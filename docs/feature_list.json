@@ -108,7 +108,7 @@
         "Save the notebook",
         "Verify notebook displays with selected color"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "notebook-07",

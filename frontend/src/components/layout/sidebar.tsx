@@ -9,6 +9,7 @@ import {
   Pencil,
   Trash2,
   FileText,
+  Palette,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +39,43 @@ import {
 import { OllamaStatus } from "@/components/ollama/ollama-status";
 import type { Notebook } from "@/types/api";
 
+const PRESET_COLORS = [
+  "#6366f1", // indigo (default)
+  "#f43f5e", // rose
+  "#10b981", // emerald
+  "#f59e0b", // amber
+  "#3b82f6", // blue
+  "#8b5cf6", // violet
+  "#ec4899", // pink
+  "#14b8a6", // teal
+];
+
+interface ColorPaletteProps {
+  selectedColor: string;
+  onSelectColor: (color: string) => void;
+}
+
+function ColorPalette({ selectedColor, onSelectColor }: ColorPaletteProps) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {PRESET_COLORS.map((color) => (
+        <button
+          key={color}
+          type="button"
+          className={cn(
+            "h-8 w-8 rounded-full border-2 transition-transform hover:scale-110",
+            selectedColor === color
+              ? "border-foreground ring-2 ring-foreground ring-offset-2 ring-offset-background"
+              : "border-transparent"
+          )}
+          style={{ backgroundColor: color }}
+          onClick={() => onSelectColor(color)}
+        />
+      ))}
+    </div>
+  );
+}
+
 interface SidebarProps {
   className?: string;
   selectedNotebookId?: string;
@@ -58,12 +96,14 @@ export function Sidebar({
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [newNotebookName, setNewNotebookName] = useState("");
+  const [newNotebookColor, setNewNotebookColor] = useState(PRESET_COLORS[0]);
 
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [renamingNotebook, setRenamingNotebook] = useState<Notebook | null>(
     null
   );
   const [renameValue, setRenameValue] = useState("");
+  const [renameColor, setRenameColor] = useState(PRESET_COLORS[0]);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingNotebook, setDeletingNotebook] = useState<Notebook | null>(
@@ -73,10 +113,11 @@ export function Sidebar({
   function handleCreateNotebook() {
     if (!newNotebookName.trim()) return;
     createNotebook.mutate(
-      { name: newNotebookName.trim() },
+      { name: newNotebookName.trim(), color: newNotebookColor },
       {
         onSuccess: () => {
           setNewNotebookName("");
+          setNewNotebookColor(PRESET_COLORS[0]);
           setCreateDialogOpen(false);
         },
       }
@@ -86,11 +127,12 @@ export function Sidebar({
   function handleRenameNotebook() {
     if (!renamingNotebook || !renameValue.trim()) return;
     updateNotebook.mutate(
-      { id: renamingNotebook.id, data: { name: renameValue.trim() } },
+      { id: renamingNotebook.id, data: { name: renameValue.trim(), color: renameColor } },
       {
         onSuccess: () => {
           setRenamingNotebook(null);
           setRenameValue("");
+          setRenameColor(PRESET_COLORS[0]);
           setRenameDialogOpen(false);
         },
       }
@@ -110,6 +152,7 @@ export function Sidebar({
   function openRenameDialog(notebook: Notebook) {
     setRenamingNotebook(notebook);
     setRenameValue(notebook.name);
+    setRenameColor(notebook.color || PRESET_COLORS[0]);
     setRenameDialogOpen(true);
   }
 
@@ -161,16 +204,30 @@ export function Sidebar({
                 conversations.
               </DialogDescription>
             </DialogHeader>
-            <div className="py-4">
-              <Input
-                placeholder="Notebook name"
-                value={newNotebookName}
-                onChange={(e) => setNewNotebookName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleCreateNotebook();
-                }}
-                autoFocus
-              />
+            <div className="space-y-4 py-4">
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  Name
+                </label>
+                <Input
+                  placeholder="Notebook name"
+                  value={newNotebookName}
+                  onChange={(e) => setNewNotebookName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleCreateNotebook();
+                  }}
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  Color
+                </label>
+                <ColorPalette
+                  selectedColor={newNotebookColor}
+                  onSelectColor={setNewNotebookColor}
+                />
+              </div>
             </div>
             <DialogFooter>
               <Button
@@ -237,25 +294,39 @@ export function Sidebar({
         </Button>
       </div>
 
-      {/* Rename Dialog */}
+      {/* Edit Notebook Dialog */}
       <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Rename Notebook</DialogTitle>
+            <DialogTitle>Edit Notebook</DialogTitle>
             <DialogDescription>
-              Enter a new name for this notebook.
+              Update the name and color for this notebook.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <Input
-              placeholder="Notebook name"
-              value={renameValue}
-              onChange={(e) => setRenameValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleRenameNotebook();
-              }}
-              autoFocus
-            />
+          <div className="space-y-4 py-4">
+            <div>
+              <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                Name
+              </label>
+              <Input
+                placeholder="Notebook name"
+                value={renameValue}
+                onChange={(e) => setRenameValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleRenameNotebook();
+                }}
+                autoFocus
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                Color
+              </label>
+              <ColorPalette
+                selectedColor={renameColor}
+                onSelectColor={setRenameColor}
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button
@@ -363,8 +434,8 @@ function NotebookItem({
               onRename();
             }}
           >
-            <Pencil className="mr-2 h-4 w-4" />
-            Rename
+            <Palette className="mr-2 h-4 w-4" />
+            Edit
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={(e) => {
