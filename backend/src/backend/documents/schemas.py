@@ -35,3 +35,22 @@ class ChunkResponse(BaseModel):
 
 class ChunkListResponse(BaseModel):
     chunks: list[ChunkResponse]
+
+
+class SearchRequest(BaseModel):
+    query: str
+    top_k: int = 5
+
+
+class SearchResult(BaseModel):
+    chunk_id: str
+    document_id: str
+    document_name: str
+    content: str
+    chunk_index: int
+    token_count: int
+    relevance_score: float
+
+
+class SearchResponse(BaseModel):
+    results: list[SearchResult]

@@ -8,7 +8,12 @@ from src.backend.documents.schemas import (
     ChunkResponse,
     DocumentListResponse,
     DocumentResponse,
+    SearchRequest,
+    SearchResponse,
+    SearchResult,
 )
+from src.backend.embedding.service import embed_query
+from src.backend.embedding.vectorstore import search_collection
 from src.backend.notebooks.service import get_notebook
 from src.backend.processing.service import process_document
 
@@ -172,3 +177,59 @@ async def reprocess_document(
     # Queue background processing
     background_tasks.add_task(process_document_background, document.id)
     return document_to_response(document)
+
+
+@router.post("/notebooks/{notebook_id}/search", response_model=SearchResponse)
+async def search_documents(
+    notebook_id: str,
+    request: SearchRequest,
+    session: AsyncSession = Depends(get_session),
+) -> SearchResponse:
+    """Search for relevant chunks in a notebook."""
+    notebook = await get_notebook(session, notebook_id)
+    if not notebook:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Notebook not found",
+        )
+
+    # Embed query
+    query_embedding = embed_query(request.query)
+
+    # Search vector store
+    results = search_collection(
+        notebook_id=notebook_id,
+        query_embedding=query_embedding,
+        n_results=request.top_k,
+    )
+
+    # Convert to response format
+    search_results: list[SearchResult] = []
+
+    if results and results.get("ids") and results["ids"][0]:
+        ids = results["ids"][0]
+        documents = results.get("documents", [[]])[0]
+        metadatas = results.get("metadatas", [[]])[0]
+        distances = results.get("distances", [[]])[0]
+
+        for i, chunk_id in enumerate(ids):
+            metadata = metadatas[i] if i < len(metadatas) else {}
+            content = documents[i] if i < len(documents) else ""
+            distance = distances[i] if i < len(distances) else 1.0
+
+            # Convert distance to relevance score (cosine distance to similarity)
+            relevance_score = 1.0 - distance
+
+            search_results.append(
+                SearchResult(
+                    chunk_id=chunk_id,
+                    document_id=metadata.get("document_id", ""),
+                    document_name=metadata.get("document_name", ""),
+                    content=content,
+                    chunk_index=metadata.get("chunk_index", 0),
+                    token_count=metadata.get("token_count", 0),
+                    relevance_score=round(relevance_score, 4),
+                )
+            )
+
+    return SearchResponse(results=search_results)
