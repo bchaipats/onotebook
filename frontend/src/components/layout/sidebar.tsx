@@ -131,10 +131,12 @@ export function Sidebar({
     createNotebook.mutate(
       { name: newNotebookName.trim(), color: newNotebookColor },
       {
-        onSuccess: () => {
+        onSuccess: (notebook) => {
           setNewNotebookName("");
           setNewNotebookColor(PRESET_COLORS[0]);
           setCreateDialogOpen(false);
+          // Auto-select the newly created notebook
+          onSelectNotebook?.(notebook);
         },
       }
     );
