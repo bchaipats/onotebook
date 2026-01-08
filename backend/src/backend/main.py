@@ -10,6 +10,7 @@ from src.backend.database import init_db
 from src.backend.documents import router as documents_router
 from src.backend.health import router as health_router
 from src.backend.notebooks import router as notebooks_router
+from src.backend.ollama import router as ollama_router
 
 
 @asynccontextmanager
@@ -47,3 +48,4 @@ app.add_middleware(
 app.include_router(health_router)
 app.include_router(notebooks_router)
 app.include_router(documents_router)
+app.include_router(ollama_router)
