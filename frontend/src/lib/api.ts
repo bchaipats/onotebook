@@ -74,7 +74,7 @@ export async function deleteNotebook(id: string): Promise<void> {
 
 // Document API
 
-import type { Document } from "@/types/api";
+import type { Document, Chunk } from "@/types/api";
 
 interface DocumentsResponse {
   documents: Document[];
@@ -122,6 +122,26 @@ export async function retryProcessing(id: string): Promise<Document> {
   return request<Document>(`/api/documents/${id}/process`, {
     method: "POST",
   });
+}
+
+interface ChunksResponse {
+  chunks: Chunk[];
+}
+
+export async function getChunks(documentId: string): Promise<Chunk[]> {
+  const response = await request<ChunksResponse>(
+    `/api/documents/${documentId}/chunks`
+  );
+  return response.chunks;
+}
+
+export async function getDocumentContent(documentId: string): Promise<string> {
+  const url = `${API_BASE_URL}/api/documents/${documentId}/content`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new ApiError(response.status, response.statusText);
+  }
+  return response.text();
 }
 
 export { ApiError };

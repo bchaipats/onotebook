@@ -303,7 +303,7 @@
         "Verify panel slides in from the right",
         "Verify close button is visible"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "preview-02",
@@ -328,7 +328,7 @@
         "Verify Markdown formatting is rendered (headings, bold, lists)",
         "Verify text is readable"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "preview-04",
@@ -340,7 +340,7 @@
         "Verify list of chunks is displayed",
         "Verify each chunk shows token count"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "preview-05",
@@ -351,7 +351,7 @@
         "Click the close button",
         "Verify panel slides out and closes"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "ollama-01",

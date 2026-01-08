@@ -47,3 +47,11 @@ export interface Message {
   content: string;
   created_at: string;
 }
+
+export interface Chunk {
+  id: string;
+  chunk_index: number;
+  content: string;
+  token_count: number;
+  page_number: number | null;
+}

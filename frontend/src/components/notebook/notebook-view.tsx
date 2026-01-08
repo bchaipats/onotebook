@@ -10,6 +10,7 @@ import {
   CheckCircle,
   Loader2,
   Clock,
+  Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,7 @@ import {
   useRetryProcessing,
 } from "@/hooks/use-documents";
 import type { Document, Notebook } from "@/types/api";
+import { DocumentPreview } from "./document-preview";
 
 const ALLOWED_FILE_TYPES = [".pdf", ".txt", ".md", ".docx", ".html"];
 
@@ -35,6 +37,7 @@ export function NotebookView({ notebook }: NotebookViewProps) {
 
   const [isDragging, setIsDragging] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [previewDocument, setPreviewDocument] = useState<Document | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function validateFile(file: File): string | null {
@@ -183,6 +186,7 @@ export function NotebookView({ notebook }: NotebookViewProps) {
                 document={doc}
                 onDelete={() => handleDeleteDocument(doc.id)}
                 onRetry={() => handleRetryProcessing(doc.id)}
+                onPreview={() => setPreviewDocument(doc)}
                 isDeleting={deleteDocument.isPending}
                 isRetrying={retryProcessing.isPending}
               />
@@ -200,6 +204,12 @@ export function NotebookView({ notebook }: NotebookViewProps) {
           </div>
         )}
       </div>
+
+      <DocumentPreview
+        document={previewDocument}
+        open={previewDocument !== null}
+        onClose={() => setPreviewDocument(null)}
+      />
     </div>
   );
 }
@@ -208,6 +218,7 @@ interface DocumentItemProps {
   document: Document;
   onDelete: () => void;
   onRetry: () => void;
+  onPreview: () => void;
   isDeleting: boolean;
   isRetrying: boolean;
 }
@@ -216,6 +227,7 @@ function DocumentItem({
   document,
   onDelete,
   onRetry,
+  onPreview,
   isDeleting,
   isRetrying,
 }: DocumentItemProps) {
@@ -246,6 +258,17 @@ function DocumentItem({
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-1">
+        {document.processing_status === "ready" && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0"
+            onClick={onPreview}
+            title="Preview document"
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+        )}
         {document.processing_status === "failed" && (
           <Button
             variant="ghost"

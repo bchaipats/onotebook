@@ -25,7 +25,7 @@ onotebook is an open-source RAG knowledge assistant. Read `docs/app_spec.txt` fo
 2. Read `claude-progress.txt` for context from previous sessions
 3. Read `docs/feature_list.json` to see current progress
 4. Check `git log --oneline -10` for recent changes
-5. Start dev servers if not running
+5. Start dev servers if not running (kill any running servers first)
 6. Verify 1-2 existing features still work before new work
 
 ### During Development
