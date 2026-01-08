@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { showToast } from "@/components/ui/toast";
 import {
   useDocuments,
   useUploadDocument,
@@ -71,15 +72,16 @@ export function NotebookView({ notebook }: NotebookViewProps) {
       const error = validateFile(file);
       if (error) {
         setUploadError(error);
+        showToast(error, "error");
         continue;
       }
 
       try {
         await uploadDocument.mutateAsync(file);
       } catch (err) {
-        setUploadError(
-          err instanceof Error ? err.message : "Failed to upload file"
-        );
+        const errorMessage = err instanceof Error ? err.message : "Failed to upload file";
+        setUploadError(errorMessage);
+        showToast(`Upload failed: ${errorMessage}`, "error");
       }
     }
   }

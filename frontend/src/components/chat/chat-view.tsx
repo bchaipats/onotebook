@@ -40,6 +40,7 @@ export function ChatView({ sessionId, notebookId, selectedModel }: ChatViewProps
   const [currentSources, setCurrentSources] = useState<SourceInfo[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [highlightedCitation, setHighlightedCitation] = useState<number | null>(null);
+  const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -83,12 +84,15 @@ export function ChatView({ sessionId, notebookId, selectedModel }: ChatViewProps
     }
   }, [invalidateMessages, invalidateSessions]);
 
-  async function handleSend() {
-    if (!inputValue.trim() || isStreaming) return;
+  async function handleSend(retryContent?: string) {
+    const content = retryContent || inputValue.trim();
+    if (!content || isStreaming) return;
 
-    const content = inputValue.trim();
-    setInputValue("");
+    if (!retryContent) {
+      setInputValue("");
+    }
     setError(null);
+    setLastFailedMessage(null);
     setIsStreaming(true);
     setStreamingContent("");
     setStoppedContent("");
@@ -116,9 +120,16 @@ export function ChatView({ sessionId, notebookId, selectedModel }: ChatViewProps
         }
       } else {
         setError(err instanceof Error ? err.message : "Failed to send message");
+        setLastFailedMessage(content);
       }
       setIsStreaming(false);
       setStreamingContent("");
+    }
+  }
+
+  function handleRetryMessage() {
+    if (lastFailedMessage) {
+      handleSend(lastFailedMessage);
     }
   }
 
@@ -300,12 +311,26 @@ export function ChatView({ sessionId, notebookId, selectedModel }: ChatViewProps
       {/* Error */}
       {error && (
         <div className="border-t border-border bg-destructive/10 p-3 text-center text-sm text-destructive">
-          {error}
+          <span>{error}</span>
+          {lastFailedMessage && (
+            <Button
+              variant="link"
+              size="sm"
+              className="ml-2 h-auto p-0 text-destructive font-medium"
+              onClick={handleRetryMessage}
+            >
+              <RefreshCw className="mr-1 h-3 w-3" />
+              Retry
+            </Button>
+          )}
           <Button
             variant="link"
             size="sm"
-            className="ml-2 h-auto p-0 text-destructive"
-            onClick={() => setError(null)}
+            className="ml-2 h-auto p-0 text-destructive/70"
+            onClick={() => {
+              setError(null);
+              setLastFailedMessage(null);
+            }}
           >
             Dismiss
           </Button>

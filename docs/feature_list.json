@@ -291,7 +291,7 @@
         "Verify error badge appears with error message",
         "Verify retry button is available"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "preview-01",
@@ -774,7 +774,7 @@
         "Verify error banner appears indicating API connection failed",
         "Verify retry button is available"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "error-02",
@@ -786,7 +786,7 @@
         "Verify retry button is available",
         "Click retry and verify message is resent"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "error-03",
@@ -797,7 +797,7 @@
         "Verify toast notification appears with error",
         "Verify error message is descriptive"
       ],
-      "passes": false
+      "passes": true
     }
   ]
 }
