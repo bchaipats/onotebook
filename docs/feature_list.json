@@ -146,7 +146,7 @@
         "Select a TXT file from file picker",
         "Verify document appears in list with pending/processing status"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "document-03",
@@ -171,7 +171,7 @@
         "Verify error message appears indicating invalid file type",
         "Verify file is not added to document list"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "document-05",
@@ -184,7 +184,7 @@
         "Verify file size is displayed",
         "Verify status badge shows current processing state"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "document-06",
@@ -196,7 +196,7 @@
         "Confirm deletion if prompted",
         "Verify document is removed from list"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "document-07",
@@ -207,7 +207,7 @@
         "Verify message 'Upload documents to build your knowledge base' appears",
         "Verify upload prompt/button is visible"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "processing-01",
@@ -231,7 +231,7 @@
         "Verify status shows 'ready'",
         "Verify chunks are created"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "processing-03",
@@ -243,7 +243,7 @@
         "Verify status shows 'ready'",
         "Verify chunks are created"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "processing-04",

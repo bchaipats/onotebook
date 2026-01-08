@@ -24,13 +24,11 @@ export interface Document {
   filename: string;
   file_type: string;
   file_size: number;
-  file_path: string;
-  status: "pending" | "processing" | "ready" | "failed";
-  error_message: string | null;
-  chunk_count: number;
   page_count: number | null;
+  chunk_count: number;
+  processing_status: "pending" | "processing" | "ready" | "failed";
+  processing_error: string | null;
   created_at: string;
-  updated_at: string;
 }
 
 export interface ChatSession {
