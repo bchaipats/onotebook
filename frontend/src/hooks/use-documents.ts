@@ -17,15 +17,15 @@ function hasProcessingDocuments(documents: Document[] | undefined): boolean {
 }
 
 export function useDocuments(notebookId: string) {
-  const query = useQuery({
+  return useQuery({
     queryKey: ["documents", notebookId],
     queryFn: () => getDocuments(notebookId),
     enabled: !!notebookId,
     refetchInterval: (query) => {
-      return hasProcessingDocuments(query.state.data) ? 2000 : false;
+      return hasProcessingDocuments(query.state.data) ? 3000 : false;
     },
+    refetchIntervalInBackground: false,
   });
-  return query;
 }
 
 export function useUploadDocument(notebookId: string) {
