@@ -385,7 +385,7 @@
         "Verify list of available models is displayed",
         "Verify current selection is highlighted"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "ollama-04",
@@ -396,7 +396,7 @@
         "Click on a different model than currently selected",
         "Verify selection updates to new model"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "ollama-05",

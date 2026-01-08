@@ -27,6 +27,8 @@ import type { ChatSession, Document, Notebook } from "@/types/api";
 import { DocumentPreview } from "./document-preview";
 import { ChatView } from "@/components/chat/chat-view";
 import { ChatSessionList } from "@/components/chat/chat-session-list";
+import { ModelSelector } from "@/components/chat/model-selector";
+import { useSettings } from "@/hooks/use-settings";
 
 const ALLOWED_FILE_TYPES = [".pdf", ".txt", ".md", ".docx", ".html"];
 
@@ -36,6 +38,7 @@ interface NotebookViewProps {
 
 export function NotebookView({ notebook }: NotebookViewProps) {
   const { data: documents, isLoading } = useDocuments(notebook.id);
+  const { data: settings } = useSettings();
   const uploadDocument = useUploadDocument(notebook.id);
   const deleteDocument = useDeleteDocument(notebook.id);
   const retryProcessing = useRetryProcessing(notebook.id);
@@ -45,7 +48,11 @@ export function NotebookView({ notebook }: NotebookViewProps) {
   const [previewDocument, setPreviewDocument] = useState<Document | null>(null);
   const [activeTab, setActiveTab] = useState<string>("documents");
   const [selectedSession, setSelectedSession] = useState<ChatSession | null>(null);
+  const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Initialize selected model from settings when loaded
+  const effectiveModel = selectedModel || settings?.default_model || null;
 
   function validateFile(file: File): string | null {
     const ext = "." + file.name.split(".").pop()?.toLowerCase();
@@ -227,6 +234,14 @@ export function NotebookView({ notebook }: NotebookViewProps) {
         </TabsContent>
 
         <TabsContent value="chat" className="flex flex-1 flex-col overflow-hidden mt-0">
+          {/* Model Selector Bar */}
+          <div className="flex items-center justify-between border-b border-border px-4 py-2">
+            <ModelSelector
+              selectedModel={effectiveModel}
+              onSelectModel={setSelectedModel}
+            />
+          </div>
+
           <div className="flex flex-1 overflow-hidden">
             {/* Chat Session List */}
             <div className="w-56 shrink-0 border-r border-border overflow-y-auto">
@@ -243,7 +258,7 @@ export function NotebookView({ notebook }: NotebookViewProps) {
                 <ChatView
                   sessionId={selectedSession.id}
                   notebookId={notebook.id}
-                  selectedModel={null}
+                  selectedModel={effectiveModel}
                 />
               ) : (
                 <div className="flex h-full items-center justify-center">
