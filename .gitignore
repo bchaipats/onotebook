@@ -1,0 +1,20 @@
+# Progress tracking
+claude-progress.txt
+
+# Environment
+.env
+.env.local
+
+# Dependencies
+node_modules/
+__pycache__/
+.venv/
+
+# Build outputs
+.next/
+dist/
+
+# Data
+*.db
+data/
+```

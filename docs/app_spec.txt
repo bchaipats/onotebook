@@ -1,0 +1,595 @@
+<project_specification>
+  <project_name>onotebook - Open-Source RAG Knowledge Assistant</project_name>
+
+  <overview>
+    Build a fully open-source, self-hosted alternative to NotebookLM that allows users to upload 
+    documents and have natural language conversations about their content using retrieval-augmented 
+    generation (RAG). The application provides a clean interface for document management, knowledge 
+    organization, and AI-powered conversations with transparent source attribution. The entire stack 
+    is open-source with no proprietary APIs, giving users full control over their data and privacy.
+  </overview>
+
+  <design_philosophy>
+    - Privacy-first: All data stays local or on user-controlled infrastructure
+    - Fully open-source: Every component is freely available and modifiable
+    - Self-hosted: Deployable on local machines or private servers
+    - Offline-capable: Works without internet after initial model download
+    - Transparent: Users see exactly which sources informed each response
+    - Single-user: No authentication, designed for personal use
+  </design_philosophy>
+
+  <technology_stack>
+    <frontend>
+      <framework>Next.js with App Router</framework>
+      <language>TypeScript</language>
+      <styling>Tailwind CSS</styling>
+      <ui_components>shadcn/ui</ui_components>
+      <icons>Lucide React</icons>
+      <state_management>Zustand for global state, TanStack Query for server state</state_management>
+      <markdown_rendering>react-markdown with remark-gfm</markdown_rendering>
+      <code_highlighting>Shiki</code_highlighting>
+      <file_upload>react-dropzone</file_upload>
+      <pdf_preview>react-pdf</pdf_preview>
+      <notifications>sonner</notifications>
+      <package_manager>Bun</package_manager>
+      <port>3000</port>
+    </frontend>
+
+    <backend>
+      <framework>FastAPI</framework>
+      <language>Python 3.13</language>
+      <build_system>uv</build_system>
+      <orm>SQLModel</orm>
+      <database>SQLite with aiosqlite</database>
+      <migrations>Alembic</migrations>
+      <port>8000</port>
+    </backend>
+
+    <document_processing>
+      <pdf_extraction>pymupdf4llm</pdf_extraction>
+      <docx_extraction>python-docx</docx_extraction>
+      <html_parsing>beautifulsoup4 with lxml</html_parsing>
+      <text_chunking>langchain-text-splitters RecursiveCharacterTextSplitter</text_chunking>
+      <supported_formats>PDF, TXT, MD, DOCX, HTML</supported_formats>
+    </document_processing>
+
+    <embedding_system>
+      <model>sentence-transformers with BAAI/bge-small-en-v1.5</model>
+      <dimensions>384</dimensions>
+      <batch_size>32</batch_size>
+    </embedding_system>
+
+    <vector_database>
+      <database>ChromaDB persistent mode</database>
+      <collection_strategy>One collection per notebook</collection_strategy>
+    </vector_database>
+
+    <llm_inference>
+      <server>Ollama</server>
+      <default_model>llama3.2:3b</default_model>
+      <api_endpoint>http://localhost:11434</api_endpoint>
+    </llm_inference>
+  </technology_stack>
+
+  <environment_variables>
+    <frontend>
+      NEXT_PUBLIC_API_URL=http://localhost:8000
+    </frontend>
+
+    <backend>
+      DATABASE_URL=sqlite+aiosqlite:///./data/onotebook.db
+      OLLAMA_BASE_URL=http://localhost:11434
+      CHROMA_PERSIST_DIRECTORY=./data/chroma
+      UPLOAD_DIRECTORY=./data/uploads
+      EMBEDDING_MODEL=BAAI/bge-small-en-v1.5
+      DEFAULT_LLM_MODEL=llama3.2:3b
+      CHUNK_SIZE=512
+      CHUNK_OVERLAP=50
+      MAX_UPLOAD_SIZE_MB=50
+    </backend>
+  </environment_variables>
+
+  <core_features>
+    <notebook_management>
+      - Create notebooks with name and optional description
+      - Notebook list showing name, document count, last modified
+      - Notebook color selection (preset palette)
+      - Rename notebooks inline
+      - Delete notebooks with confirmation (warns about cascade)
+      - Sort by name or date modified
+      - Empty state with create notebook CTA
+    </notebook_management>
+
+    <document_management>
+      - Upload via drag-and-drop or file picker
+      - Multi-file upload with progress indicator
+      - File type validation with clear errors
+      - Document list showing filename, size, status badge
+      - Processing status: pending → processing → ready / failed
+      - Document actions: preview, delete
+      - Empty state with upload prompt
+    </document_management>
+
+    <document_preview>
+      - Slide-in panel from right
+      - PDF rendered with page navigation
+      - Text/Markdown displayed with formatting
+      - Chunks tab showing all chunks with token counts
+      - Close button to dismiss
+    </document_preview>
+
+    <document_processing>
+      - Automatic file type detection
+      - Text extraction preserving structure
+      - Chunking: 512 tokens, 50 token overlap
+      - Progress indicator with stage: Extracting → Chunking → Embedding
+      - Background processing
+      - Error display with retry option
+    </document_processing>
+
+    <chat_interface>
+      - Clean message bubbles (user right, assistant left)
+      - Streaming responses with typing indicator
+      - Markdown rendering with code syntax highlighting
+      - Copy button on code blocks
+      - Inline citations [1], [2], [3] linking to sources
+      - Stop generation button during streaming
+      - Regenerate last response button
+      - Auto-resize textarea input
+      - Enter to send, Shift+Enter for newline
+      - New chat button
+      - Chat session list with auto-generated titles
+      - Delete chat sessions
+    </chat_interface>
+
+    <sources_panel>
+      - Collapsible right panel
+      - Source cards showing:
+        * Document name
+        * Relevance score (percentage)
+        * Chunk preview (expandable)
+      - Click citation to highlight source
+      - Empty state when no sources
+    </sources_panel>
+
+    <ollama_integration>
+      - Connection status indicator (connected/disconnected)
+      - Model selector dropdown
+      - Available models list from Ollama
+      - Pull new model with progress bar
+      - Model info display (size, parameters)
+      - Clear error when Ollama not running
+    </ollama_integration>
+
+    <settings>
+      - Theme: Light, Dark, System
+      - Default model selection
+      - Ollama endpoint URL
+      - RAG parameters: Top-k results, Temperature
+      - About section with version
+    </settings>
+
+    <empty_states>
+      - Home: "Create your first notebook to get started"
+      - Notebook: "Upload documents to build your knowledge base"
+      - Chat: Welcome message with suggested prompts
+      - Sources: "Sources will appear when you ask questions"
+    </empty_states>
+
+    <loading_states>
+      - App load: Spinner with logo
+      - Lists: Skeleton placeholders
+      - Document processing: Progress bar with percentage
+      - Chat: Typing indicator
+    </loading_states>
+
+    <error_handling>
+      - API connection failed: Banner with retry
+      - Ollama not running: Modal with instructions
+      - Processing failed: Error badge with message
+      - Chat error: Inline error with retry
+      - Upload failed: Toast notification
+    </error_handling>
+  </core_features>
+
+  <database_schema>
+    <notebooks>
+      id: TEXT PRIMARY KEY (UUID)
+      name: TEXT NOT NULL
+      description: TEXT
+      color: TEXT
+      created_at: TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      updated_at: TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    </notebooks>
+
+    <documents>
+      id: TEXT PRIMARY KEY (UUID)
+      notebook_id: TEXT NOT NULL REFERENCES notebooks(id) ON DELETE CASCADE
+      filename: TEXT NOT NULL
+      file_type: TEXT NOT NULL
+      file_size: INTEGER NOT NULL
+      file_path: TEXT NOT NULL
+      page_count: INTEGER
+      chunk_count: INTEGER DEFAULT 0
+      processing_status: TEXT NOT NULL DEFAULT 'pending'
+      processing_error: TEXT
+      created_at: TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    </documents>
+
+    <chunks>
+      id: TEXT PRIMARY KEY (UUID)
+      document_id: TEXT NOT NULL REFERENCES documents(id) ON DELETE CASCADE
+      chunk_index: INTEGER NOT NULL
+      content: TEXT NOT NULL
+      token_count: INTEGER NOT NULL
+      page_number: INTEGER
+      embedding_id: TEXT
+    </chunks>
+
+    <chat_sessions>
+      id: TEXT PRIMARY KEY (UUID)
+      notebook_id: TEXT NOT NULL REFERENCES notebooks(id) ON DELETE CASCADE
+      title: TEXT
+      created_at: TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      updated_at: TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    </chat_sessions>
+
+    <messages>
+      id: TEXT PRIMARY KEY (UUID)
+      chat_session_id: TEXT NOT NULL REFERENCES chat_sessions(id) ON DELETE CASCADE
+      role: TEXT NOT NULL (user, assistant)
+      content: TEXT NOT NULL
+      model: TEXT
+      created_at: TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    </messages>
+
+    <message_sources>
+      id: TEXT PRIMARY KEY (UUID)
+      message_id: TEXT NOT NULL REFERENCES messages(id) ON DELETE CASCADE
+      chunk_id: TEXT NOT NULL REFERENCES chunks(id) ON DELETE CASCADE
+      relevance_score: REAL NOT NULL
+      citation_index: INTEGER NOT NULL
+    </message_sources>
+
+    <settings>
+      key: TEXT PRIMARY KEY
+      value: TEXT NOT NULL (JSON)
+    </settings>
+  </database_schema>
+
+  <api_endpoints>
+    <health>
+      GET /api/health
+        → { status, ollama_connected, version }
+    </health>
+
+    <notebooks>
+      GET /api/notebooks
+      POST /api/notebooks
+      GET /api/notebooks/{id}
+      PUT /api/notebooks/{id}
+      DELETE /api/notebooks/{id}
+    </notebooks>
+
+    <documents>
+      GET /api/notebooks/{notebook_id}/documents
+      POST /api/notebooks/{notebook_id}/documents (multipart)
+      GET /api/documents/{id}
+      GET /api/documents/{id}/chunks
+      DELETE /api/documents/{id}
+    </documents>
+
+    <chat>
+      GET /api/notebooks/{notebook_id}/sessions
+      POST /api/notebooks/{notebook_id}/sessions
+      GET /api/sessions/{id}
+      DELETE /api/sessions/{id}
+      POST /api/sessions/{id}/messages → SSE stream
+      POST /api/messages/{id}/regenerate → SSE stream
+    </chat>
+
+    <models>
+      GET /api/models
+      POST /api/models/pull → SSE stream (progress)
+    </models>
+
+    <settings>
+      GET /api/settings
+      PUT /api/settings
+    </settings>
+  </api_endpoints>
+
+  <rag_system>
+    <retrieval>
+      - Query embedded using same model as documents
+      - ChromaDB similarity search
+      - Top-k chunks retrieved (default: 5)
+      - Results include relevance scores
+    </retrieval>
+
+    <prompt_template>
+      You are a helpful assistant answering questions based on the provided documents.
+      Use the following context to answer the user's question. If the context doesn't 
+      contain relevant information, say so.
+
+      When using information from the context, cite your sources using [1], [2], etc.
+      corresponding to the source numbers provided.
+
+      Context:
+      {sources}
+
+      Question: {question}
+    </prompt_template>
+
+    <source_format>
+      [1] From "{document_name}":
+      {chunk_content}
+
+      [2] From "{document_name}":
+      {chunk_content}
+    </source_format>
+
+    <citation_parsing>
+      - Parse [N] patterns from LLM response
+      - Map to source chunks by index
+      - Store in message_sources table
+      - Render as clickable badges in UI
+    </citation_parsing>
+  </rag_system>
+
+  <ui_layout>
+    <structure>
+      Three-column layout:
+        - Sidebar (280px): Notebooks, chat sessions
+        - Main (flexible): Chat or notebook view
+        - Panel (320px): Sources, document preview (collapsible)
+    </structure>
+
+    <sidebar>
+      - App logo "onotebook"
+      - Notebooks section with list
+      - When in notebook: chat sessions list
+      - Settings button at bottom
+    </sidebar>
+
+    <main_notebook_view>
+      - Notebook name and description
+      - Upload button
+      - Document list with status badges
+      - Drag-and-drop overlay
+    </main_notebook_view>
+
+    <main_chat_view>
+      - Chat title
+      - Model selector
+      - Message list
+      - Input area at bottom
+      - Welcome state with suggested prompts
+    </main_chat_view>
+
+    <right_panel>
+      - Sources panel (during chat)
+      - Document preview (when viewing document)
+    </right_panel>
+  </ui_layout>
+
+  <design_system>
+    <colors>
+      Use shadcn/ui default theme with customization:
+        Primary: Blue (#2563EB light, #3B82F6 dark)
+        Background: White/Slate-950
+        Foreground: Slate-900/Slate-50
+        Muted: Slate-100/Slate-800
+        Border: Slate-200/Slate-800
+        Success: Green-600
+        Error: Red-600
+    </colors>
+
+    <typography>
+      Font: System font stack (Inter if available)
+      Monospace: JetBrains Mono, Consolas
+    </typography>
+
+    <components>
+      Use shadcn/ui components:
+        - Button (primary, secondary, ghost, destructive)
+        - Input, Textarea
+        - Card
+        - Dialog, AlertDialog
+        - DropdownMenu
+        - Badge
+        - Progress
+        - Skeleton
+        - Toast (via sonner)
+        - Tooltip
+    </components>
+
+    <message_bubbles>
+      User: bg-primary text-primary-foreground rounded-2xl max-w-[80%] ml-auto
+      Assistant: bg-muted rounded-2xl max-w-[80%]
+    </message_bubbles>
+  </design_system>
+
+  <key_interactions>
+    <document_upload>
+      1. Drag files or click upload
+      2. Validate file types
+      3. Show uploading progress
+      4. Start background processing
+      5. Update status: Extracting → Chunking → Embedding → Ready
+      6. Show error if failed with retry option
+    </document_upload>
+
+    <chat_flow>
+      1. User types message, presses Enter
+      2. Message appears, input disabled
+      3. Typing indicator shows
+      4. Backend: embed query → retrieve chunks → build prompt → generate
+      5. Stream tokens to UI
+      6. Parse and render citations
+      7. Populate sources panel
+      8. Save message and sources
+    </chat_flow>
+
+    <source_exploration>
+      1. Hover citation [1] → tooltip preview
+      2. Click citation → scroll sources panel to source
+      3. Click "View document" → open preview panel
+    </source_exploration>
+
+    <model_management>
+      1. Open model selector dropdown
+      2. See available models with current selection
+      3. Click "Pull new model"
+      4. Enter model name (e.g., mistral:7b)
+      5. Progress bar shows download
+      6. Model appears in list when complete
+    </model_management>
+  </key_interactions>
+
+  <implementation_phases>
+    <phase_1>
+      <title>Project Setup and Database</title>
+      - Initialize FastAPI backend with uv
+      - Set up SQLModel with SQLite async
+      - Create Alembic migrations
+      - Implement database models
+      - Set up Next.js frontend with shadcn/ui
+      - Create basic layout (sidebar, main)
+      - Health check endpoint
+    </phase_1>
+
+    <phase_2>
+      <title>Notebook and Document Management</title>
+      - Notebook CRUD endpoints and UI
+      - Document upload endpoint
+      - File storage service
+      - Drag-and-drop upload zone
+      - Document list with status
+      - Document delete
+    </phase_2>
+
+    <phase_3>
+      <title>Document Processing Pipeline</title>
+      - PDF extraction with pymupdf4llm
+      - Text extraction for other formats
+      - Chunking service
+      - Store chunks in database
+      - Processing status updates
+      - Error handling
+    </phase_3>
+
+    <phase_4>
+      <title>Embedding and Vector Storage</title>
+      - Embedding service with sentence-transformers
+      - ChromaDB setup and persistence
+      - Store embeddings after chunking
+      - Similarity search endpoint
+    </phase_4>
+
+    <phase_5>
+      <title>Ollama Integration</title>
+      - Ollama client service
+      - Connection status check
+      - Model listing endpoint
+      - Model pull with progress
+      - Model selector UI
+    </phase_5>
+
+    <phase_6>
+      <title>Chat Interface</title>
+      - Chat session CRUD
+      - Message display with markdown
+      - Streaming with SSE
+      - Auto-resize input
+      - Stop generation
+      - Regenerate response
+    </phase_6>
+
+    <phase_7>
+      <title>RAG and Citations</title>
+      - RAG prompt assembly
+      - Query → retrieval → generation pipeline
+      - Citation parsing
+      - Sources panel
+      - Citation hover/click behavior
+    </phase_7>
+
+    <phase_8>
+      <title>Polish and Settings</title>
+      - Settings modal
+      - Theme switching
+      - Document preview panel
+      - Empty states
+      - Loading states
+      - Error handling UI
+      - Mobile responsiveness
+    </phase_8>
+  </implementation_phases>
+
+  <quality_assurance>
+    <type_safety>
+      - TypeScript strict mode in frontend (catches errors at compile time)
+      - Python type hints throughout backend (validate with pyright)
+      - No `any` types in TypeScript, no untyped functions in Python
+    </type_safety>
+
+    <verification>
+      - Feature verification via Playwright MCP during development
+      - Each feature tested through actual UI before marking complete
+      - Screenshots captured as evidence of working features
+    </verification>
+
+    <no_test_suites>
+      - Skip unit tests, integration tests during development phase
+      - Type systems + E2E verification is sufficient for this stage
+      - Add automated regression tests later if needed
+    </no_test_suites>
+  </quality_assurance>
+
+  <success_criteria>
+    <functionality>
+      - Upload and process PDF, TXT, MD, DOCX, HTML
+      - Clean text extraction
+      - Relevant chunk retrieval
+      - Accurate source citations
+      - Smooth streaming responses
+      - Working model selection and pull
+    </functionality>
+
+    <performance>
+      - Document processing < 30s for typical PDF
+      - Query to first token < 3s
+      - UI interactions < 100ms
+    </performance>
+
+    <user_experience>
+      - Intuitive for first-time users
+      - Clear processing feedback
+      - Transparent source attribution
+      - Graceful error handling
+    </user_experience>
+  </success_criteria>
+
+  <deployment>
+    <development>
+      # Terminal 1
+      cd backend && uv run fastapi dev src/backend/main.py
+
+      # Terminal 2
+      cd frontend && bun run dev
+
+      # Terminal 3 (if not running)
+      ollama serve
+    </development>
+
+    <docker>
+      docker-compose up -d
+
+      Services:
+        - frontend (port 3000)
+        - backend (port 8000)
+        - ollama (port 11434)
+    </docker>
+  </deployment>
+</project_specification>

@@ -5,19 +5,15 @@ Project guidelines and best practices for this codebase.
 ## Project Structure
 
 Use domain-driven organization rather than grouping by file type:
-
 ```
-src/
-├── <domain>/           # e.g., auth, posts, payments
+src/backend/
+├── <domain>/           # e.g., notebooks, documents, chat
 │   ├── router.py       # API endpoints
 │   ├── schemas.py      # Request/response models
 │   ├── models.py       # Database models
 │   ├── service.py      # Business logic
 │   ├── dependencies.py # Route dependencies
-│   ├── config.py       # Domain-specific config
-│   ├── constants.py    # Domain constants/error codes
-│   ├── exceptions.py   # Domain-specific exceptions
-│   └── utils.py        # Helper functions
+│   └── exceptions.py   # Domain-specific exceptions
 ├── config.py           # Global configuration
 ├── database.py         # DB connection setup
 └── main.py             # Application entrypoint
