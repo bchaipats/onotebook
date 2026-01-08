@@ -34,7 +34,7 @@ onotebook is an open-source RAG knowledge assistant. Read `docs/app_spec.txt` fo
 - Commit after each completed feature
 - Keep the app in a working state
 
-### Ending a Session
+### Before Stopping or Waiting for Next Instruction
 1. Commit all working code
 2. Update `claude-progress.txt` with:
    - What you accomplished
