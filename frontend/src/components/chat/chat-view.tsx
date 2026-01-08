@@ -291,13 +291,11 @@ export function ChatView({ sessionId, notebookId, selectedModel }: ChatViewProps
       </div>
 
       {/* Sources Panel */}
-      {currentSources.length > 0 && (
-        <SourcesPanel
-          sources={currentSources}
-          highlightedCitation={highlightedCitation}
-          onClearHighlight={() => setHighlightedCitation(null)}
-        />
-      )}
+      <SourcesPanel
+        sources={currentSources}
+        highlightedCitation={highlightedCitation}
+        onClearHighlight={() => setHighlightedCitation(null)}
+      />
 
       {/* Error */}
       {error && (
@@ -644,51 +642,59 @@ function SourcesPanel({ sources, highlightedCitation, onClearHighlight }: Source
     <div className="border-t border-border bg-muted/50 p-4">
       <div className="mx-auto max-w-3xl">
         <h3 className="mb-3 text-sm font-medium">Sources ({sources.length})</h3>
-        <div className="space-y-2">
-          {sources.map((source) => {
-            const isHighlighted = highlightedCitation === source.citation_index;
-            return (
-              <div
-                key={source.chunk_id}
-                ref={(el) => { sourceRefs.current[source.citation_index] = el; }}
-                className={cn(
-                  "rounded-lg border p-3 transition-all duration-300",
-                  isHighlighted
-                    ? "border-primary bg-primary/5 ring-2 ring-primary ring-offset-2"
-                    : "border-border bg-background"
-                )}
-              >
+        {sources.length === 0 ? (
+          <div className="flex items-center justify-center rounded-lg border border-dashed border-border bg-background p-6">
+            <p className="text-sm text-muted-foreground">
+              Sources will appear when you ask questions
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {sources.map((source) => {
+              const isHighlighted = highlightedCitation === source.citation_index;
+              return (
                 <div
-                  className="flex cursor-pointer items-center gap-2"
-                  onClick={() => toggleExpanded(source.chunk_id)}
-                >
-                  {expanded[source.chunk_id] ? (
-                    <ChevronDown className="h-4 w-4 shrink-0" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 shrink-0" />
+                  key={source.chunk_id}
+                  ref={(el) => { sourceRefs.current[source.citation_index] = el; }}
+                  className={cn(
+                    "rounded-lg border p-3 transition-all duration-300",
+                    isHighlighted
+                      ? "border-primary bg-primary/5 ring-2 ring-primary ring-offset-2"
+                      : "border-border bg-background"
                   )}
-                  <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  <span className="flex-1 truncate text-sm font-medium">
-                    [{source.citation_index}] {source.document_name}
-                  </span>
-                  <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                    {Math.round(source.relevance_score * 100)}%
-                  </span>
-                </div>
-                {expanded[source.chunk_id] && (
-                  <div className="mt-2 text-sm text-muted-foreground">
-                    {source.content}
+                >
+                  <div
+                    className="flex cursor-pointer items-center gap-2"
+                    onClick={() => toggleExpanded(source.chunk_id)}
+                  >
+                    {expanded[source.chunk_id] ? (
+                      <ChevronDown className="h-4 w-4 shrink-0" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 shrink-0" />
+                    )}
+                    <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span className="flex-1 truncate text-sm font-medium">
+                      [{source.citation_index}] {source.document_name}
+                    </span>
+                    <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                      {Math.round(source.relevance_score * 100)}%
+                    </span>
                   </div>
-                )}
-                {!expanded[source.chunk_id] && (
-                  <p className="mt-1 truncate text-xs text-muted-foreground">
-                    {source.content}
-                  </p>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                  {expanded[source.chunk_id] && (
+                    <div className="mt-2 text-sm text-muted-foreground">
+                      {source.content}
+                    </div>
+                  )}
+                  {!expanded[source.chunk_id] && (
+                    <p className="mt-1 truncate text-xs text-muted-foreground">
+                      {source.content}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

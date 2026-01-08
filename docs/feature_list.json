@@ -651,7 +651,7 @@
         "View sources panel",
         "Verify message 'Sources will appear when you ask questions' is displayed"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "settings-01",
