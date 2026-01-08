@@ -1,4 +1,7 @@
+from pathlib import Path
+
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, UploadFile, status
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.backend.database import async_session, get_session
@@ -110,6 +113,43 @@ async def get_document(
             detail="Document not found",
         )
     return document_to_response(document)
+
+
+@router.get("/documents/{document_id}/file")
+async def get_document_file(
+    document_id: str,
+    session: AsyncSession = Depends(get_session),
+) -> FileResponse:
+    """Get the original file for a document."""
+    document = await service.get_document(session, document_id)
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found",
+        )
+
+    file_path = Path(document.file_path)
+    if not file_path.exists():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="File not found on disk",
+        )
+
+    # Determine media type based on file type
+    media_types = {
+        "pdf": "application/pdf",
+        "txt": "text/plain",
+        "markdown": "text/markdown",
+        "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "html": "text/html",
+    }
+    media_type = media_types.get(document.file_type, "application/octet-stream")
+
+    return FileResponse(
+        path=file_path,
+        filename=document.filename,
+        media_type=media_type,
+    )
 
 
 @router.get("/documents/{document_id}/chunks", response_model=ChunkListResponse)

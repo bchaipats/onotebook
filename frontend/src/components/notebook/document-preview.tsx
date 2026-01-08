@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useQuery } from "@tanstack/react-query";
 import { FileText, Hash, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -10,8 +11,18 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getChunks } from "@/lib/api";
+import { getChunks, getDocumentFileUrl } from "@/lib/api";
 import type { Document, Chunk } from "@/types/api";
+
+// Dynamically import PDF viewer to avoid SSR issues
+const PDFViewer = dynamic(() => import("./pdf-viewer"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center p-8">
+      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+    </div>
+  ),
+});
 
 interface DocumentPreviewProps {
   document: Document | null;
@@ -30,6 +41,7 @@ export function DocumentPreview({
     enabled: !!document && open,
   });
 
+  const isPdf = document?.file_type === "pdf";
   const isMarkdown =
     document?.file_type === "md" || document?.file_type === "markdown";
 
@@ -68,7 +80,9 @@ export function DocumentPreview({
           </TabsList>
 
           <TabsContent value="preview" className="flex-1 overflow-auto">
-            {isLoading ? (
+            {isPdf && document ? (
+              <PDFViewer url={getDocumentFileUrl(document.id)} />
+            ) : isLoading ? (
               <div className="flex items-center justify-center p-8">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>

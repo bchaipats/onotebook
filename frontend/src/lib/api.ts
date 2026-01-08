@@ -146,6 +146,10 @@ export async function getChunks(documentId: string): Promise<Chunk[]> {
   return response.chunks;
 }
 
+export function getDocumentFileUrl(documentId: string): string {
+  return `${API_BASE_URL}/api/documents/${documentId}/file`;
+}
+
 export async function getDocumentContent(documentId: string): Promise<string> {
   const url = `${API_BASE_URL}/api/documents/${documentId}/content`;
   const response = await fetch(url);
