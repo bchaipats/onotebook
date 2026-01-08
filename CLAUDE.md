@@ -68,6 +68,31 @@ onotebook is an open-source RAG knowledge assistant. Read `docs/app_spec.txt` fo
 - Generated files
 - .env files (use .env.example for templates)
 
+## Implementation Style
+
+### Code Quality
+- Write it properly the first time — there is no "refine later"
+- Use clear names that describe intent (no abbreviations)
+- Functions do one thing; if it needs a comment to explain, split it
+- Handle errors explicitly — no silent failures
+
+### Avoid Over-Engineering
+- No premature abstractions — write concrete code until duplication is obvious
+- No "just in case" flexibility — solve the current problem only
+- No wrapper functions that just call another function
+- No config files for things that could be constants
+
+### Avoid Under-Engineering
+- Validate all user input at API boundaries
+- Handle all errors with meaningful messages to the user
+- No `any` types in TypeScript, no untyped `def` in Python
+- Cancel in-flight requests when components unmount
+
+### Structure
+- Max 2-3 levels of nesting; refactor if deeper
+- Delete unused code immediately — no TODOs, no commented-out blocks
+- One file per component/route/model — no mega-files
+
 ## Quality Assurance
 
 ### Type Safety (Primary Bug Prevention)
