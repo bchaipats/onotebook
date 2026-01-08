@@ -373,7 +373,7 @@
         "Navigate to the app or refresh",
         "Verify connection status shows 'disconnected' (red indicator)"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "ollama-03",
@@ -445,7 +445,7 @@
         "Verify new chat session is created",
         "Verify chat session appears in sidebar list"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "chat-02",
@@ -553,7 +553,7 @@
         "Verify textarea grows to fit content",
         "Verify textarea shrinks when text is removed"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "chat-11",

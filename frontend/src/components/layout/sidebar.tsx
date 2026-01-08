@@ -35,6 +35,7 @@ import {
   useUpdateNotebook,
   useDeleteNotebook,
 } from "@/hooks/use-notebooks";
+import { OllamaStatus } from "@/components/ollama/ollama-status";
 import type { Notebook } from "@/types/api";
 
 interface SidebarProps {
@@ -223,8 +224,9 @@ export function Sidebar({
         )}
       </div>
 
-      {/* Settings button */}
-      <div className="border-t border-border p-4">
+      {/* Ollama status and Settings button */}
+      <div className="border-t border-border p-4 space-y-3">
+        <OllamaStatus />
         <Button
           variant="ghost"
           className="w-full justify-start gap-2"

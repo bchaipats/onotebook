@@ -1,5 +1,16 @@
 import { API_BASE_URL } from "./constants";
-import type { HealthResponse, Notebook, NotebooksResponse } from "@/types/api";
+import type {
+  HealthResponse,
+  Notebook,
+  NotebooksResponse,
+  ModelInfo,
+  ModelsResponse,
+  ChatSession,
+  ChatSessionsResponse,
+  ChatMessage,
+  MessagesResponse,
+  StreamEvent,
+} from "@/types/api";
 
 class ApiError extends Error {
   constructor(
@@ -142,6 +153,201 @@ export async function getDocumentContent(documentId: string): Promise<string> {
     throw new ApiError(response.status, response.statusText);
   }
   return response.text();
+}
+
+// Ollama/Models API
+
+export async function getModels(): Promise<ModelInfo[]> {
+  const response = await request<ModelsResponse>("/api/models");
+  return response.models;
+}
+
+export async function getModelInfo(modelName: string): Promise<ModelInfo> {
+  return request<ModelInfo>(`/api/models/${encodeURIComponent(modelName)}`);
+}
+
+export interface PullProgressEvent {
+  status: string;
+  digest?: string;
+  total?: number;
+  completed?: number;
+  error?: string;
+}
+
+export async function pullModel(
+  modelName: string,
+  onProgress: (event: PullProgressEvent) => void
+): Promise<void> {
+  const url = `${API_BASE_URL}/api/models/pull`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ name: modelName }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new ApiError(response.status, errorText || response.statusText);
+  }
+
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error("No response body");
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
+
+    for (const line of lines) {
+      if (line.startsWith("data: ")) {
+        const data = line.slice(6);
+        try {
+          const event = JSON.parse(data) as PullProgressEvent;
+          onProgress(event);
+        } catch {
+          // Ignore parse errors
+        }
+      }
+    }
+  }
+}
+
+// Chat API
+
+export async function getChatSessions(notebookId: string): Promise<ChatSession[]> {
+  const response = await request<ChatSessionsResponse>(
+    `/api/notebooks/${notebookId}/sessions`
+  );
+  return response.sessions;
+}
+
+export async function createChatSession(
+  notebookId: string,
+  title?: string
+): Promise<ChatSession> {
+  return request<ChatSession>(`/api/notebooks/${notebookId}/sessions`, {
+    method: "POST",
+    body: JSON.stringify({ title }),
+  });
+}
+
+export async function getChatSession(sessionId: string): Promise<ChatSession> {
+  return request<ChatSession>(`/api/sessions/${sessionId}`);
+}
+
+export async function deleteChatSession(sessionId: string): Promise<void> {
+  await request<void>(`/api/sessions/${sessionId}`, {
+    method: "DELETE",
+  });
+}
+
+export async function getMessages(sessionId: string): Promise<ChatMessage[]> {
+  const response = await request<MessagesResponse>(
+    `/api/sessions/${sessionId}/messages`
+  );
+  return response.messages;
+}
+
+export async function sendMessage(
+  sessionId: string,
+  content: string,
+  model: string | null,
+  onEvent: (event: StreamEvent) => void,
+  signal?: AbortSignal
+): Promise<void> {
+  const url = `${API_BASE_URL}/api/sessions/${sessionId}/messages`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ content, model }),
+    signal,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new ApiError(response.status, errorText || response.statusText);
+  }
+
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error("No response body");
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
+
+    for (const line of lines) {
+      if (line.startsWith("data: ")) {
+        const data = line.slice(6);
+        try {
+          const event = JSON.parse(data) as StreamEvent;
+          onEvent(event);
+        } catch {
+          // Ignore parse errors
+        }
+      }
+    }
+  }
+}
+
+export async function regenerateMessage(
+  messageId: string,
+  onEvent: (event: StreamEvent) => void,
+  signal?: AbortSignal
+): Promise<void> {
+  const url = `${API_BASE_URL}/api/messages/${messageId}/regenerate`;
+  const response = await fetch(url, {
+    method: "POST",
+    signal,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new ApiError(response.status, errorText || response.statusText);
+  }
+
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error("No response body");
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
+
+    for (const line of lines) {
+      if (line.startsWith("data: ")) {
+        const data = line.slice(6);
+        try {
+          const event = JSON.parse(data) as StreamEvent;
+          onEvent(event);
+        } catch {
+          // Ignore parse errors
+        }
+      }
+    }
+  }
 }
 
 export { ApiError };
