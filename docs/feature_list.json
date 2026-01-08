@@ -44,7 +44,7 @@
         "Click create/save button",
         "Verify notebook appears in sidebar list"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "notebook-02",
@@ -56,7 +56,7 @@
         "Verify message 'Create your first notebook to get started' appears",
         "Verify create notebook CTA is visible"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "notebook-03",
@@ -69,7 +69,7 @@
         "Verify document count is displayed",
         "Verify last modified date is displayed"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "notebook-04",
@@ -82,7 +82,7 @@
         "Press Enter or click away to save",
         "Verify new name is displayed"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "notebook-05",
@@ -95,7 +95,7 @@
         "Confirm deletion",
         "Verify notebook is removed from list"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "notebook-06",

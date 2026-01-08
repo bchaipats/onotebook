@@ -5,17 +5,22 @@ export interface HealthResponse {
 }
 
 export interface Notebook {
-  id: number;
+  id: string;
   name: string;
+  description: string | null;
   color: string | null;
   created_at: string;
   updated_at: string;
   document_count: number;
 }
 
+export interface NotebooksResponse {
+  notebooks: Notebook[];
+}
+
 export interface Document {
-  id: number;
-  notebook_id: number;
+  id: string;
+  notebook_id: string;
   filename: string;
   file_type: string;
   file_size: number;
@@ -29,8 +34,8 @@ export interface Document {
 }
 
 export interface ChatSession {
-  id: number;
-  notebook_id: number;
+  id: string;
+  notebook_id: string;
   title: string;
   model: string;
   created_at: string;
@@ -38,8 +43,8 @@ export interface ChatSession {
 }
 
 export interface Message {
-  id: number;
-  session_id: number;
+  id: string;
+  session_id: string;
   role: "user" | "assistant";
   content: string;
   created_at: string;

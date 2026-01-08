@@ -1,5 +1,5 @@
 import { API_BASE_URL } from "./constants";
-import type { HealthResponse, Notebook } from "@/types/api";
+import type { HealthResponse, Notebook, NotebooksResponse } from "@/types/api";
 
 class ApiError extends Error {
   constructor(
@@ -29,6 +29,11 @@ async function request<T>(
     throw new ApiError(response.status, errorText || response.statusText);
   }
 
+  // Handle 204 No Content responses
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
   return response.json();
 }
 
@@ -37,7 +42,8 @@ export async function getHealth(): Promise<HealthResponse> {
 }
 
 export async function getNotebooks(): Promise<Notebook[]> {
-  return request<Notebook[]>("/api/notebooks");
+  const response = await request<NotebooksResponse>("/api/notebooks");
+  return response.notebooks;
 }
 
 export async function createNotebook(data: {
@@ -50,7 +56,17 @@ export async function createNotebook(data: {
   });
 }
 
-export async function deleteNotebook(id: number): Promise<void> {
+export async function updateNotebook(
+  id: string,
+  data: { name?: string; color?: string }
+): Promise<Notebook> {
+  return request<Notebook>(`/api/notebooks/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteNotebook(id: string): Promise<void> {
   await request<void>(`/api/notebooks/${id}`, {
     method: "DELETE",
   });
