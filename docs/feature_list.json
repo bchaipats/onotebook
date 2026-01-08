@@ -9,7 +9,7 @@
         "Navigate to http://localhost:8000/api/health",
         "Verify response contains status, ollama_connected, and version fields"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "setup-02",
@@ -21,7 +21,7 @@
         "Verify sidebar is visible on the left",
         "Verify main content area is visible"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "setup-03",
@@ -32,7 +32,7 @@
         "Verify 'onotebook' logo/text appears in sidebar",
         "Verify Settings button appears at bottom of sidebar"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "notebook-01",
