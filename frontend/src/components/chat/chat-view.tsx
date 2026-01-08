@@ -10,8 +10,12 @@ import {
   ChevronDown,
   ChevronRight,
   FileText,
+  Copy,
+  Check,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useMessages, useInvalidateMessages, useInvalidateChatSessions } from "@/hooks/use-chat";
@@ -160,7 +164,7 @@ export function ChatView({ sessionId, notebookId, selectedModel }: ChatViewProps
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4">
         {allMessages.length === 0 && !isStreaming ? (
-          <WelcomeState />
+          <WelcomeState onSelectPrompt={(prompt) => setInputValue(prompt)} />
         ) : (
           <div className="mx-auto max-w-3xl space-y-4">
             {allMessages.map((message) => (
@@ -183,7 +187,30 @@ export function ChatView({ sessionId, notebookId, selectedModel }: ChatViewProps
                 </div>
                 <div className="flex-1 rounded-lg bg-muted p-3">
                   <div className="prose prose-sm max-w-none dark:prose-invert">
-                    <ReactMarkdown>{streamingContent}</ReactMarkdown>
+                    <ReactMarkdown
+                      components={{
+                        code({ className, children, ...props }) {
+                          const match = /language-(\w+)/.exec(className || "");
+                          const isInline = !match && !className;
+
+                          if (isInline) {
+                            return (
+                              <code className={className} {...props}>
+                                {children}
+                              </code>
+                            );
+                          }
+
+                          return (
+                            <CodeBlock language={match?.[1]}>
+                              {String(children).replace(/\n$/, "")}
+                            </CodeBlock>
+                          );
+                        },
+                      }}
+                    >
+                      {streamingContent}
+                    </ReactMarkdown>
                   </div>
                 </div>
               </div>
@@ -274,6 +301,45 @@ interface MessageBubbleProps {
   onRegenerate?: () => void;
 }
 
+interface CodeBlockProps {
+  language: string | undefined;
+  children: string;
+}
+
+function CodeBlock({ language, children }: CodeBlockProps) {
+  const [copied, setCopied] = useState(false);
+
+  async function handleCopy() {
+    await navigator.clipboard.writeText(children);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <div className="group/code relative">
+      <button
+        onClick={handleCopy}
+        className="absolute right-2 top-2 rounded bg-gray-700 p-1.5 text-gray-300 opacity-0 transition-opacity hover:bg-gray-600 hover:text-white group-hover/code:opacity-100"
+        title="Copy code"
+      >
+        {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+      </button>
+      <SyntaxHighlighter
+        style={oneDark}
+        language={language || "text"}
+        PreTag="div"
+        customStyle={{
+          margin: 0,
+          borderRadius: "0.5rem",
+          fontSize: "0.875rem",
+        }}
+      >
+        {children}
+      </SyntaxHighlighter>
+    </div>
+  );
+}
+
 function MessageBubble({ message, onRegenerate }: MessageBubbleProps) {
   const isUser = message.role === "user";
 
@@ -301,7 +367,30 @@ function MessageBubble({ message, onRegenerate }: MessageBubbleProps) {
             isUser ? "prose-invert" : "dark:prose-invert"
           )}
         >
-          <ReactMarkdown>{message.content}</ReactMarkdown>
+          <ReactMarkdown
+            components={{
+              code({ className, children, ...props }) {
+                const match = /language-(\w+)/.exec(className || "");
+                const isInline = !match && !className;
+
+                if (isInline) {
+                  return (
+                    <code className={className} {...props}>
+                      {children}
+                    </code>
+                  );
+                }
+
+                return (
+                  <CodeBlock language={match?.[1]}>
+                    {String(children).replace(/\n$/, "")}
+                  </CodeBlock>
+                );
+              },
+            }}
+          >
+            {message.content}
+          </ReactMarkdown>
         </div>
         {onRegenerate && (
           <div className="mt-2 flex justify-end opacity-0 transition-opacity group-hover:opacity-100">
@@ -321,15 +410,39 @@ function MessageBubble({ message, onRegenerate }: MessageBubbleProps) {
   );
 }
 
-function WelcomeState() {
+const SUGGESTED_PROMPTS = [
+  "Summarize the key points from my documents",
+  "What are the main topics covered?",
+  "Find information about...",
+  "Compare and contrast the different perspectives",
+];
+
+interface WelcomeStateProps {
+  onSelectPrompt: (prompt: string) => void;
+}
+
+function WelcomeState({ onSelectPrompt }: WelcomeStateProps) {
   return (
     <div className="flex h-full items-center justify-center">
-      <div className="text-center">
+      <div className="text-center max-w-md">
         <MessageSquare className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
         <h2 className="mb-2 text-lg font-semibold">Start a conversation</h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="mb-6 text-sm text-muted-foreground">
           Ask questions about your documents and get answers with citations.
         </p>
+        <div className="flex flex-wrap justify-center gap-2">
+          {SUGGESTED_PROMPTS.map((prompt) => (
+            <Button
+              key={prompt}
+              variant="outline"
+              size="sm"
+              className="text-xs"
+              onClick={() => onSelectPrompt(prompt)}
+            >
+              {prompt}
+            </Button>
+          ))}
+        </div>
       </div>
     </div>
   );

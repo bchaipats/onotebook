@@ -468,7 +468,7 @@
         "Confirm deletion if prompted",
         "Verify chat session is removed from list"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "chat-04",
@@ -505,7 +505,7 @@
         "Verify bold and italic text renders correctly",
         "Verify lists render correctly"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "chat-07",
@@ -517,7 +517,7 @@
         "Verify copy button appears on code block",
         "Click copy button and verify code is copied"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "chat-08",
@@ -579,7 +579,7 @@
         "Click a suggested prompt",
         "Verify prompt is used as message"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "rag-01",
@@ -640,7 +640,7 @@
         "Click to collapse",
         "Verify preview returns to truncated state"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "rag-06",
