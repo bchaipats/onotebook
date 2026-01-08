@@ -219,7 +219,7 @@
         "Verify status changes: pending → processing → ready",
         "Verify chunk count is populated"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "processing-02",

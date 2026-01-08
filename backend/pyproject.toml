@@ -12,6 +12,7 @@ dependencies = [
     "beautifulsoup4>=4.14.3",
     "chromadb>=1.4.0",
     "fastapi[standard]>=0.128.0",
+    "fpdf2>=2.8.5",
     "greenlet>=3.3.0",
     "httpx>=0.28.1",
     "langchain-text-splitters>=1.1.0",
