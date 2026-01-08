@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Send,
   Square,
@@ -36,12 +36,15 @@ export function ChatView({ sessionId, notebookId, selectedModel }: ChatViewProps
   const [inputValue, setInputValue] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
+  const [stoppedContent, setStoppedContent] = useState("");
   const [currentSources, setCurrentSources] = useState<SourceInfo[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [highlightedCitation, setHighlightedCitation] = useState<number | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const stoppedByUserRef = useRef(false);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -88,7 +91,9 @@ export function ChatView({ sessionId, notebookId, selectedModel }: ChatViewProps
     setError(null);
     setIsStreaming(true);
     setStreamingContent("");
+    setStoppedContent("");
     setCurrentSources([]);
+    stoppedByUserRef.current = false;
 
     abortControllerRef.current = new AbortController();
 
@@ -102,7 +107,13 @@ export function ChatView({ sessionId, notebookId, selectedModel }: ChatViewProps
       );
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") {
-        // User cancelled
+        // User cancelled - keep partial content visible
+        if (stoppedByUserRef.current) {
+          // Refresh messages to get the saved user message
+          invalidateMessages();
+          // Don't clear streaming content - it will be shown as partial response
+          return;
+        }
       } else {
         setError(err instanceof Error ? err.message : "Failed to send message");
       }
@@ -112,6 +123,9 @@ export function ChatView({ sessionId, notebookId, selectedModel }: ChatViewProps
   }
 
   function handleStop() {
+    stoppedByUserRef.current = true;
+    // Save partial content before stopping
+    setStoppedContent(streamingContent);
     abortControllerRef.current?.abort();
     setIsStreaming(false);
   }
@@ -120,7 +134,9 @@ export function ChatView({ sessionId, notebookId, selectedModel }: ChatViewProps
     setError(null);
     setIsStreaming(true);
     setStreamingContent("");
+    setStoppedContent("");
     setCurrentSources([]);
+    stoppedByUserRef.current = false;
 
     abortControllerRef.current = new AbortController();
 
@@ -132,7 +148,11 @@ export function ChatView({ sessionId, notebookId, selectedModel }: ChatViewProps
       );
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") {
-        // User cancelled
+        // User cancelled - keep partial content visible
+        if (stoppedByUserRef.current) {
+          invalidateMessages();
+          return;
+        }
       } else {
         setError(err instanceof Error ? err.message : "Failed to regenerate");
       }
@@ -163,7 +183,7 @@ export function ChatView({ sessionId, notebookId, selectedModel }: ChatViewProps
     <div className="flex h-full flex-col">
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4">
-        {allMessages.length === 0 && !isStreaming ? (
+        {allMessages.length === 0 && !isStreaming && !stoppedContent ? (
           <WelcomeState onSelectPrompt={(prompt) => setInputValue(prompt)} />
         ) : (
           <div className="mx-auto max-w-3xl space-y-4">
@@ -178,6 +198,7 @@ export function ChatView({ sessionId, notebookId, selectedModel }: ChatViewProps
                     ? () => handleRegenerate(message.id)
                     : undefined
                 }
+                onCitationClick={setHighlightedCitation}
               />
             ))}
             {isStreaming && streamingContent && (
@@ -226,6 +247,44 @@ export function ChatView({ sessionId, notebookId, selectedModel }: ChatViewProps
                 </div>
               </div>
             )}
+            {!isStreaming && stoppedContent && (
+              <div className="flex gap-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                  <MessageSquare className="h-4 w-4" />
+                </div>
+                <div className="flex-1 rounded-lg bg-muted p-3">
+                  <div className="prose prose-sm max-w-none dark:prose-invert">
+                    <ReactMarkdown
+                      components={{
+                        code({ className, children, ...props }) {
+                          const match = /language-(\w+)/.exec(className || "");
+                          const isInline = !match && !className;
+
+                          if (isInline) {
+                            return (
+                              <code className={className} {...props}>
+                                {children}
+                              </code>
+                            );
+                          }
+
+                          return (
+                            <CodeBlock language={match?.[1]}>
+                              {String(children).replace(/\n$/, "")}
+                            </CodeBlock>
+                          );
+                        },
+                      }}
+                    >
+                      {stoppedContent}
+                    </ReactMarkdown>
+                  </div>
+                  <div className="mt-2 text-xs text-muted-foreground italic">
+                    Generation stopped
+                  </div>
+                </div>
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
         )}
@@ -233,7 +292,11 @@ export function ChatView({ sessionId, notebookId, selectedModel }: ChatViewProps
 
       {/* Sources Panel */}
       {currentSources.length > 0 && (
-        <SourcesPanel sources={currentSources} />
+        <SourcesPanel
+          sources={currentSources}
+          highlightedCitation={highlightedCitation}
+          onClearHighlight={() => setHighlightedCitation(null)}
+        />
       )}
 
       {/* Error */}
@@ -340,7 +403,81 @@ function CodeBlock({ language, children }: CodeBlockProps) {
   );
 }
 
-function MessageBubble({ message, onRegenerate }: MessageBubbleProps) {
+interface CitationLinkProps {
+  index: number;
+  onClick: (index: number) => void;
+}
+
+function CitationLink({ index, onClick }: CitationLinkProps) {
+  return (
+    <button
+      onClick={() => onClick(index)}
+      className="inline-flex items-center justify-center rounded bg-primary/20 px-1.5 py-0.5 text-xs font-medium text-primary hover:bg-primary/30 transition-colors"
+      title={`Go to source ${index}`}
+    >
+      [{index}]
+    </button>
+  );
+}
+
+// Helper to process text and replace [1], [2], etc. with clickable citations
+function processTextWithCitations(
+  text: string,
+  onCitationClick: (index: number) => void
+): React.ReactNode[] {
+  const parts: React.ReactNode[] = [];
+  const citationRegex = /\[(\d+)\]/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = citationRegex.exec(text)) !== null) {
+    // Add text before the citation
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    // Add the citation link
+    const citationIndex = parseInt(match[1], 10);
+    parts.push(
+      <CitationLink
+        key={`citation-${match.index}`}
+        index={citationIndex}
+        onClick={onCitationClick}
+      />
+    );
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Add remaining text
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+
+  return parts.length > 0 ? parts : [text];
+}
+
+// Process React children recursively to handle citations in text
+function processChildren(
+  children: React.ReactNode,
+  onCitationClick: (index: number) => void
+): React.ReactNode {
+  return React.Children.map(children, (child, idx) => {
+    if (typeof child === "string") {
+      const processed = processTextWithCitations(child, onCitationClick);
+      return processed.length === 1 && typeof processed[0] === "string"
+        ? child
+        : <React.Fragment key={idx}>{processed}</React.Fragment>;
+    }
+    return child;
+  });
+}
+
+interface MessageBubbleProps {
+  message: ChatMessage;
+  onRegenerate?: () => void;
+  onCitationClick?: (index: number) => void;
+}
+
+function MessageBubble({ message, onRegenerate, onCitationClick }: MessageBubbleProps) {
   const isUser = message.role === "user";
 
   return (
@@ -385,6 +522,27 @@ function MessageBubble({ message, onRegenerate }: MessageBubbleProps) {
                   <CodeBlock language={match?.[1]}>
                     {String(children).replace(/\n$/, "")}
                   </CodeBlock>
+                );
+              },
+              // Process citations in text nodes
+              p({ children }) {
+                if (!onCitationClick || isUser) {
+                  return <p>{children}</p>;
+                }
+                return (
+                  <p>
+                    {processChildren(children, onCitationClick)}
+                  </p>
+                );
+              },
+              li({ children }) {
+                if (!onCitationClick || isUser) {
+                  return <li>{children}</li>;
+                }
+                return (
+                  <li>
+                    {processChildren(children, onCitationClick)}
+                  </li>
                 );
               },
             }}
@@ -450,10 +608,33 @@ function WelcomeState({ onSelectPrompt }: WelcomeStateProps) {
 
 interface SourcesPanelProps {
   sources: SourceInfo[];
+  highlightedCitation: number | null;
+  onClearHighlight: () => void;
 }
 
-function SourcesPanel({ sources }: SourcesPanelProps) {
+function SourcesPanel({ sources, highlightedCitation, onClearHighlight }: SourcesPanelProps) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const sourceRefs = useRef<Record<number, HTMLDivElement | null>>({});
+
+  // Scroll to highlighted source when citation is clicked
+  useEffect(() => {
+    if (highlightedCitation !== null && sourceRefs.current[highlightedCitation]) {
+      sourceRefs.current[highlightedCitation]?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      // Auto-expand the highlighted source
+      const highlightedSource = sources.find(s => s.citation_index === highlightedCitation);
+      if (highlightedSource) {
+        setExpanded(prev => ({ ...prev, [highlightedSource.chunk_id]: true }));
+      }
+      // Clear highlight after a delay
+      const timeout = setTimeout(() => {
+        onClearHighlight();
+      }, 3000);
+      return () => clearTimeout(timeout);
+    }
+  }, [highlightedCitation, sources, onClearHighlight]);
 
   function toggleExpanded(chunkId: string) {
     setExpanded((prev) => ({ ...prev, [chunkId]: !prev[chunkId] }));
@@ -464,40 +645,49 @@ function SourcesPanel({ sources }: SourcesPanelProps) {
       <div className="mx-auto max-w-3xl">
         <h3 className="mb-3 text-sm font-medium">Sources ({sources.length})</h3>
         <div className="space-y-2">
-          {sources.map((source) => (
-            <div
-              key={source.chunk_id}
-              className="rounded-lg border border-border bg-background p-3"
-            >
+          {sources.map((source) => {
+            const isHighlighted = highlightedCitation === source.citation_index;
+            return (
               <div
-                className="flex cursor-pointer items-center gap-2"
-                onClick={() => toggleExpanded(source.chunk_id)}
-              >
-                {expanded[source.chunk_id] ? (
-                  <ChevronDown className="h-4 w-4 shrink-0" />
-                ) : (
-                  <ChevronRight className="h-4 w-4 shrink-0" />
+                key={source.chunk_id}
+                ref={(el) => { sourceRefs.current[source.citation_index] = el; }}
+                className={cn(
+                  "rounded-lg border p-3 transition-all duration-300",
+                  isHighlighted
+                    ? "border-primary bg-primary/5 ring-2 ring-primary ring-offset-2"
+                    : "border-border bg-background"
                 )}
-                <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <span className="flex-1 truncate text-sm font-medium">
-                  [{source.citation_index}] {source.document_name}
-                </span>
-                <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                  {Math.round(source.relevance_score * 100)}%
-                </span>
-              </div>
-              {expanded[source.chunk_id] && (
-                <div className="mt-2 text-sm text-muted-foreground">
-                  {source.content}
+              >
+                <div
+                  className="flex cursor-pointer items-center gap-2"
+                  onClick={() => toggleExpanded(source.chunk_id)}
+                >
+                  {expanded[source.chunk_id] ? (
+                    <ChevronDown className="h-4 w-4 shrink-0" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 shrink-0" />
+                  )}
+                  <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <span className="flex-1 truncate text-sm font-medium">
+                    [{source.citation_index}] {source.document_name}
+                  </span>
+                  <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                    {Math.round(source.relevance_score * 100)}%
+                  </span>
                 </div>
-              )}
-              {!expanded[source.chunk_id] && (
-                <p className="mt-1 truncate text-xs text-muted-foreground">
-                  {source.content}
-                </p>
-              )}
-            </div>
-          ))}
+                {expanded[source.chunk_id] && (
+                  <div className="mt-2 text-sm text-muted-foreground">
+                    {source.content}
+                  </div>
+                )}
+                {!expanded[source.chunk_id] && (
+                  <p className="mt-1 truncate text-xs text-muted-foreground">
+                    {source.content}
+                  </p>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
