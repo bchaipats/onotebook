@@ -255,7 +255,7 @@
         "Verify status shows 'ready'",
         "Verify chunks are created"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "processing-05",
@@ -267,7 +267,7 @@
         "Verify status shows 'ready'",
         "Verify chunks are created"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "processing-06",
@@ -279,7 +279,7 @@
         "Verify stages are shown: Extracting → Chunking → Embedding",
         "Verify progress percentage is displayed"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "processing-07",
@@ -738,7 +738,7 @@
         "Verify logo is visible during load",
         "Verify content appears after load completes"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "loading-02",
@@ -750,7 +750,7 @@
         "Wait for data to load",
         "Verify skeletons are replaced with actual content"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "loading-03",
@@ -762,7 +762,7 @@
         "Verify percentage is displayed",
         "Verify progress bar updates as processing continues"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "error-01",

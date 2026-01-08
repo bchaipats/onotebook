@@ -5,6 +5,8 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { NotebookView } from "@/components/notebook/notebook-view";
 import { SettingsModal } from "@/components/settings/settings-modal";
 import { getHealth } from "@/lib/api";
+import { BookOpen, Loader2 } from "lucide-react";
+import { APP_NAME } from "@/lib/constants";
 import type { HealthResponse, Notebook } from "@/types/api";
 
 export default function Home() {
@@ -14,12 +16,28 @@ export default function Home() {
     null
   );
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   useEffect(() => {
     getHealth()
       .then(setHealth)
-      .catch((err) => setError(err.message));
+      .catch((err) => setError(err.message))
+      .finally(() => setIsInitialLoading(false));
   }, []);
+
+  if (isInitialLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex items-center gap-3">
+            <BookOpen className="h-10 w-10 text-primary" />
+            <span className="text-2xl font-semibold">{APP_NAME}</span>
+          </div>
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-background">

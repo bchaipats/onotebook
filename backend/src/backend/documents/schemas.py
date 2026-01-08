@@ -13,6 +13,7 @@ class DocumentResponse(BaseModel):
     page_count: Optional[int]
     chunk_count: int
     processing_status: str
+    processing_progress: int
     processing_error: Optional[str]
     created_at: datetime
 

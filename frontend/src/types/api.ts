@@ -27,6 +27,7 @@ export interface Document {
   page_count: number | null;
   chunk_count: number;
   processing_status: "pending" | "processing" | "ready" | "failed";
+  processing_progress: number;
   processing_error: string | null;
   created_at: string;
 }

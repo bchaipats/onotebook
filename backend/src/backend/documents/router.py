@@ -31,6 +31,7 @@ def document_to_response(doc: service.Document) -> DocumentResponse:
         page_count=doc.page_count,
         chunk_count=doc.chunk_count,
         processing_status=doc.processing_status,
+        processing_progress=doc.processing_progress,
         processing_error=doc.processing_error,
         created_at=doc.created_at,
     )

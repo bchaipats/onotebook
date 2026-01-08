@@ -45,6 +45,7 @@ class Document(SQLModel, table=True):
     page_count: Optional[int] = None
     chunk_count: int = Field(default=0)
     processing_status: str = Field(default="pending", index=True)
+    processing_progress: int = Field(default=0)  # 0-100 percentage
     processing_error: Optional[str] = None
     created_at: datetime = Field(default_factory=utc_now)
 

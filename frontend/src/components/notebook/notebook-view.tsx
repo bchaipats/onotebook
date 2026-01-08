@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import {
   useDocuments,
@@ -310,7 +311,7 @@ function DocumentItem({
           <span className="truncate text-sm font-medium">
             {document.filename}
           </span>
-          <StatusBadge status={document.processing_status} />
+          <StatusBadge status={document.processing_status} progress={document.processing_progress} />
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>{formatFileSize(document.file_size)}</span>
@@ -327,6 +328,12 @@ function DocumentItem({
             </>
           )}
         </div>
+        {document.processing_status === "processing" && (
+          <div className="mt-2 flex items-center gap-2">
+            <Progress value={document.processing_progress} className="h-1.5 flex-1" />
+            <span className="text-xs text-muted-foreground w-8">{document.processing_progress}%</span>
+          </div>
+        )}
       </div>
       <div className="flex shrink-0 items-center gap-1">
         {document.processing_status === "ready" && (
@@ -367,7 +374,7 @@ function DocumentItem({
   );
 }
 
-function StatusBadge({ status }: { status: Document["processing_status"] }) {
+function StatusBadge({ status, progress }: { status: Document["processing_status"]; progress: number }) {
   switch (status) {
     case "pending":
       return (
@@ -380,7 +387,7 @@ function StatusBadge({ status }: { status: Document["processing_status"] }) {
       return (
         <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
           <Loader2 className="h-3 w-3 animate-spin" />
-          Processing
+          {progress < 33 ? "Extracting" : progress < 66 ? "Chunking" : "Embedding"}
         </span>
       );
     case "ready":

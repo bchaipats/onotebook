@@ -16,10 +16,13 @@ async def update_document_status(
     document: Document,
     status: str,
     error: str | None = None,
+    progress: int | None = None,
 ) -> None:
     """Update document processing status."""
     document.processing_status = status
     document.processing_error = error
+    if progress is not None:
+        document.processing_progress = progress
     await session.commit()
     await session.refresh(document)
 
@@ -27,26 +30,29 @@ async def update_document_status(
 async def process_document(session: AsyncSession, document: Document) -> None:
     """Process a document: extract text, chunk, embed, and store."""
     try:
-        # Update status to processing
-        await update_document_status(session, document, "processing")
+        # Update status to processing (0% progress)
+        await update_document_status(session, document, "processing", progress=0)
 
-        # Extract text
+        # Extract text (0-33% progress)
         file_path = Path(document.file_path)
         if not file_path.exists():
             raise FileNotFoundError(f"File not found: {file_path}")
 
         result = extract_text(file_path, document.file_type)
+        await update_document_status(session, document, "processing", progress=33)
 
         # Update page count if available
         if result.page_count is not None:
             document.page_count = result.page_count
 
-        # Chunk text
+        # Chunk text (33-66% progress)
         chunks_data = chunk_text(result.text)
+        await update_document_status(session, document, "processing", progress=66)
 
         if not chunks_data:
             document.chunk_count = 0
             document.processing_status = "ready"
+            document.processing_progress = 100
             document.processing_error = None
             await session.commit()
             return
@@ -91,9 +97,10 @@ async def process_document(session: AsyncSession, document: Document) -> None:
             ],
         )
 
-        # Update document
+        # Update document (100% progress)
         document.chunk_count = len(chunks_data)
         document.processing_status = "ready"
+        document.processing_progress = 100
         document.processing_error = None
         await session.commit()
 
