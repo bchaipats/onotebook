@@ -21,3 +21,8 @@ data/
 
 # Playwright
 .playwright-mcp/
+
+# docs
+docs/notebooklm-reference/
+
+.DS_Store
