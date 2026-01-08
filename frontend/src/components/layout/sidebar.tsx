@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Settings,
   BookOpen,
@@ -10,6 +10,9 @@ import {
   Trash2,
   FileText,
   Palette,
+  ArrowUpDown,
+  SortAsc,
+  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -109,6 +112,19 @@ export function Sidebar({
   const [deletingNotebook, setDeletingNotebook] = useState<Notebook | null>(
     null
   );
+
+  const [sortBy, setSortBy] = useState<"date" | "name">("date");
+
+  const sortedNotebooks = useMemo(() => {
+    if (!notebooks) return [];
+    return [...notebooks].sort((a, b) => {
+      if (sortBy === "name") {
+        return a.name.localeCompare(b.name);
+      }
+      // Sort by date (most recent first)
+      return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+    });
+  }, [notebooks, sortBy]);
 
   function handleCreateNotebook() {
     if (!newNotebookName.trim()) return;
@@ -250,35 +266,70 @@ export function Sidebar({
       </div>
 
       {/* Notebook list area */}
-      <div className="flex-1 overflow-y-auto p-2">
-        {isLoading ? (
-          <div className="space-y-2">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="h-16 animate-pulse rounded-md bg-muted"
-              />
-            ))}
+      <div className="flex-1 overflow-y-auto">
+        {/* Sort dropdown */}
+        {!isLoading && sortedNotebooks.length > 0 && (
+          <div className="flex items-center justify-between px-3 py-2 border-b border-border">
+            <span className="text-xs text-muted-foreground font-medium">
+              {sortedNotebooks.length} notebook{sortedNotebooks.length !== 1 ? "s" : ""}
+            </span>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1">
+                  <ArrowUpDown className="h-3 w-3" />
+                  {sortBy === "name" ? "Name" : "Date"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => setSortBy("date")}
+                  className={sortBy === "date" ? "bg-accent" : ""}
+                >
+                  <Calendar className="mr-2 h-4 w-4" />
+                  Date Modified
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setSortBy("name")}
+                  className={sortBy === "name" ? "bg-accent" : ""}
+                >
+                  <SortAsc className="mr-2 h-4 w-4" />
+                  Name
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-        ) : notebooks && notebooks.length > 0 ? (
-          <div className="space-y-1">
-            {notebooks.map((notebook) => (
-              <NotebookItem
-                key={notebook.id}
-                notebook={notebook}
-                isSelected={selectedNotebookId === notebook.id}
-                onSelect={() => onSelectNotebook?.(notebook)}
-                onRename={() => openRenameDialog(notebook)}
-                onDelete={() => openDeleteDialog(notebook)}
-                formatDate={formatRelativeDate}
-              />
-            ))}
-          </div>
-        ) : (
-          <p className="px-2 text-sm text-muted-foreground">
-            Create your first notebook to get started
-          </p>
         )}
+
+        <div className="p-2">
+          {isLoading ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="h-16 animate-pulse rounded-md bg-muted"
+                />
+              ))}
+            </div>
+          ) : sortedNotebooks.length > 0 ? (
+            <div className="space-y-1">
+              {sortedNotebooks.map((notebook) => (
+                <NotebookItem
+                  key={notebook.id}
+                  notebook={notebook}
+                  isSelected={selectedNotebookId === notebook.id}
+                  onSelect={() => onSelectNotebook?.(notebook)}
+                  onRename={() => openRenameDialog(notebook)}
+                  onDelete={() => openDeleteDialog(notebook)}
+                  formatDate={formatRelativeDate}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="px-2 text-sm text-muted-foreground">
+              Create your first notebook to get started
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Ollama status and Settings button */}

@@ -121,7 +121,7 @@
         "Click sort option for 'Date Modified'",
         "Verify notebooks are sorted by date"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "document-01",
