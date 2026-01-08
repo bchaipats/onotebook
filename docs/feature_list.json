@@ -1,0 +1,803 @@
+{
+  "tests": [
+    {
+      "id": "setup-01",
+      "category": "setup",
+      "description": "Backend health check endpoint responds",
+      "steps": [
+        "Start the backend server",
+        "Navigate to http://localhost:8000/api/health",
+        "Verify response contains status, ollama_connected, and version fields"
+      ],
+      "passes": false
+    },
+    {
+      "id": "setup-02",
+      "category": "setup",
+      "description": "Frontend loads with basic layout",
+      "steps": [
+        "Start both backend and frontend servers",
+        "Navigate to http://localhost:3000",
+        "Verify sidebar is visible on the left",
+        "Verify main content area is visible"
+      ],
+      "passes": false
+    },
+    {
+      "id": "setup-03",
+      "category": "setup",
+      "description": "App logo displays in sidebar",
+      "steps": [
+        "Navigate to http://localhost:3000",
+        "Verify 'onotebook' logo/text appears in sidebar",
+        "Verify Settings button appears at bottom of sidebar"
+      ],
+      "passes": false
+    },
+    {
+      "id": "notebook-01",
+      "category": "notebook",
+      "description": "Create a new notebook",
+      "steps": [
+        "Click 'Create Notebook' or '+' button",
+        "Enter notebook name 'Test Notebook'",
+        "Click create/save button",
+        "Verify notebook appears in sidebar list"
+      ],
+      "passes": false
+    },
+    {
+      "id": "notebook-02",
+      "category": "notebook",
+      "description": "Empty state shows when no notebooks exist",
+      "steps": [
+        "Ensure no notebooks exist",
+        "Navigate to home page",
+        "Verify message 'Create your first notebook to get started' appears",
+        "Verify create notebook CTA is visible"
+      ],
+      "passes": false
+    },
+    {
+      "id": "notebook-03",
+      "category": "notebook",
+      "description": "Notebook list shows name, document count, and last modified",
+      "steps": [
+        "Create a notebook with documents",
+        "View notebook list in sidebar",
+        "Verify notebook name is displayed",
+        "Verify document count is displayed",
+        "Verify last modified date is displayed"
+      ],
+      "passes": false
+    },
+    {
+      "id": "notebook-04",
+      "category": "notebook",
+      "description": "Rename notebook inline",
+      "steps": [
+        "Select a notebook from the list",
+        "Click to rename (double-click or edit button)",
+        "Change name to 'Renamed Notebook'",
+        "Press Enter or click away to save",
+        "Verify new name is displayed"
+      ],
+      "passes": false
+    },
+    {
+      "id": "notebook-05",
+      "category": "notebook",
+      "description": "Delete notebook with confirmation",
+      "steps": [
+        "Select a notebook from the list",
+        "Click delete button",
+        "Verify confirmation dialog appears with cascade warning",
+        "Confirm deletion",
+        "Verify notebook is removed from list"
+      ],
+      "passes": false
+    },
+    {
+      "id": "notebook-06",
+      "category": "notebook",
+      "description": "Select notebook color from palette",
+      "steps": [
+        "Create or edit a notebook",
+        "Click color selector",
+        "Select a color from the preset palette",
+        "Save the notebook",
+        "Verify notebook displays with selected color"
+      ],
+      "passes": false
+    },
+    {
+      "id": "notebook-07",
+      "category": "notebook",
+      "description": "Sort notebooks by name or date",
+      "steps": [
+        "Create multiple notebooks with different names and dates",
+        "Click sort option for 'Name'",
+        "Verify notebooks are sorted alphabetically",
+        "Click sort option for 'Date Modified'",
+        "Verify notebooks are sorted by date"
+      ],
+      "passes": false
+    },
+    {
+      "id": "document-01",
+      "category": "document",
+      "description": "Upload document via drag-and-drop",
+      "steps": [
+        "Open a notebook",
+        "Drag a PDF file onto the upload zone",
+        "Verify drop overlay appears",
+        "Drop the file",
+        "Verify document appears in list with pending/processing status"
+      ],
+      "passes": false
+    },
+    {
+      "id": "document-02",
+      "category": "document",
+      "description": "Upload document via file picker",
+      "steps": [
+        "Open a notebook",
+        "Click the upload button",
+        "Select a TXT file from file picker",
+        "Verify document appears in list with pending/processing status"
+      ],
+      "passes": false
+    },
+    {
+      "id": "document-03",
+      "category": "document",
+      "description": "Multi-file upload with progress indicator",
+      "steps": [
+        "Open a notebook",
+        "Select multiple files (3+) via file picker",
+        "Verify progress indicator shows for uploads",
+        "Wait for uploads to complete",
+        "Verify all documents appear in list"
+      ],
+      "passes": false
+    },
+    {
+      "id": "document-04",
+      "category": "document",
+      "description": "File type validation with clear error",
+      "steps": [
+        "Open a notebook",
+        "Attempt to upload an unsupported file type (e.g., .exe)",
+        "Verify error message appears indicating invalid file type",
+        "Verify file is not added to document list"
+      ],
+      "passes": false
+    },
+    {
+      "id": "document-05",
+      "category": "document",
+      "description": "Document list shows filename, size, and status badge",
+      "steps": [
+        "Upload a document to a notebook",
+        "View the document list",
+        "Verify filename is displayed",
+        "Verify file size is displayed",
+        "Verify status badge shows current processing state"
+      ],
+      "passes": false
+    },
+    {
+      "id": "document-06",
+      "category": "document",
+      "description": "Delete document from notebook",
+      "steps": [
+        "Open a notebook with documents",
+        "Click delete button on a document",
+        "Confirm deletion if prompted",
+        "Verify document is removed from list"
+      ],
+      "passes": false
+    },
+    {
+      "id": "document-07",
+      "category": "document",
+      "description": "Empty state shows upload prompt",
+      "steps": [
+        "Open a notebook with no documents",
+        "Verify message 'Upload documents to build your knowledge base' appears",
+        "Verify upload prompt/button is visible"
+      ],
+      "passes": false
+    },
+    {
+      "id": "processing-01",
+      "category": "processing",
+      "description": "PDF document is extracted and processed",
+      "steps": [
+        "Upload a PDF document",
+        "Wait for processing to complete",
+        "Verify status changes: pending → processing → ready",
+        "Verify chunk count is populated"
+      ],
+      "passes": false
+    },
+    {
+      "id": "processing-02",
+      "category": "processing",
+      "description": "TXT document is processed",
+      "steps": [
+        "Upload a TXT document",
+        "Wait for processing to complete",
+        "Verify status shows 'ready'",
+        "Verify chunks are created"
+      ],
+      "passes": false
+    },
+    {
+      "id": "processing-03",
+      "category": "processing",
+      "description": "Markdown document is processed",
+      "steps": [
+        "Upload a MD document",
+        "Wait for processing to complete",
+        "Verify status shows 'ready'",
+        "Verify chunks are created"
+      ],
+      "passes": false
+    },
+    {
+      "id": "processing-04",
+      "category": "processing",
+      "description": "DOCX document is processed",
+      "steps": [
+        "Upload a DOCX document",
+        "Wait for processing to complete",
+        "Verify status shows 'ready'",
+        "Verify chunks are created"
+      ],
+      "passes": false
+    },
+    {
+      "id": "processing-05",
+      "category": "processing",
+      "description": "HTML document is processed",
+      "steps": [
+        "Upload an HTML document",
+        "Wait for processing to complete",
+        "Verify status shows 'ready'",
+        "Verify chunks are created"
+      ],
+      "passes": false
+    },
+    {
+      "id": "processing-06",
+      "category": "processing",
+      "description": "Processing shows progress stages",
+      "steps": [
+        "Upload a larger PDF document",
+        "Watch the processing status",
+        "Verify stages are shown: Extracting → Chunking → Embedding",
+        "Verify progress percentage is displayed"
+      ],
+      "passes": false
+    },
+    {
+      "id": "processing-07",
+      "category": "processing",
+      "description": "Processing error displays with retry option",
+      "steps": [
+        "Upload a corrupted or problematic document",
+        "Wait for processing to fail",
+        "Verify error badge appears with error message",
+        "Verify retry button is available"
+      ],
+      "passes": false
+    },
+    {
+      "id": "preview-01",
+      "category": "preview",
+      "description": "Document preview panel slides in from right",
+      "steps": [
+        "Open a notebook with a processed document",
+        "Click preview button on a document",
+        "Verify panel slides in from the right",
+        "Verify close button is visible"
+      ],
+      "passes": false
+    },
+    {
+      "id": "preview-02",
+      "category": "preview",
+      "description": "PDF preview with page navigation",
+      "steps": [
+        "Upload and process a multi-page PDF",
+        "Open preview for the PDF",
+        "Verify PDF content is rendered",
+        "Use page navigation to go to page 2",
+        "Verify page changes correctly"
+      ],
+      "passes": false
+    },
+    {
+      "id": "preview-03",
+      "category": "preview",
+      "description": "Text and Markdown preview with formatting",
+      "steps": [
+        "Upload and process a Markdown document",
+        "Open preview for the document",
+        "Verify Markdown formatting is rendered (headings, bold, lists)",
+        "Verify text is readable"
+      ],
+      "passes": false
+    },
+    {
+      "id": "preview-04",
+      "category": "preview",
+      "description": "Chunks tab shows all chunks with token counts",
+      "steps": [
+        "Open preview for a processed document",
+        "Click on 'Chunks' tab",
+        "Verify list of chunks is displayed",
+        "Verify each chunk shows token count"
+      ],
+      "passes": false
+    },
+    {
+      "id": "preview-05",
+      "category": "preview",
+      "description": "Close preview panel",
+      "steps": [
+        "Open document preview panel",
+        "Click the close button",
+        "Verify panel slides out and closes"
+      ],
+      "passes": false
+    },
+    {
+      "id": "ollama-01",
+      "category": "ollama",
+      "description": "Connection status indicator shows connected",
+      "steps": [
+        "Ensure Ollama is running",
+        "Navigate to the app",
+        "Verify connection status shows 'connected' (green indicator)"
+      ],
+      "passes": false
+    },
+    {
+      "id": "ollama-02",
+      "category": "ollama",
+      "description": "Connection status indicator shows disconnected",
+      "steps": [
+        "Stop Ollama service",
+        "Navigate to the app or refresh",
+        "Verify connection status shows 'disconnected' (red indicator)"
+      ],
+      "passes": false
+    },
+    {
+      "id": "ollama-03",
+      "category": "ollama",
+      "description": "Model selector dropdown lists available models",
+      "steps": [
+        "Ensure Ollama is running with models installed",
+        "Open model selector dropdown",
+        "Verify list of available models is displayed",
+        "Verify current selection is highlighted"
+      ],
+      "passes": false
+    },
+    {
+      "id": "ollama-04",
+      "category": "ollama",
+      "description": "Select a different model",
+      "steps": [
+        "Open model selector dropdown",
+        "Click on a different model than currently selected",
+        "Verify selection updates to new model"
+      ],
+      "passes": false
+    },
+    {
+      "id": "ollama-05",
+      "category": "ollama",
+      "description": "Pull new model with progress bar",
+      "steps": [
+        "Click 'Pull new model' option",
+        "Enter model name (e.g., 'tinyllama')",
+        "Click pull/download button",
+        "Verify progress bar shows download progress",
+        "Wait for completion and verify model appears in list"
+      ],
+      "passes": false
+    },
+    {
+      "id": "ollama-06",
+      "category": "ollama",
+      "description": "Model info displays size and parameters",
+      "steps": [
+        "Open model selector dropdown",
+        "Hover over or view details of a model",
+        "Verify model size is displayed",
+        "Verify parameter count is displayed"
+      ],
+      "passes": false
+    },
+    {
+      "id": "ollama-07",
+      "category": "ollama",
+      "description": "Clear error when Ollama not running",
+      "steps": [
+        "Stop Ollama service",
+        "Navigate to the app",
+        "Verify modal or banner appears with clear instructions",
+        "Verify error message explains how to start Ollama"
+      ],
+      "passes": false
+    },
+    {
+      "id": "chat-01",
+      "category": "chat",
+      "description": "Create new chat session",
+      "steps": [
+        "Open a notebook",
+        "Click 'New Chat' button",
+        "Verify new chat session is created",
+        "Verify chat session appears in sidebar list"
+      ],
+      "passes": false
+    },
+    {
+      "id": "chat-02",
+      "category": "chat",
+      "description": "Chat session list with auto-generated titles",
+      "steps": [
+        "Create a new chat and send a message",
+        "View chat sessions in sidebar",
+        "Verify chat has an auto-generated title based on first message"
+      ],
+      "passes": false
+    },
+    {
+      "id": "chat-03",
+      "category": "chat",
+      "description": "Delete chat session",
+      "steps": [
+        "Create a chat session with messages",
+        "Click delete button on the chat session",
+        "Confirm deletion if prompted",
+        "Verify chat session is removed from list"
+      ],
+      "passes": false
+    },
+    {
+      "id": "chat-04",
+      "category": "chat",
+      "description": "Send message and receive response",
+      "steps": [
+        "Open a chat in a notebook with documents",
+        "Type a question about the documents",
+        "Press Enter to send",
+        "Verify message appears as user bubble on right",
+        "Verify assistant response appears on left"
+      ],
+      "passes": false
+    },
+    {
+      "id": "chat-05",
+      "category": "chat",
+      "description": "Streaming response with typing indicator",
+      "steps": [
+        "Send a message in chat",
+        "Verify typing indicator appears while waiting",
+        "Verify response streams in token by token",
+        "Verify typing indicator disappears when complete"
+      ],
+      "passes": false
+    },
+    {
+      "id": "chat-06",
+      "category": "chat",
+      "description": "Markdown rendering in responses",
+      "steps": [
+        "Ask a question that would produce formatted response",
+        "Verify headings are rendered correctly",
+        "Verify bold and italic text renders correctly",
+        "Verify lists render correctly"
+      ],
+      "passes": false
+    },
+    {
+      "id": "chat-07",
+      "category": "chat",
+      "description": "Code syntax highlighting with copy button",
+      "steps": [
+        "Ask a question that produces code in response",
+        "Verify code block is syntax highlighted",
+        "Verify copy button appears on code block",
+        "Click copy button and verify code is copied"
+      ],
+      "passes": false
+    },
+    {
+      "id": "chat-08",
+      "category": "chat",
+      "description": "Stop generation button during streaming",
+      "steps": [
+        "Send a message that produces a long response",
+        "While response is streaming, click Stop button",
+        "Verify generation stops",
+        "Verify partial response is preserved"
+      ],
+      "passes": false
+    },
+    {
+      "id": "chat-09",
+      "category": "chat",
+      "description": "Regenerate last response",
+      "steps": [
+        "Send a message and receive response",
+        "Click Regenerate button on the response",
+        "Verify new response is generated",
+        "Verify old response is replaced"
+      ],
+      "passes": false
+    },
+    {
+      "id": "chat-10",
+      "category": "chat",
+      "description": "Auto-resize textarea input",
+      "steps": [
+        "Click in the message input",
+        "Type multiple lines of text",
+        "Verify textarea grows to fit content",
+        "Verify textarea shrinks when text is removed"
+      ],
+      "passes": false
+    },
+    {
+      "id": "chat-11",
+      "category": "chat",
+      "description": "Enter to send, Shift+Enter for newline",
+      "steps": [
+        "Type a message in input",
+        "Press Shift+Enter",
+        "Verify newline is added, message not sent",
+        "Press Enter",
+        "Verify message is sent"
+      ],
+      "passes": false
+    },
+    {
+      "id": "chat-12",
+      "category": "chat",
+      "description": "Welcome state with suggested prompts",
+      "steps": [
+        "Open a new chat session",
+        "Verify welcome message is displayed",
+        "Verify suggested prompt buttons appear",
+        "Click a suggested prompt",
+        "Verify prompt is used as message"
+      ],
+      "passes": false
+    },
+    {
+      "id": "rag-01",
+      "category": "rag",
+      "description": "Inline citations appear in responses",
+      "steps": [
+        "Upload and process documents",
+        "Ask a question about document content",
+        "Verify response includes inline citations [1], [2], etc.",
+        "Verify citations are clickable"
+      ],
+      "passes": false
+    },
+    {
+      "id": "rag-02",
+      "category": "rag",
+      "description": "Sources panel shows relevant sources",
+      "steps": [
+        "Send a message that uses document context",
+        "Verify sources panel appears or expands",
+        "Verify source cards are displayed",
+        "Verify 'Sources will appear when you ask questions' empty state is gone"
+      ],
+      "passes": false
+    },
+    {
+      "id": "rag-03",
+      "category": "rag",
+      "description": "Source cards show document name and relevance score",
+      "steps": [
+        "Send a message and view sources panel",
+        "Verify each source card shows document name",
+        "Verify relevance score (percentage) is displayed",
+        "Verify chunk preview text is shown"
+      ],
+      "passes": false
+    },
+    {
+      "id": "rag-04",
+      "category": "rag",
+      "description": "Click citation highlights source in panel",
+      "steps": [
+        "Send a message that produces citations",
+        "Click on a citation [1] in the response",
+        "Verify sources panel scrolls to corresponding source",
+        "Verify source is highlighted or focused"
+      ],
+      "passes": false
+    },
+    {
+      "id": "rag-05",
+      "category": "rag",
+      "description": "Expand chunk preview in source card",
+      "steps": [
+        "View a source card in sources panel",
+        "Click to expand the chunk preview",
+        "Verify full chunk content is displayed",
+        "Click to collapse",
+        "Verify preview returns to truncated state"
+      ],
+      "passes": false
+    },
+    {
+      "id": "rag-06",
+      "category": "rag",
+      "description": "Sources panel empty state",
+      "steps": [
+        "Open a new chat with no messages sent",
+        "View sources panel",
+        "Verify message 'Sources will appear when you ask questions' is displayed"
+      ],
+      "passes": false
+    },
+    {
+      "id": "settings-01",
+      "category": "settings",
+      "description": "Open settings modal",
+      "steps": [
+        "Click Settings button in sidebar",
+        "Verify settings modal/panel opens",
+        "Verify settings options are visible"
+      ],
+      "passes": false
+    },
+    {
+      "id": "settings-02",
+      "category": "settings",
+      "description": "Theme switching Light/Dark/System",
+      "steps": [
+        "Open settings",
+        "Select 'Dark' theme",
+        "Verify app switches to dark mode",
+        "Select 'Light' theme",
+        "Verify app switches to light mode"
+      ],
+      "passes": false
+    },
+    {
+      "id": "settings-03",
+      "category": "settings",
+      "description": "Default model selection setting",
+      "steps": [
+        "Open settings",
+        "Change default model selection",
+        "Save settings",
+        "Create new chat",
+        "Verify new default model is selected"
+      ],
+      "passes": false
+    },
+    {
+      "id": "settings-04",
+      "category": "settings",
+      "description": "Ollama endpoint URL configuration",
+      "steps": [
+        "Open settings",
+        "Locate Ollama endpoint URL field",
+        "Verify current value is displayed",
+        "Change URL and save",
+        "Verify new URL is persisted"
+      ],
+      "passes": false
+    },
+    {
+      "id": "settings-05",
+      "category": "settings",
+      "description": "RAG parameters configuration",
+      "steps": [
+        "Open settings",
+        "Find Top-k results setting",
+        "Change value from default",
+        "Find Temperature setting",
+        "Change value and save",
+        "Verify settings are persisted"
+      ],
+      "passes": false
+    },
+    {
+      "id": "settings-06",
+      "category": "settings",
+      "description": "About section shows version",
+      "steps": [
+        "Open settings",
+        "Scroll to About section",
+        "Verify version number is displayed"
+      ],
+      "passes": false
+    },
+    {
+      "id": "loading-01",
+      "category": "loading",
+      "description": "App load shows spinner with logo",
+      "steps": [
+        "Refresh the application",
+        "Verify loading spinner appears",
+        "Verify logo is visible during load",
+        "Verify content appears after load completes"
+      ],
+      "passes": false
+    },
+    {
+      "id": "loading-02",
+      "category": "loading",
+      "description": "List loading shows skeleton placeholders",
+      "steps": [
+        "Navigate to notebooks list while loading",
+        "Verify skeleton placeholders are shown",
+        "Wait for data to load",
+        "Verify skeletons are replaced with actual content"
+      ],
+      "passes": false
+    },
+    {
+      "id": "loading-03",
+      "category": "loading",
+      "description": "Document processing shows progress bar",
+      "steps": [
+        "Upload a document",
+        "Verify progress bar appears during processing",
+        "Verify percentage is displayed",
+        "Verify progress bar updates as processing continues"
+      ],
+      "passes": false
+    },
+    {
+      "id": "error-01",
+      "category": "error",
+      "description": "API connection failed shows banner with retry",
+      "steps": [
+        "Stop the backend server",
+        "Refresh the frontend",
+        "Verify error banner appears indicating API connection failed",
+        "Verify retry button is available"
+      ],
+      "passes": false
+    },
+    {
+      "id": "error-02",
+      "category": "error",
+      "description": "Chat error shows inline error with retry",
+      "steps": [
+        "Cause a chat error (e.g., network issue during response)",
+        "Verify inline error message appears in chat",
+        "Verify retry button is available",
+        "Click retry and verify message is resent"
+      ],
+      "passes": false
+    },
+    {
+      "id": "error-03",
+      "category": "error",
+      "description": "Upload failed shows toast notification",
+      "steps": [
+        "Attempt to upload an excessively large file",
+        "Verify toast notification appears with error",
+        "Verify error message is descriptive"
+      ],
+      "passes": false
+    }
+  ]
+}
