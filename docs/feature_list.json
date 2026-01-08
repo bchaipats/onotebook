@@ -409,7 +409,7 @@
         "Verify progress bar shows download progress",
         "Wait for completion and verify model appears in list"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "ollama-06",
@@ -433,7 +433,7 @@
         "Verify modal or banner appears with clear instructions",
         "Verify error message explains how to start Ollama"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "chat-01",

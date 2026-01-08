@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { NotebookView } from "@/components/notebook/notebook-view";
 import { SettingsModal } from "@/components/settings/settings-modal";
+import { OllamaErrorDialog } from "@/components/ollama/ollama-error-dialog";
 import { getHealth } from "@/lib/api";
 import { BookOpen, Loader2, AlertTriangle, RefreshCw } from "lucide-react";
 import { APP_NAME } from "@/lib/constants";
@@ -17,6 +18,7 @@ export default function Home() {
     null
   );
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [ollamaErrorOpen, setOllamaErrorOpen] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isRetrying, setIsRetrying] = useState(false);
 
@@ -39,6 +41,23 @@ export default function Home() {
   useEffect(() => {
     checkHealth().finally(() => setIsInitialLoading(false));
   }, [checkHealth]);
+
+  // Show Ollama error dialog when disconnected (only after initial load)
+  useEffect(() => {
+    if (!isInitialLoading && health && !health.ollama_connected && !error) {
+      setOllamaErrorOpen(true);
+    }
+  }, [health, isInitialLoading, error]);
+
+  const handleOllamaRetry = async () => {
+    setOllamaErrorOpen(false);
+    await checkHealth();
+    // Re-show dialog if still disconnected
+    const newHealth = await getHealth();
+    if (!newHealth.ollama_connected) {
+      setOllamaErrorOpen(true);
+    }
+  };
 
   if (isInitialLoading) {
     return (
@@ -85,6 +104,11 @@ export default function Home() {
           onOpenSettings={() => setSettingsOpen(true)}
         />
         <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
+        <OllamaErrorDialog
+          open={ollamaErrorOpen}
+          onOpenChange={setOllamaErrorOpen}
+          onRetry={handleOllamaRetry}
+        />
         <main className="flex-1 overflow-y-auto">
           {selectedNotebook ? (
             <NotebookView notebook={selectedNotebook} />

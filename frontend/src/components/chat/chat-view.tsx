@@ -365,7 +365,7 @@ export function ChatView({ sessionId, notebookId, selectedModel }: ChatViewProps
             ) : (
               <Button
                 size="icon"
-                onClick={handleSend}
+                onClick={() => handleSend()}
                 disabled={!inputValue.trim()}
                 title="Send message"
               >

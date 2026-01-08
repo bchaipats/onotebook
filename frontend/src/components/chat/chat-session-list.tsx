@@ -40,7 +40,7 @@ export function ChatSessionList({
   const [deletingSession, setDeletingSession] = useState<ChatSession | null>(null);
 
   async function handleCreateSession() {
-    const session = await createSession.mutateAsync();
+    const session = await createSession.mutateAsync(undefined);
     onSelectSession(session);
   }
 

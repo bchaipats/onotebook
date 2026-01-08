@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Monitor, Moon, Sun, ExternalLink } from "lucide-react";
+import { Monitor, Moon, Sun, ExternalLink, Download, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -21,8 +21,10 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 import { useSettings, useUpdateSettings } from "@/hooks/use-settings";
-import { useModels } from "@/hooks/use-ollama";
+import { useModels, usePullModel } from "@/hooks/use-ollama";
+import type { PullProgressEvent } from "@/lib/api";
 import { useHealth } from "@/hooks/use-health";
 import type { ThemeSetting } from "@/types/api";
 
@@ -42,6 +44,13 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
   const [ollamaUrl, setOllamaUrl] = useState("http://localhost:11434");
   const [topK, setTopK] = useState(10);
   const [temperature, setTemperature] = useState(0.7);
+
+  // Model pulling state
+  const [modelToPull, setModelToPull] = useState("");
+  const [pullProgress, setPullProgress] = useState<PullProgressEvent | null>(null);
+  const [pullError, setPullError] = useState<string | null>(null);
+  const [pullComplete, setPullComplete] = useState(false);
+  const pullModel = usePullModel();
 
   useEffect(() => {
     if (settings) {
@@ -90,6 +99,36 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
 
   function handleTemperatureCommit(value: number[]) {
     updateSettings.mutate({ temperature: value[0] });
+  }
+
+  async function handlePullModel() {
+    if (!modelToPull.trim()) return;
+
+    setPullError(null);
+    setPullComplete(false);
+    setPullProgress(null);
+
+    try {
+      await pullModel.mutateAsync({
+        modelName: modelToPull.trim(),
+        onProgress: (event) => {
+          setPullProgress(event);
+          if (event.error) {
+            setPullError(event.error);
+          }
+        },
+      });
+      setPullComplete(true);
+      setModelToPull("");
+    } catch (err) {
+      setPullError(err instanceof Error ? err.message : "Failed to pull model");
+    }
+  }
+
+  function calculatePullPercent(): number {
+    if (!pullProgress || !pullProgress.total) return 0;
+    if (!pullProgress.completed) return 0;
+    return Math.round((pullProgress.completed / pullProgress.total) * 100);
   }
 
   if (isLoading) {
@@ -237,6 +276,72 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
               <p className="text-xs text-muted-foreground">
                 Higher values make responses more creative, lower values more
                 focused (0-2).
+              </p>
+            </div>
+
+            {/* Pull New Model */}
+            <div className="space-y-3 border-t pt-4">
+              <Label>Pull New Model</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={modelToPull}
+                  onChange={(e) => setModelToPull(e.target.value)}
+                  placeholder="e.g., llama3.2, tinyllama"
+                  disabled={pullModel.isPending}
+                />
+                <Button
+                  variant="outline"
+                  onClick={handlePullModel}
+                  disabled={pullModel.isPending || !modelToPull.trim()}
+                  className="gap-2"
+                >
+                  {pullModel.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                  Pull
+                </Button>
+              </div>
+
+              {/* Progress Bar */}
+              {pullModel.isPending && pullProgress && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>{pullProgress.status}</span>
+                    <span>{calculatePullPercent()}%</span>
+                  </div>
+                  <Progress value={calculatePullPercent()} className="h-2" />
+                </div>
+              )}
+
+              {/* Success Message */}
+              {pullComplete && !pullError && (
+                <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Model pulled successfully
+                </div>
+              )}
+
+              {/* Error Message */}
+              {pullError && (
+                <div className="flex items-center gap-2 text-sm text-destructive">
+                  <XCircle className="h-4 w-4" />
+                  {pullError}
+                </div>
+              )}
+
+              <p className="text-xs text-muted-foreground">
+                Download a new model from Ollama. Visit{" "}
+                <a
+                  href="https://ollama.ai/library"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary underline"
+                >
+                  ollama.ai/library
+                </a>{" "}
+                for available models.
               </p>
             </div>
           </TabsContent>
