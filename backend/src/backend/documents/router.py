@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.backend.database import get_session
+from src.backend.database import async_session, get_session
 from src.backend.documents import service
 from src.backend.documents.schemas import (
     ChunkListResponse,
@@ -10,6 +10,7 @@ from src.backend.documents.schemas import (
     DocumentResponse,
 )
 from src.backend.notebooks.service import get_notebook
+from src.backend.processing.service import process_document
 
 router = APIRouter(prefix="/api", tags=["documents"])
 
@@ -30,6 +31,14 @@ def document_to_response(doc: service.Document) -> DocumentResponse:
     )
 
 
+async def process_document_background(document_id: str) -> None:
+    """Process document in background with new session."""
+    async with async_session() as session:
+        document = await service.get_document(session, document_id)
+        if document and document.processing_status == "pending":
+            await process_document(session, document)
+
+
 @router.get(
     "/notebooks/{notebook_id}/documents", response_model=DocumentListResponse
 )
@@ -38,7 +47,6 @@ async def list_documents(
     session: AsyncSession = Depends(get_session),
 ) -> DocumentListResponse:
     """List all documents in a notebook."""
-    # Verify notebook exists
     notebook = await get_notebook(session, notebook_id)
     if not notebook:
         raise HTTPException(
@@ -60,10 +68,10 @@ async def list_documents(
 async def upload_document(
     notebook_id: str,
     file: UploadFile,
+    background_tasks: BackgroundTasks,
     session: AsyncSession = Depends(get_session),
 ) -> DocumentResponse:
     """Upload a document to a notebook."""
-    # Verify notebook exists
     notebook = await get_notebook(session, notebook_id)
     if not notebook:
         raise HTTPException(
@@ -73,6 +81,8 @@ async def upload_document(
 
     try:
         document = await service.upload_document(session, notebook_id, file)
+        # Queue background processing
+        background_tasks.add_task(process_document_background, document.id)
         return document_to_response(document)
     except ValueError as e:
         raise HTTPException(
@@ -137,3 +147,28 @@ async def delete_document(
             detail="Document not found",
         )
     await service.delete_document(session, document)
+
+
+@router.post("/documents/{document_id}/process", response_model=DocumentResponse)
+async def reprocess_document(
+    document_id: str,
+    background_tasks: BackgroundTasks,
+    session: AsyncSession = Depends(get_session),
+) -> DocumentResponse:
+    """Retry processing a failed document."""
+    document = await service.get_document(session, document_id)
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found",
+        )
+
+    # Reset status to pending and clear error
+    document.processing_status = "pending"
+    document.processing_error = None
+    await session.commit()
+    await session.refresh(document)
+
+    # Queue background processing
+    background_tasks.add_task(process_document_background, document.id)
+    return document_to_response(document)
