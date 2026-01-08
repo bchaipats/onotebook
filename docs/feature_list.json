@@ -362,7 +362,7 @@
         "Navigate to the app",
         "Verify connection status shows 'connected' (green indicator)"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "ollama-02",
@@ -456,7 +456,7 @@
         "View chat sessions in sidebar",
         "Verify chat has an auto-generated title based on first message"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "chat-03",
@@ -481,7 +481,7 @@
         "Verify message appears as user bubble on right",
         "Verify assistant response appears on left"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "chat-05",
@@ -493,7 +493,7 @@
         "Verify response streams in token by token",
         "Verify typing indicator disappears when complete"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "chat-06",
@@ -603,7 +603,7 @@
         "Verify source cards are displayed",
         "Verify 'Sources will appear when you ask questions' empty state is gone"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "rag-03",
@@ -615,7 +615,7 @@
         "Verify relevance score (percentage) is displayed",
         "Verify chunk preview text is shown"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "rag-04",
