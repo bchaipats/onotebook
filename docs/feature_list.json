@@ -134,7 +134,7 @@
         "Drop the file",
         "Verify document appears in list with pending/processing status"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "document-02",
@@ -159,7 +159,7 @@
         "Wait for uploads to complete",
         "Verify all documents appear in list"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "document-04",
@@ -421,7 +421,7 @@
         "Verify model size is displayed",
         "Verify parameter count is displayed"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "ollama-07",
