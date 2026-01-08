@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { NotebookView } from "@/components/notebook/notebook-view";
+import { SettingsModal } from "@/components/settings/settings-modal";
 import { getHealth } from "@/lib/api";
 import type { HealthResponse, Notebook } from "@/types/api";
 
@@ -12,6 +13,7 @@ export default function Home() {
   const [selectedNotebook, setSelectedNotebook] = useState<Notebook | null>(
     null
   );
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     getHealth()
@@ -24,7 +26,9 @@ export default function Home() {
       <Sidebar
         selectedNotebookId={selectedNotebook?.id}
         onSelectNotebook={setSelectedNotebook}
+        onOpenSettings={() => setSettingsOpen(true)}
       />
+      <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
       <main className="flex-1 overflow-y-auto">
         {selectedNotebook ? (
           <NotebookView notebook={selectedNotebook} />

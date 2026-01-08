@@ -662,7 +662,7 @@
         "Verify settings modal/panel opens",
         "Verify settings options are visible"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "settings-02",
@@ -675,7 +675,7 @@
         "Select 'Light' theme",
         "Verify app switches to light mode"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "settings-03",
@@ -688,7 +688,7 @@
         "Create new chat",
         "Verify new default model is selected"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "settings-04",
@@ -701,7 +701,7 @@
         "Change URL and save",
         "Verify new URL is persisted"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "settings-05",
@@ -715,7 +715,7 @@
         "Change value and save",
         "Verify settings are persisted"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "settings-06",
@@ -726,7 +726,7 @@
         "Scroll to About section",
         "Verify version number is displayed"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "loading-01",

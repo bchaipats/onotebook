@@ -94,3 +94,13 @@ export interface StreamEvent {
   message_id?: string;
   error?: string;
 }
+
+export type ThemeSetting = "light" | "dark" | "system";
+
+export interface Settings {
+  theme: ThemeSetting;
+  default_model: string;
+  ollama_url: string;
+  top_k: number;
+  temperature: number;
+}

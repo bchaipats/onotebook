@@ -350,4 +350,19 @@ export async function regenerateMessage(
   }
 }
 
+// Settings API
+
+import type { Settings, ThemeSetting } from "@/types/api";
+
+export async function getSettings(): Promise<Settings> {
+  return request<Settings>("/api/settings");
+}
+
+export async function updateSettings(settings: Partial<Settings>): Promise<Settings> {
+  return request<Settings>("/api/settings", {
+    method: "PUT",
+    body: JSON.stringify(settings),
+  });
+}
+
 export { ApiError };
