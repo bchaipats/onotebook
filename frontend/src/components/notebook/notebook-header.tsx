@@ -8,6 +8,36 @@ import { ModelSelector } from "@/components/chat/model-selector";
 import { useUpdateNotebook } from "@/hooks/use-notebooks";
 import type { Notebook } from "@/types/api";
 
+function NotebookIconSmall() {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 48 48"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="shrink-0"
+    >
+      <path
+        d="M8 12C8 9.79086 9.79086 8 12 8H36C38.2091 8 40 9.79086 40 12V40C40 42.2091 38.2091 44 36 44H12C9.79086 44 8 42.2091 8 40V12Z"
+        fill="#D4A853"
+      />
+      <path
+        d="M8 10C8 7.79086 9.79086 6 12 6H32L40 14V38C40 40.2091 38.2091 42 36 42H12C9.79086 42 8 40.2091 8 38V10Z"
+        fill="#F5C869"
+      />
+      <path
+        d="M32 6V14H40L32 6Z"
+        fill="#D4A853"
+      />
+      <path
+        d="M8 10C8 7.79086 9.79086 6 12 6H14V42H12C9.79086 42 8 40.2091 8 38V10Z"
+        fill="#E8B84A"
+      />
+    </svg>
+  );
+}
+
 interface NotebookHeaderProps {
   notebook: Notebook;
   onBack: () => void;
@@ -49,12 +79,9 @@ export function NotebookHeader({
           <ArrowLeft className="h-5 w-5" />
         </Button>
 
-        {/* Color indicator + editable title */}
+        {/* Notebook icon + editable title */}
         <div className="flex items-center gap-2">
-          <div
-            className="h-6 w-6 shrink-0 rounded-lg"
-            style={{ backgroundColor: notebook.color || "#6366f1" }}
-          />
+          <NotebookIconSmall />
 
           {isEditing ? (
             <Input

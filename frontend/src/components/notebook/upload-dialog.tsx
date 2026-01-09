@@ -117,12 +117,12 @@ export function UploadDialog({ open, onOpenChange, notebookId }: UploadDialogPro
         {/* Header with branding */}
         <div className="mb-2 flex items-center gap-2">
           <BookOpen className="h-6 w-6 text-primary" />
-          <span className="text-lg font-semibold">onotebook</span>
+          <span className="text-lg font-semibold">ONotebook</span>
         </div>
 
         <h2 className="text-2xl font-bold">Add sources</h2>
         <p className="mb-6 mt-1 text-muted-foreground">
-          Sources let onotebook base its responses on the information that matters to you.
+          Sources let ONotebook base its responses on the information that matters to you.
         </p>
 
         {/* Drop zone */}

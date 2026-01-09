@@ -397,7 +397,7 @@ function ChatContent({ sessionId, notebookId, selectedSources }: ChatContentProp
             </div>
           </div>
           <p className="mt-3 text-center text-xs text-muted-foreground">
-            onotebook may make mistakes. Consider verifying important information.
+            ONotebook may make mistakes. Consider verifying important information.
           </p>
         </div>
       </div>
