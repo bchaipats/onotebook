@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { useDeleteDocument } from "@/hooks/use-documents";
-import { cn } from "@/lib/utils";
+import { cn, formatFileSize } from "@/lib/utils";
 import type { Document } from "@/types/api";
 
 interface SourceItemProps {
@@ -33,7 +33,7 @@ export function SourceItem({
   onPreview,
   style,
 }: SourceItemProps) {
-  const deleteDocument = useDeleteDocument();
+  const deleteDocument = useDeleteDocument(document.notebook_id);
   const [isExpanded, setIsExpanded] = useState(false);
 
   const isReady = document.processing_status === "ready";
@@ -158,10 +158,4 @@ function FileIcon({ type }: { type: string }) {
     default:
       return <File className={iconClass} />;
   }
-}
-
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }

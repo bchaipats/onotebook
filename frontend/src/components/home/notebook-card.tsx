@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FileText, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,33 +19,26 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useUpdateNotebook, useDeleteNotebook } from "@/hooks/use-notebooks";
-import { cn } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import type { Notebook } from "@/types/api";
-
-const PRESET_COLORS = [
-  "#6366f1", "#f43f5e", "#10b981", "#f59e0b",
-  "#3b82f6", "#8b5cf6", "#ec4899", "#14b8a6",
-];
 
 interface NotebookCardProps {
   notebook: Notebook;
   onSelect: () => void;
-  style?: React.CSSProperties;
 }
 
-export function NotebookCard({ notebook, onSelect, style }: NotebookCardProps) {
+export function NotebookCard({ notebook, onSelect }: NotebookCardProps) {
   const updateNotebook = useUpdateNotebook();
   const deleteNotebook = useDeleteNotebook();
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editName, setEditName] = useState(notebook.name);
-  const [editColor, setEditColor] = useState(notebook.color || PRESET_COLORS[0]);
 
   function handleEdit() {
     if (!editName.trim()) return;
     updateNotebook.mutate(
-      { id: notebook.id, data: { name: editName.trim(), color: editColor } },
+      { id: notebook.id, data: { name: editName.trim() } },
       { onSuccess: () => setEditDialogOpen(false) }
     );
   }
@@ -59,41 +52,20 @@ export function NotebookCard({ notebook, onSelect, style }: NotebookCardProps) {
   return (
     <>
       <div
-        className="group relative cursor-pointer overflow-hidden rounded-2xl border bg-card shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg animate-slide-in-bottom"
+        className="group relative cursor-pointer rounded-xl bg-[#3c4043] p-6"
         onClick={onSelect}
-        style={style}
       >
-        {/* Color accent header */}
-        <div
-          className="h-28 transition-transform duration-300 group-hover:scale-105"
-          style={{ backgroundColor: notebook.color || "#6366f1" }}
-        />
-
-        {/* Content */}
-        <div className="p-4">
-          <h3 className="mb-1 truncate text-base font-semibold">
-            {notebook.name}
-          </h3>
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <FileText className="h-4 w-4" />
-              {notebook.document_count} sources
-            </span>
-            <span>{formatRelativeDate(notebook.updated_at)}</span>
-          </div>
-        </div>
-
-        {/* Hover actions */}
-        <div className="absolute right-3 top-3 translate-x-2 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100">
+        {/* Menu button - top right */}
+        <div className="absolute right-3 top-3 opacity-0 transition-opacity group-hover:opacity-100">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
-                variant="secondary"
+                variant="ghost"
                 size="icon"
-                className="h-8 w-8 rounded-full shadow-md"
+                className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground"
                 onClick={(e) => e.stopPropagation()}
               >
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreVertical className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -101,12 +73,11 @@ export function NotebookCard({ notebook, onSelect, style }: NotebookCardProps) {
                 onClick={(e) => {
                   e.stopPropagation();
                   setEditName(notebook.name);
-                  setEditColor(notebook.color || PRESET_COLORS[0]);
                   setEditDialogOpen(true);
                 }}
               >
                 <Pencil className="mr-2 h-4 w-4" />
-                Edit
+                Rename
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={(e) => {
@@ -121,50 +92,37 @@ export function NotebookCard({ notebook, onSelect, style }: NotebookCardProps) {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
+        {/* Notebook icon */}
+        <div className="mb-6">
+          <NotebookIcon />
+        </div>
+
+        {/* Content */}
+        <h3 className="mb-2 text-xl font-normal text-foreground">
+          {notebook.name}
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          {formatDate(notebook.updated_at)} · {notebook.document_count} sources
+        </p>
       </div>
 
       {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Notebook</DialogTitle>
+            <DialogTitle>Rename notebook</DialogTitle>
             <DialogDescription>
-              Update the name and color for this notebook.
+              Enter a new name for this notebook.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-muted-foreground">
-                Name
-              </label>
-              <Input
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleEdit()}
-                autoFocus
-              />
-            </div>
-            <div>
-              <label className="mb-2 block text-sm font-medium text-muted-foreground">
-                Color
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {PRESET_COLORS.map((color) => (
-                  <button
-                    key={color}
-                    type="button"
-                    className={cn(
-                      "h-8 w-8 rounded-full border-2 transition-transform hover:scale-110",
-                      editColor === color
-                        ? "border-foreground ring-2 ring-foreground ring-offset-2 ring-offset-background"
-                        : "border-transparent"
-                    )}
-                    style={{ backgroundColor: color }}
-                    onClick={() => setEditColor(color)}
-                  />
-                ))}
-              </div>
-            </div>
+          <div className="py-4">
+            <Input
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleEdit()}
+              autoFocus
+            />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
@@ -184,7 +142,7 @@ export function NotebookCard({ notebook, onSelect, style }: NotebookCardProps) {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Notebook</DialogTitle>
+            <DialogTitle>Delete notebook</DialogTitle>
             <DialogDescription>
               Are you sure you want to delete &quot;{notebook.name}&quot;? This
               will permanently delete all documents and chat sessions.
@@ -208,15 +166,35 @@ export function NotebookCard({ notebook, onSelect, style }: NotebookCardProps) {
   );
 }
 
-function formatRelativeDate(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) return "Today";
-  if (diffDays === 1) return "Yesterday";
-  if (diffDays < 7) return `${diffDays} days ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-  return date.toLocaleDateString();
+function NotebookIcon() {
+  return (
+    <svg
+      width="56"
+      height="56"
+      viewBox="0 0 48 48"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Back cover */}
+      <path
+        d="M8 12C8 9.79086 9.79086 8 12 8H36C38.2091 8 40 9.79086 40 12V40C40 42.2091 38.2091 44 36 44H12C9.79086 44 8 42.2091 8 40V12Z"
+        fill="#D4A853"
+      />
+      {/* Front cover with fold */}
+      <path
+        d="M8 10C8 7.79086 9.79086 6 12 6H32L40 14V38C40 40.2091 38.2091 42 36 42H12C9.79086 42 8 40.2091 8 38V10Z"
+        fill="#F5C869"
+      />
+      {/* Fold triangle */}
+      <path
+        d="M32 6V14H40L32 6Z"
+        fill="#D4A853"
+      />
+      {/* Spine highlight */}
+      <path
+        d="M8 10C8 7.79086 9.79086 6 12 6H14V42H12C9.79086 42 8 40.2091 8 38V10Z"
+        fill="#E8B84A"
+      />
+    </svg>
+  );
 }

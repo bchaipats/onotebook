@@ -2,7 +2,6 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Send,
   Square,
   RefreshCw,
   MessageSquare,
@@ -29,7 +28,7 @@ import {
   useInvalidateChatSessions,
 } from "@/hooks/use-chat";
 import { sendMessage, regenerateMessage } from "@/lib/api";
-import type { ChatMessage, ChatSession, SourceInfo, StreamEvent } from "@/types/api";
+import type { ChatMessage, SourceInfo, StreamEvent } from "@/types/api";
 
 interface ChatPanelProps {
   notebookId: string;
