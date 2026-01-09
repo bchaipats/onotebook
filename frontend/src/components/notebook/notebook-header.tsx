@@ -1,18 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeft, Settings } from "lucide-react";
+import { Plus, Share2, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ModelSelector } from "@/components/chat/model-selector";
 import { useUpdateNotebook } from "@/hooks/use-notebooks";
 import type { Notebook } from "@/types/api";
 
-function NotebookIconSmall() {
+function ONotebookLogo() {
   return (
     <svg
-      width="24"
-      height="24"
+      width="32"
+      height="32"
       viewBox="0 0 48 48"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -47,76 +45,65 @@ export function NotebookHeader({
   onOpenSettings,
 }: NotebookHeaderProps) {
   const updateNotebook = useUpdateNotebook();
-  const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(notebook.name);
 
-  function handleSave() {
+  function handleTitleBlur() {
     if (!title.trim() || title === notebook.name) {
       setTitle(notebook.name);
-      setIsEditing(false);
       return;
     }
 
-    updateNotebook.mutate(
-      { id: notebook.id, data: { name: title.trim() } },
-      { onSuccess: () => setIsEditing(false) },
-    );
+    updateNotebook.mutate({ id: notebook.id, data: { name: title.trim() } });
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") {
+      e.currentTarget.blur();
+    }
+    if (e.key === "Escape") {
+      setTitle(notebook.name);
+      e.currentTarget.blur();
+    }
   }
 
   return (
     <header className="flex h-14 items-center justify-between border-b bg-card px-4 shadow-sm">
       <div className="flex items-center gap-3">
-        {/* Back button */}
-        <Button
-          variant="ghost"
-          size="icon"
+        <button
           onClick={onBack}
-          className="rounded-full transition-colors hover:bg-muted"
+          className="rounded-lg p-1 transition-colors hover:bg-muted"
+          title="ONotebook Homepage"
         >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-
-        {/* Notebook icon + editable title */}
-        <div className="flex items-center gap-2">
-          <NotebookIconSmall />
-
-          {isEditing ? (
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              onBlur={handleSave}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSave();
-                if (e.key === "Escape") {
-                  setTitle(notebook.name);
-                  setIsEditing(false);
-                }
-              }}
-              className="h-8 w-64 text-lg font-semibold"
-              autoFocus
-            />
-          ) : (
-            <button
-              className="text-lg font-semibold transition-colors hover:text-primary"
-              onClick={() => setIsEditing(true)}
-            >
-              {notebook.name}
-            </button>
-          )}
-        </div>
+          <ONotebookLogo />
+        </button>
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          onBlur={handleTitleBlur}
+          onKeyDown={handleKeyDown}
+          className="w-64 rounded-md border border-transparent bg-transparent px-2 py-1 text-lg font-medium transition-colors hover:border-border focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
+        />
       </div>
 
       <div className="flex items-center gap-2">
-        <ModelSelector className="hidden sm:flex" />
+        <Button className="gap-1.5 rounded-full" size="sm">
+          <Plus className="h-4 w-4" />
+          Create notebook
+        </Button>
+        <Button variant="ghost" size="sm" className="gap-1.5 rounded-full">
+          <Share2 className="h-4 w-4" />
+          Share
+        </Button>
         <Button
           variant="ghost"
-          size="icon"
+          size="sm"
           onClick={onOpenSettings}
-          className="rounded-full"
+          className="gap-1.5 rounded-full"
         >
-          <Settings className="h-5 w-5" />
+          <Settings className="h-4 w-4" />
+          Settings
         </Button>
-        {/* User avatar */}
         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-user-avatar text-sm font-medium text-white">
           U
         </div>

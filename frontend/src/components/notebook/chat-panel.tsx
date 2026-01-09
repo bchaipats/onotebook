@@ -1,19 +1,20 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import {
   Square,
   RefreshCw,
-  MessageSquare,
   Loader2,
   ChevronDown,
   ChevronRight,
   FileText,
   Copy,
   Check,
-  Plus,
   Bot,
   ArrowUp,
+  Upload,
+  SlidersHorizontal,
+  MoreVertical,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -58,25 +59,28 @@ export function ChatPanel({ notebookId, selectedSources }: ChatPanelProps) {
 
   return (
     <div className="flex flex-1 flex-col">
-      {/* Header */}
       <div className="flex items-center justify-between border-b px-4 py-3">
-        <div className="flex items-center gap-2">
-          <MessageSquare className="h-5 w-5 text-muted-foreground" />
-          <h2 className="font-semibold">Chat</h2>
+        <h2 className="font-semibold">Chat</h2>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            title="Configure notebook"
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            title="Chat options"
+          >
+            <MoreVertical className="h-4 w-4" />
+          </Button>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="gap-1.5 rounded-full"
-          onClick={handleNewSession}
-          disabled={createSession.isPending}
-        >
-          <Plus className="h-4 w-4" />
-          New chat
-        </Button>
       </div>
 
-      {/* Content */}
       {sessionsLoading ? (
         <div className="flex flex-1 items-center justify-center">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -127,13 +131,9 @@ function ChatContent({
   const abortControllerRef = useRef<AbortController | null>(null);
   const stoppedByUserRef = useRef(false);
 
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, []);
-
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, streamingContent, scrollToBottom]);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, streamingContent]);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -212,12 +212,6 @@ function ChatContent({
     }
   }
 
-  function handleRetryMessage() {
-    if (lastFailedMessage) {
-      handleSend(lastFailedMessage);
-    }
-  }
-
   function handleStop() {
     stoppedByUserRef.current = true;
     setStoppedContent(streamingContent);
@@ -282,15 +276,16 @@ function ChatContent({
 
   return (
     <>
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto">
         {allMessages.length === 0 && !isStreaming && !stoppedContent ? (
           <div className="flex h-full flex-col items-center justify-center p-8 text-center">
-            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-              <MessageSquare className="h-8 w-8 text-primary" />
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full border-2 border-dashed border-primary/40">
+              <Upload className="h-6 w-6 text-primary/60" />
             </div>
-            <h2 className="mb-2 text-xl font-semibold">Start a conversation</h2>
-            <p className="mb-8 max-w-md text-muted-foreground">
+            <h2 className="mb-2 text-lg font-medium">
+              Add a source to get started
+            </h2>
+            <p className="mb-6 max-w-md text-sm text-muted-foreground">
               Ask questions about your sources. The AI will reference specific
               passages to answer.
             </p>
@@ -334,7 +329,6 @@ function ChatContent({
         )}
       </div>
 
-      {/* Sources Panel */}
       {currentSources.length > 0 && (
         <SourcesPanel
           sources={currentSources}
@@ -343,7 +337,6 @@ function ChatContent({
         />
       )}
 
-      {/* Error */}
       {error && (
         <div className="border-t bg-destructive/10 p-3 text-center text-sm text-destructive">
           <span>{error}</span>
@@ -352,7 +345,7 @@ function ChatContent({
               variant="link"
               size="sm"
               className="ml-2 h-auto p-0 font-medium text-destructive"
-              onClick={handleRetryMessage}
+              onClick={() => handleSend(lastFailedMessage!)}
             >
               <RefreshCw className="mr-1 h-3 w-3" />
               Retry
@@ -372,50 +365,52 @@ function ChatContent({
         </div>
       )}
 
-      {/* Input */}
       <div className="border-t bg-card p-4">
         <div className="mx-auto max-w-3xl">
-          <div className="flex items-end gap-3 rounded-3xl border bg-background p-3 shadow-sm transition-shadow focus-within:shadow-md focus-within:ring-1 focus-within:ring-primary/20">
+          <div className="flex items-center gap-3 rounded-full border bg-background px-4 py-2 shadow-sm transition-shadow focus-within:shadow-md focus-within:ring-1 focus-within:ring-primary/20">
             <textarea
               ref={textareaRef}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask about your sources..."
-              className="flex-1 resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+              placeholder={
+                selectedSources.size === 0
+                  ? "Upload a source to get started"
+                  : "Ask about your sources..."
+              }
+              className="flex-1 resize-none bg-transparent py-1 text-sm outline-none placeholder:text-muted-foreground"
               rows={1}
-              disabled={isStreaming}
+              disabled={isStreaming || selectedSources.size === 0}
             />
-            <div className="flex items-center gap-2">
-              <span className="whitespace-nowrap text-xs text-muted-foreground">
-                {selectedSources.size} sources
-              </span>
-              {isStreaming ? (
-                <Button
-                  size="icon"
-                  variant="destructive"
-                  className="h-9 w-9 rounded-full"
-                  onClick={handleStop}
-                >
-                  <Square className="h-4 w-4" />
-                </Button>
-              ) : (
-                <Button
-                  size="icon"
-                  className="h-9 w-9 rounded-full bg-primary text-primary-foreground shadow-sm transition-transform hover:scale-105"
-                  onClick={() => handleSend()}
-                  disabled={!inputValue.trim()}
-                >
-                  <ArrowUp className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
+            <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
+              {selectedSources.size} sources
+            </span>
+            {isStreaming ? (
+              <Button
+                size="icon"
+                variant="destructive"
+                className="h-8 w-8 shrink-0 rounded-full"
+                onClick={handleStop}
+              >
+                <Square className="h-4 w-4" />
+              </Button>
+            ) : (
+              <Button
+                size="icon"
+                className="h-8 w-8 shrink-0 rounded-full"
+                onClick={() => handleSend()}
+                disabled={!inputValue.trim() || selectedSources.size === 0}
+              >
+                <ArrowUp className="h-4 w-4" />
+              </Button>
+            )}
           </div>
-          <p className="mt-3 text-center text-xs text-muted-foreground">
-            ONotebook may make mistakes. Consider verifying important
-            information.
-          </p>
         </div>
+      </div>
+      <div className="border-t bg-background py-2 text-center">
+        <p className="text-xs text-muted-foreground">
+          ONotebook may make mistakes. Consider verifying important information.
+        </p>
       </div>
     </>
   );
@@ -431,16 +426,16 @@ const SUGGESTED_PROMPTS = [
 function ChatWelcome({ onCreateSession }: { onCreateSession: () => void }) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
-      <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-        <MessageSquare className="h-8 w-8 text-primary" />
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full border-2 border-dashed border-primary/40">
+        <Upload className="h-6 w-6 text-primary/60" />
       </div>
-      <h2 className="mb-2 text-xl font-semibold">No chat sessions yet</h2>
-      <p className="mb-6 max-w-md text-muted-foreground">
-        Start a new conversation to ask questions about your documents.
-      </p>
-      <Button onClick={onCreateSession} className="gap-2 rounded-full">
-        <Plus className="h-4 w-4" />
-        New chat
+      <h2 className="mb-3 text-lg font-medium">Add a source to get started</h2>
+      <Button
+        variant="outline"
+        onClick={onCreateSession}
+        className="rounded-full"
+      >
+        Upload a source
       </Button>
     </div>
   );

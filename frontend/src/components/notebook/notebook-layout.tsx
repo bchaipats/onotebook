@@ -6,6 +6,7 @@ import { SourcesPanel } from "./sources-panel";
 import { StudioPanel } from "./studio-panel";
 import { ChatPanel } from "./chat-panel";
 import { useDocuments } from "@/hooks/use-documents";
+import { cn } from "@/lib/utils";
 import type { Notebook } from "@/types/api";
 
 interface NotebookLayoutProps {
@@ -25,6 +26,8 @@ export function NotebookLayout({
   const [selectedSources, setSelectedSources] = useState<Set<string>>(
     new Set(),
   );
+  const [sourcesCollapsed, setSourcesCollapsed] = useState(false);
+  const [studioCollapsed, setStudioCollapsed] = useState(false);
 
   // Initialize with all sources selected when documents load
   useEffect(() => {
@@ -46,12 +49,19 @@ export function NotebookLayout({
 
       <div className="flex flex-1 overflow-hidden">
         {/* Left: Sources Panel */}
-        <aside className="hidden w-80 shrink-0 border-r bg-card md:flex md:flex-col">
+        <aside
+          className={cn(
+            "hidden shrink-0 border-r bg-card transition-all duration-300 ease-out md:flex md:flex-col",
+            sourcesCollapsed ? "w-12" : "w-80",
+          )}
+        >
           <SourcesPanel
             notebookId={notebook.id}
             selectedSources={selectedSources}
             onSelectionChange={setSelectedSources}
             autoOpenAddSources={autoOpenAddSources}
+            collapsed={sourcesCollapsed}
+            onToggleCollapse={() => setSourcesCollapsed(!sourcesCollapsed)}
           />
         </aside>
 
@@ -64,8 +74,16 @@ export function NotebookLayout({
         </main>
 
         {/* Right: Studio Panel */}
-        <aside className="hidden w-72 shrink-0 border-l bg-card lg:flex lg:flex-col">
-          <StudioPanel />
+        <aside
+          className={cn(
+            "hidden shrink-0 border-l bg-card transition-all duration-300 ease-out lg:flex lg:flex-col",
+            studioCollapsed ? "w-12" : "w-72",
+          )}
+        >
+          <StudioPanel
+            collapsed={studioCollapsed}
+            onToggleCollapse={() => setStudioCollapsed(!studioCollapsed)}
+          />
         </aside>
       </div>
     </div>

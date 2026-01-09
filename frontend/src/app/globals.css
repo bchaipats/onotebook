@@ -224,3 +224,8 @@ html {
 .animate-slide-in-top {
   animation: slide-in-from-top var(--transition-base) ease-out;
 }
+
+/* Vertical text for collapsed panels */
+.writing-vertical-lr {
+  writing-mode: vertical-lr;
+}
