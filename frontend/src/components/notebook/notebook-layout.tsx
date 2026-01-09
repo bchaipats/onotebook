@@ -12,12 +12,14 @@ interface NotebookLayoutProps {
   notebook: Notebook;
   onBack: () => void;
   onOpenSettings: () => void;
+  autoOpenAddSources?: boolean;
 }
 
 export function NotebookLayout({
   notebook,
   onBack,
   onOpenSettings,
+  autoOpenAddSources = false,
 }: NotebookLayoutProps) {
   const { data: documents } = useDocuments(notebook.id);
   const [selectedSources, setSelectedSources] = useState<Set<string>>(
@@ -49,6 +51,7 @@ export function NotebookLayout({
             notebookId={notebook.id}
             selectedSources={selectedSources}
             onSelectionChange={setSelectedSources}
+            autoOpenAddSources={autoOpenAddSources}
           />
         </aside>
 

@@ -5,22 +5,24 @@ import { Plus, FileStack, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SourceItem } from "./source-item";
-import { UploadDialog } from "./upload-dialog";
+import { AddSourcesDialog } from "./add-sources-dialog";
 import { useDocuments } from "@/hooks/use-documents";
 
 interface SourcesPanelProps {
   notebookId: string;
   selectedSources: Set<string>;
   onSelectionChange: (sources: Set<string>) => void;
+  autoOpenAddSources?: boolean;
 }
 
 export function SourcesPanel({
   notebookId,
   selectedSources,
   onSelectionChange,
+  autoOpenAddSources = false,
 }: SourcesPanelProps) {
   const { data: documents, isLoading } = useDocuments(notebookId);
-  const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [isUploadOpen, setIsUploadOpen] = useState(autoOpenAddSources);
 
   const readyDocuments = documents?.filter(
     (d) => d.processing_status === "ready",
@@ -52,7 +54,6 @@ export function SourcesPanel({
 
   return (
     <div className="flex h-full flex-col">
-      {/* Header */}
       <div className="flex items-center justify-between border-b p-4">
         <div className="flex items-center gap-2">
           <FileStack className="h-5 w-5 text-muted-foreground" />
@@ -68,7 +69,6 @@ export function SourcesPanel({
         </Button>
       </div>
 
-      {/* Select All */}
       {documents && documents.length > 0 && (
         <div className="flex items-center gap-3 border-b px-4 py-3">
           <Checkbox
@@ -87,7 +87,6 @@ export function SourcesPanel({
         </div>
       )}
 
-      {/* Source List */}
       <div className="flex-1 overflow-y-auto p-2">
         {isLoading ? (
           <div className="space-y-2">
@@ -115,7 +114,7 @@ export function SourcesPanel({
         )}
       </div>
 
-      <UploadDialog
+      <AddSourcesDialog
         open={isUploadOpen}
         onOpenChange={setIsUploadOpen}
         notebookId={notebookId}

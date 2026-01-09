@@ -17,10 +17,16 @@ export default function Home() {
   const [selectedNotebook, setSelectedNotebook] = useState<Notebook | null>(
     null,
   );
+  const [isNewlyCreatedNotebook, setIsNewlyCreatedNotebook] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [ollamaErrorOpen, setOllamaErrorOpen] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isRetrying, setIsRetrying] = useState(false);
+
+  function handleSelectNotebook(notebook: Notebook, isNewlyCreated = false) {
+    setSelectedNotebook(notebook);
+    setIsNewlyCreatedNotebook(isNewlyCreated);
+  }
 
   const checkHealth = useCallback(async () => {
     try {
@@ -80,8 +86,12 @@ export default function Home() {
       <>
         <NotebookLayout
           notebook={selectedNotebook}
-          onBack={() => setSelectedNotebook(null)}
+          onBack={() => {
+            setSelectedNotebook(null);
+            setIsNewlyCreatedNotebook(false);
+          }}
           onOpenSettings={() => setSettingsOpen(true)}
+          autoOpenAddSources={isNewlyCreatedNotebook}
         />
         <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
         <OllamaErrorDialog
@@ -121,7 +131,7 @@ export default function Home() {
       )}
 
       <HomePage
-        onSelectNotebook={setSelectedNotebook}
+        onSelectNotebook={handleSelectNotebook}
         onOpenSettings={() => setSettingsOpen(true)}
       />
 

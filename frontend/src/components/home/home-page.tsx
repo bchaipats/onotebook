@@ -4,7 +4,6 @@ import { useState, useMemo } from "react";
 import { HomeHeader } from "./home-header";
 import { NotebookGrid } from "./notebook-grid";
 import { EmptyState } from "./empty-state";
-import { CreateNotebookDialog } from "./create-notebook-dialog";
 import { useNotebooks, useCreateNotebook } from "@/hooks/use-notebooks";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -18,7 +17,7 @@ import { Plus, LayoutGrid, List, ChevronDown, Check } from "lucide-react";
 import type { Notebook } from "@/types/api";
 
 interface HomePageProps {
-  onSelectNotebook: (notebook: Notebook) => void;
+  onSelectNotebook: (notebook: Notebook, isNewlyCreated?: boolean) => void;
   onOpenSettings: () => void;
 }
 
@@ -29,7 +28,6 @@ export function HomePage({ onSelectNotebook, onOpenSettings }: HomePageProps) {
   const [filter, setFilter] = useState<"all" | "recent">("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState<"date" | "name">("date");
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   const sortedNotebooks = useMemo(() => {
     if (!notebooks) return [];
@@ -43,13 +41,12 @@ export function HomePage({ onSelectNotebook, onOpenSettings }: HomePageProps) {
     });
   }, [notebooks, sortBy]);
 
-  function handleCreateNotebook(name: string) {
+  function handleCreateNotebook() {
     createNotebook.mutate(
-      { name },
+      { name: "Untitled notebook" },
       {
         onSuccess: (notebook) => {
-          setCreateDialogOpen(false);
-          onSelectNotebook(notebook);
+          onSelectNotebook(notebook, true);
         },
       },
     );
@@ -113,7 +110,11 @@ export function HomePage({ onSelectNotebook, onOpenSettings }: HomePageProps) {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button size="pill" onClick={() => setCreateDialogOpen(true)}>
+            <Button
+              size="pill"
+              onClick={handleCreateNotebook}
+              disabled={createNotebook.isPending}
+            >
               <Plus className="h-4 w-4" />
               Create new
             </Button>
@@ -131,19 +132,12 @@ export function HomePage({ onSelectNotebook, onOpenSettings }: HomePageProps) {
             notebooks={sortedNotebooks}
             viewMode={viewMode}
             onSelectNotebook={onSelectNotebook}
-            onCreateNotebook={() => setCreateDialogOpen(true)}
+            onCreateNotebook={handleCreateNotebook}
           />
         ) : (
-          <EmptyState onCreateNotebook={() => setCreateDialogOpen(true)} />
+          <EmptyState onCreateNotebook={handleCreateNotebook} />
         )}
       </main>
-
-      <CreateNotebookDialog
-        open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
-        onSubmit={handleCreateNotebook}
-        isLoading={createNotebook.isPending}
-      />
     </div>
   );
 }
