@@ -8,7 +8,9 @@ Lint, format, and commit changes:
 
 2. **Review changes:** Run `git status` and `git diff` to understand what changed.
 
-3. **Commit with descriptive message:**
+3. **Update README.md** if changes affect setup, dependencies, or usage.
+
+4. **Commit with descriptive message:**
    - Summarize the "why" not the "what"
    - Use imperative mood (Add, Fix, Update, Remove)
    - No Claude Code trailer (no Co-Authored-By line)
