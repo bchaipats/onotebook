@@ -58,22 +58,18 @@ export function HomePage({ onSelectNotebook, onOpenSettings }: HomePageProps) {
     <div className="min-h-screen bg-background">
       <HomeHeader onOpenSettings={onOpenSettings} />
 
-      <main className="mx-auto max-w-6xl px-6 py-6 md:px-8 md:py-8">
-        {/* Controls Bar */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          {/* Left: Tab filters */}
+      <main className="mx-auto max-w-5xl px-6 py-6 md:px-8 md:py-8">
+        <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-1">
-            <button className="rounded-full bg-foreground px-4 py-1.5 text-sm font-medium text-background">
+            <button className="rounded-full bg-foreground px-5 py-2 text-sm font-medium text-background">
               All
             </button>
-            <button className="rounded-full px-4 py-1.5 text-sm text-muted-foreground">
+            <button className="rounded-full px-5 py-2 text-sm text-muted-foreground">
               Recent
             </button>
           </div>
 
-          {/* Right: Controls */}
           <div className="flex items-center gap-2">
-            {/* View Toggle */}
             <div className="flex items-center rounded-lg border border-muted-foreground/20 p-1">
               <button
                 onClick={() => setViewMode("grid")}
@@ -101,7 +97,6 @@ export function HomePage({ onSelectNotebook, onOpenSettings }: HomePageProps) {
               </button>
             </div>
 
-            {/* Sort Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -127,10 +122,9 @@ export function HomePage({ onSelectNotebook, onOpenSettings }: HomePageProps) {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Create Button */}
             <Button
               onClick={() => setCreateDialogOpen(true)}
-              className="gap-2 rounded-full"
+              className="h-11 gap-2 rounded-full px-5"
             >
               <Plus className="h-4 w-4" />
               Create new
@@ -138,11 +132,10 @@ export function HomePage({ onSelectNotebook, onOpenSettings }: HomePageProps) {
           </div>
         </div>
 
-        {/* Content */}
         {isLoading ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-48 animate-pulse rounded-xl bg-muted" />
+              <div key={i} className="h-56 animate-pulse rounded-xl bg-muted" />
             ))}
           </div>
         ) : sortedNotebooks.length > 0 ? (

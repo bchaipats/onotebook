@@ -21,14 +21,12 @@ export function NotebookGrid({
   if (viewMode === "list") {
     return (
       <div className="rounded-xl border border-muted-foreground/20 bg-card">
-        {/* List Header */}
         <div className="grid grid-cols-12 gap-4 px-6 py-4 text-sm text-muted-foreground">
           <div className="col-span-6">Title</div>
           <div className="col-span-3 text-center">Sources</div>
           <div className="col-span-3 text-right">Modified</div>
         </div>
 
-        {/* List Items */}
         {notebooks.map((notebook) => (
           <div
             key={notebook.id}
@@ -54,15 +52,20 @@ export function NotebookGrid({
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      <CreateNotebookCard onClick={onCreateNotebook} />
-      {notebooks.map((notebook) => (
-        <NotebookCard
-          key={notebook.id}
-          notebook={notebook}
-          onSelect={() => onSelectNotebook(notebook)}
-        />
-      ))}
+    <div>
+      <h2 className="mb-6 text-2xl font-medium text-foreground">
+        Recent notebooks
+      </h2>
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <CreateNotebookCard onClick={onCreateNotebook} />
+        {notebooks.map((notebook) => (
+          <NotebookCard
+            key={notebook.id}
+            notebook={notebook}
+            onSelect={() => onSelectNotebook(notebook)}
+          />
+        ))}
+      </div>
     </div>
   );
 }

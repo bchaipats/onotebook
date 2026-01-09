@@ -52,10 +52,9 @@ export function NotebookCard({ notebook, onSelect }: NotebookCardProps) {
   return (
     <>
       <div
-        className="group relative cursor-pointer rounded-xl bg-[#3c4043] p-6"
+        className="group relative cursor-pointer rounded-xl bg-card-notebook p-8 shadow-md transition-all duration-200 hover:shadow-lg"
         onClick={onSelect}
       >
-        {/* Menu button - top right */}
         <div className="absolute right-3 top-3 opacity-0 transition-opacity group-hover:opacity-100">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -93,13 +92,11 @@ export function NotebookCard({ notebook, onSelect }: NotebookCardProps) {
           </DropdownMenu>
         </div>
 
-        {/* Notebook icon */}
-        <div className="mb-6">
+        <div className="mb-8">
           <NotebookIcon />
         </div>
 
-        {/* Content */}
-        <h3 className="mb-2 text-xl font-normal text-foreground">
+        <h3 className="mb-2 line-clamp-1 text-xl font-medium text-foreground">
           {notebook.name}
         </h3>
         <p className="text-sm text-muted-foreground">
@@ -107,7 +104,6 @@ export function NotebookCard({ notebook, onSelect }: NotebookCardProps) {
         </p>
       </div>
 
-      {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -138,7 +134,6 @@ export function NotebookCard({ notebook, onSelect }: NotebookCardProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -172,25 +167,21 @@ export function NotebookCard({ notebook, onSelect }: NotebookCardProps) {
 function NotebookIcon() {
   return (
     <svg
-      width="56"
-      height="56"
+      width="64"
+      height="64"
       viewBox="0 0 48 48"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Back cover */}
       <path
         d="M8 12C8 9.79086 9.79086 8 12 8H36C38.2091 8 40 9.79086 40 12V40C40 42.2091 38.2091 44 36 44H12C9.79086 44 8 42.2091 8 40V12Z"
         fill="#D4A853"
       />
-      {/* Front cover with fold */}
       <path
         d="M8 10C8 7.79086 9.79086 6 12 6H32L40 14V38C40 40.2091 38.2091 42 36 42H12C9.79086 42 8 40.2091 8 38V10Z"
         fill="#F5C869"
       />
-      {/* Fold triangle */}
       <path d="M32 6V14H40L32 6Z" fill="#D4A853" />
-      {/* Spine highlight */}
       <path
         d="M8 10C8 7.79086 9.79086 6 12 6H14V42H12C9.79086 42 8 40.2091 8 38V10Z"
         fill="#E8B84A"

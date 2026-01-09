@@ -12,7 +12,7 @@ interface HomeHeaderProps {
 export function HomeHeader({ onOpenSettings }: HomeHeaderProps) {
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6 md:px-8">
+      <div className="mx-auto flex h-20 max-w-5xl items-center justify-between px-6 md:px-8">
         <div className="flex items-center gap-3">
           <BookOpen className="h-7 w-7 text-primary" />
           <span className="text-xl font-semibold">{APP_NAME}</span>
@@ -21,14 +21,14 @@ export function HomeHeader({ onOpenSettings }: HomeHeaderProps) {
         <div className="flex items-center gap-3">
           <OllamaStatus showLabel={false} />
           <Button
-            variant="ghost"
-            size="icon"
+            variant="outline"
+            size="sm"
             onClick={onOpenSettings}
-            className="rounded-full"
+            className="gap-2"
           >
-            <Settings className="h-5 w-5" />
+            <Settings className="h-4 w-4" />
+            Settings
           </Button>
-          {/* User Avatar */}
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-user-avatar text-sm font-medium text-white">
             U
           </div>
