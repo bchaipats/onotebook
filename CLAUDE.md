@@ -31,6 +31,8 @@ bun run format       # Format code
 
 **Package management:** Always use `uv` for Python and `bun` for JavaScript. Never manually edit dependency files or lock files.
 
+**Documentation:** Keep README.md up-to-date with quickstart instructions. Keep it minimal.
+
 ## Code Principles
 
 **Write clean code:**
