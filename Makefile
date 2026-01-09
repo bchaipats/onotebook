@@ -19,7 +19,7 @@ clean: stop
 
 lint:
 	@cd backend && uv run ruff check --fix src && uv run ruff format src
-	@cd frontend && bun run lint && bun run format
+	@cd frontend && bun install --silent && bun run lint && bun run format
 
 docker:
 	@docker compose up --build -d

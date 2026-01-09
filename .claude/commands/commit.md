@@ -3,7 +3,7 @@ Lint, format, and commit changes:
 1. **Run linters and formatters:**
    ```bash
    cd backend && uv run ruff check --fix src && uv run ruff format src
-   cd frontend && bun run lint && bun run format
+   cd frontend && bun install --silent && bun run lint && bun run format
    ```
 
 2. **Review changes:** Run `git status` and `git diff` to understand what changed.
