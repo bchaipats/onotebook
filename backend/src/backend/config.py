@@ -6,6 +6,9 @@ class Settings(BaseSettings):
     # Database
     database_url: str = "sqlite+aiosqlite:///./data/onotebook.db"
 
+    # CORS
+    cors_origins: str = "http://localhost:3000"
+
     # Ollama
     ollama_base_url: str = "http://localhost:11434"
     default_llm_model: str = "llama3.2"
