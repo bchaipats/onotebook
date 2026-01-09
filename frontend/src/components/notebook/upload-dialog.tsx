@@ -6,6 +6,8 @@ import { BookOpen, Upload, FileText, Check, X, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -120,10 +122,10 @@ export function UploadDialog({ open, onOpenChange, notebookId }: UploadDialogPro
           <span className="text-lg font-semibold">ONotebook</span>
         </div>
 
-        <h2 className="text-2xl font-bold">Add sources</h2>
-        <p className="mb-6 mt-1 text-muted-foreground">
+        <DialogTitle className="text-2xl font-bold">Add sources</DialogTitle>
+        <DialogDescription className="mb-6 mt-1">
           Sources let ONotebook base its responses on the information that matters to you.
-        </p>
+        </DialogDescription>
 
         {/* Drop zone */}
         <div
