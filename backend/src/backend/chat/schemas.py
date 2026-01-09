@@ -40,6 +40,7 @@ class MessageListResponse(BaseModel):
 class SendMessageRequest(BaseModel):
     content: str
     model: Optional[str] = None
+    document_ids: Optional[list[str]] = None
 
 
 class SourceInfo(BaseModel):

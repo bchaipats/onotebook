@@ -190,12 +190,13 @@ async def send_message(
         sources: list[dict] = []
 
         try:
-            # Retrieve relevant chunks
+            # Retrieve relevant chunks (filtered by selected sources if provided)
             query_embedding = embed_query(request.content)
             search_results = search_collection(
                 notebook_id=notebook_id,
                 query_embedding=query_embedding,
                 n_results=5,
+                document_ids=request.document_ids,
             )
 
             # Process search results

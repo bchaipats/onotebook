@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Sidebar } from "@/components/layout/sidebar";
-import { NotebookView } from "@/components/notebook/notebook-view";
+import { HomePage } from "@/components/home";
+import { NotebookLayout } from "@/components/notebook/notebook-layout";
 import { SettingsModal } from "@/components/settings/settings-modal";
 import { OllamaErrorDialog } from "@/components/ollama/ollama-error-dialog";
 import { getHealth } from "@/lib/api";
@@ -59,6 +59,7 @@ export default function Home() {
     }
   };
 
+  // Initial loading state
   if (isInitialLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
@@ -73,6 +74,26 @@ export default function Home() {
     );
   }
 
+  // If notebook is selected, show the notebook layout
+  if (selectedNotebook) {
+    return (
+      <>
+        <NotebookLayout
+          notebook={selectedNotebook}
+          onBack={() => setSelectedNotebook(null)}
+          onOpenSettings={() => setSettingsOpen(true)}
+        />
+        <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
+        <OllamaErrorDialog
+          open={ollamaErrorOpen}
+          onOpenChange={setOllamaErrorOpen}
+          onRetry={handleOllamaRetry}
+        />
+      </>
+    );
+  }
+
+  // Otherwise, show the homepage
   return (
     <div className="flex h-screen flex-col bg-background">
       {/* API Connection Error Banner */}
@@ -97,52 +118,17 @@ export default function Home() {
         </div>
       )}
 
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar
-          selectedNotebookId={selectedNotebook?.id}
-          onSelectNotebook={setSelectedNotebook}
-          onOpenSettings={() => setSettingsOpen(true)}
-        />
-        <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
-        <OllamaErrorDialog
-          open={ollamaErrorOpen}
-          onOpenChange={setOllamaErrorOpen}
-          onRetry={handleOllamaRetry}
-        />
-        <main className="flex-1 overflow-y-auto">
-          {selectedNotebook ? (
-            <NotebookView notebook={selectedNotebook} />
-          ) : (
-            <div className="flex h-full items-center justify-center">
-              <div className="text-center">
-                <h1 className="text-2xl font-semibold text-foreground">
-                  Welcome to onotebook
-                </h1>
-                <p className="mt-2 text-muted-foreground">
-                  Select a notebook from the sidebar or create a new one
-                </p>
-                {health && (
-                  <div className="mt-4 text-sm text-muted-foreground">
-                    <p>
-                      API Status:{" "}
-                      <span className="text-green-600">{health.status}</span>
-                    </p>
-                    <p>Version: {health.version}</p>
-                    <p>
-                      Ollama:{" "}
-                      {health.ollama_connected ? (
-                        <span className="text-green-600">Connected</span>
-                      ) : (
-                        <span className="text-red-600">Disconnected</span>
-                      )}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </main>
-      </div>
+      <HomePage
+        onSelectNotebook={setSelectedNotebook}
+        onOpenSettings={() => setSettingsOpen(true)}
+      />
+
+      <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <OllamaErrorDialog
+        open={ollamaErrorOpen}
+        onOpenChange={setOllamaErrorOpen}
+        onRetry={handleOllamaRetry}
+      />
     </div>
   );
 }

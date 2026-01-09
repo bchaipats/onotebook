@@ -265,7 +265,8 @@ export async function sendMessage(
   content: string,
   model: string | null,
   onEvent: (event: StreamEvent) => void,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  documentIds?: string[]
 ): Promise<void> {
   const url = `${API_BASE_URL}/api/sessions/${sessionId}/messages`;
   const response = await fetch(url, {
@@ -273,7 +274,7 @@ export async function sendMessage(
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ content, model }),
+    body: JSON.stringify({ content, model, document_ids: documentIds }),
     signal,
   });
 

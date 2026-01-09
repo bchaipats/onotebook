@@ -62,3 +62,12 @@ export function useRetryProcessing(notebookId: string) {
     },
   });
 }
+
+export function useInvalidateDocuments(notebookId: string) {
+  const queryClient = useQueryClient();
+
+  return () => {
+    queryClient.invalidateQueries({ queryKey: ["documents", notebookId] });
+    queryClient.invalidateQueries({ queryKey: ["notebooks"] });
+  };
+}
