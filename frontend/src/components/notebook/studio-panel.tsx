@@ -97,10 +97,10 @@ export function StudioPanel({
             <button
               key={tool.label}
               disabled
-              className="flex items-center gap-2 rounded-xl border bg-background p-3 text-left opacity-60 transition-all hover:bg-muted/50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2.5 rounded-xl border bg-card p-3.5 text-left transition-all hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-70"
             >
               <tool.icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-              <span className="truncate text-xs font-medium">{tool.label}</span>
+              <span className="truncate text-sm">{tool.label}</span>
             </button>
           ))}
         </div>
@@ -117,10 +117,10 @@ export function StudioPanel({
         </div>
       </div>
 
-      <div className="p-3">
+      <div className="flex justify-end p-3">
         <Button
           disabled
-          className="w-full gap-2 rounded-full bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50"
+          className="gap-2 rounded-full bg-foreground px-4 text-background hover:bg-foreground/90 disabled:opacity-50"
         >
           <StickyNote className="h-4 w-4" />
           Add note

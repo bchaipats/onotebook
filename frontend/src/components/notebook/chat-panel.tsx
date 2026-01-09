@@ -42,7 +42,6 @@ export function ChatPanel({ notebookId, selectedSources }: ChatPanelProps) {
   const createSession = useCreateChatSession(notebookId);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
-  // Auto-select first session or create new one
   useEffect(() => {
     if (sessions && sessions.length > 0 && !activeSessionId) {
       setActiveSessionId(sessions[0].id);
@@ -256,11 +255,6 @@ function ChatContent({
     }
   }
 
-  function handleSuggestionClick(suggestion: string) {
-    setInputValue(suggestion);
-    setTimeout(() => handleSend(suggestion), 100);
-  }
-
   const allMessages = messages || [];
   const lastAssistantMessage = allMessages.findLast(
     (m) => m.role === "assistant",
@@ -279,27 +273,19 @@ function ChatContent({
       <div className="flex-1 overflow-y-auto">
         {allMessages.length === 0 && !isStreaming && !stoppedContent ? (
           <div className="flex h-full flex-col items-center justify-center p-8 text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full border-2 border-dashed border-primary/40">
-              <Upload className="h-6 w-6 text-primary/60" />
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/30">
+              <Upload className="h-7 w-7 text-primary/70" />
             </div>
-            <h2 className="mb-2 text-lg font-medium">
+            <h2 className="mb-3 text-lg font-medium">
               Add a source to get started
             </h2>
-            <p className="mb-6 max-w-md text-sm text-muted-foreground">
-              Ask questions about your sources. The AI will reference specific
-              passages to answer.
-            </p>
-            <div className="flex flex-wrap justify-center gap-2">
-              {SUGGESTED_PROMPTS.map((q) => (
-                <button
-                  key={q}
-                  onClick={() => handleSuggestionClick(q)}
-                  className="rounded-full border bg-card px-4 py-2 text-sm transition-all hover:border-primary hover:bg-primary/5 hover:shadow-sm"
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
+            <Button
+              variant="outline"
+              className="rounded-full"
+              onClick={() => {}}
+            >
+              Upload a source
+            </Button>
           </div>
         ) : (
           <div className="mx-auto max-w-3xl space-y-6 p-6">
@@ -415,13 +401,6 @@ function ChatContent({
     </>
   );
 }
-
-const SUGGESTED_PROMPTS = [
-  "What are the main topics covered?",
-  "Summarize the key points",
-  "What questions does this raise?",
-  "Find connections between ideas",
-];
 
 function ChatWelcome({ onCreateSession }: { onCreateSession: () => void }) {
   return (
