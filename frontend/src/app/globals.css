@@ -31,11 +31,16 @@
   --card-notebook: 0 0% 100%; /* white notebook cards */
   --card-create: 250 100% 98%; /* light purple/lavender tint */
   --card-create-border: 250 60% 85%; /* purple border */
+  --tab-active: 234 55% 95%; /* rgb(237, 239, 250) - active tab bg */
+
+  /* Component Heights */
+  --h-button-lg: 2.5rem; /* 40px - pill buttons */
 
   /* Spacing Scale - Larger, more generous */
   --radius: 0.75rem; /* 12px base */
   --radius-card: 1rem; /* 16px for cards */
-  --radius-pill: 1.5rem; /* 24px for pills/input */
+  --radius-pill: 9999px; /* fully rounded pills */
+  --radius-pill-inner: 1.5rem; /* 24px for inner pill items */
 
   /* Shadows - Soft, layered */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -75,6 +80,7 @@
   --card-notebook: 220 13% 18%; /* elevated dark */
   --card-create: 250 30% 15%; /* dark purple tint */
   --card-create-border: 250 40% 35%; /* purple border dark */
+  --tab-active: 234 30% 25%; /* dark mode active tab */
 
   /* Dark mode shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.2);
@@ -108,12 +114,15 @@
   --color-card-notebook: hsl(var(--card-notebook));
   --color-card-create: hsl(var(--card-create));
   --color-card-create-border: hsl(var(--card-create-border));
+  --color-tab-active: hsl(var(--tab-active));
+  --h-button-lg: var(--h-button-lg);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: var(--radius-card);
-  --radius-3xl: var(--radius-pill);
+  --radius-pill: var(--radius-pill);
+  --radius-pill-inner: var(--radius-pill-inner);
   --shadow-sm: var(--shadow-sm);
   --shadow-md: var(--shadow-md);
   --shadow-lg: var(--shadow-lg);

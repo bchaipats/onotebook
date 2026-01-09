@@ -7,6 +7,7 @@ import { EmptyState } from "./empty-state";
 import { CreateNotebookDialog } from "./create-notebook-dialog";
 import { useNotebooks, useCreateNotebook } from "@/hooks/use-notebooks";
 import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +15,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Plus, LayoutGrid, List, ChevronDown, Check } from "lucide-react";
-import { cn } from "@/lib/utils";
 import type { Notebook } from "@/types/api";
 
 interface HomePageProps {
@@ -26,6 +26,7 @@ export function HomePage({ onSelectNotebook, onOpenSettings }: HomePageProps) {
   const { data: notebooks, isLoading } = useNotebooks();
   const createNotebook = useCreateNotebook();
 
+  const [filter, setFilter] = useState<"all" | "recent">("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState<"date" | "name">("date");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -60,50 +61,40 @@ export function HomePage({ onSelectNotebook, onOpenSettings }: HomePageProps) {
 
       <main className="mx-auto max-w-5xl px-6 py-6 md:px-8 md:py-8">
         <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-1">
-            <button className="rounded-full bg-foreground px-5 py-2 text-sm font-medium text-background">
-              All
-            </button>
-            <button className="rounded-full px-5 py-2 text-sm text-muted-foreground">
-              Recent
-            </button>
-          </div>
+          <ToggleGroup
+            type="single"
+            variant="pill"
+            value={filter}
+            onValueChange={(value) =>
+              value && setFilter(value as "all" | "recent")
+            }
+          >
+            <ToggleGroupItem value="all">All</ToggleGroupItem>
+            <ToggleGroupItem value="recent">Recent</ToggleGroupItem>
+          </ToggleGroup>
 
           <div className="flex items-center gap-2">
-            <div className="flex items-center rounded-lg border border-muted-foreground/20 p-1">
-              <button
-                onClick={() => setViewMode("grid")}
-                className={cn(
-                  "flex items-center gap-1 rounded-md px-2 py-1.5",
-                  viewMode === "grid"
-                    ? "text-foreground"
-                    : "text-muted-foreground",
-                )}
-              >
+            <ToggleGroup
+              type="single"
+              variant="outline"
+              value={viewMode}
+              onValueChange={(value) =>
+                value && setViewMode(value as "grid" | "list")
+              }
+            >
+              <ToggleGroupItem value="grid">
                 {viewMode === "grid" && <Check className="h-4 w-4" />}
                 <LayoutGrid className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => setViewMode("list")}
-                className={cn(
-                  "flex items-center gap-1 rounded-md px-2 py-1.5",
-                  viewMode === "list"
-                    ? "text-foreground"
-                    : "text-muted-foreground",
-                )}
-              >
+              </ToggleGroupItem>
+              <ToggleGroupItem value="list">
                 {viewMode === "list" && <Check className="h-4 w-4" />}
                 <List className="h-4 w-4" />
-              </button>
-            </div>
+              </ToggleGroupItem>
+            </ToggleGroup>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="gap-1 text-muted-foreground"
-                >
+                <Button variant="ghost" size="pill" className="text-primary">
                   {sortBy === "name" ? "Name" : "Most recent"}
                   <ChevronDown className="h-4 w-4" />
                 </Button>
@@ -122,10 +113,7 @@ export function HomePage({ onSelectNotebook, onOpenSettings }: HomePageProps) {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button
-              onClick={() => setCreateDialogOpen(true)}
-              className="h-11 gap-2 rounded-full px-5"
-            >
+            <Button size="pill" onClick={() => setCreateDialogOpen(true)}>
               <Plus className="h-4 w-4" />
               Create new
             </Button>
