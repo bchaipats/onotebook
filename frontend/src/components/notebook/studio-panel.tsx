@@ -35,23 +35,50 @@ export function StudioPanel({
   collapsed = false,
   onToggleCollapse,
 }: StudioPanelProps) {
-  // Collapsed state - show only icon strip
   if (collapsed) {
     return (
-      <div
-        className="flex h-full cursor-pointer flex-col items-center py-4"
-        onClick={onToggleCollapse}
-      >
-        <span className="writing-vertical-lr text-sm font-semibold text-muted-foreground">
-          Studio
-        </span>
+      <div className="flex h-full flex-col items-center gap-1 py-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onToggleCollapse}
+          className="h-9 w-9"
+          title="Expand studio"
+        >
+          <PanelLeftOpen className="h-4 w-4" />
+        </Button>
+        <div className="mt-2 flex flex-col items-center gap-1">
+          {STUDIO_TOOLS.map((tool) => (
+            <Button
+              key={tool.label}
+              variant="ghost"
+              size="icon"
+              disabled
+              className="h-9 w-9"
+              title={tool.label}
+            >
+              <tool.icon className="h-4 w-4" />
+            </Button>
+          ))}
+        </div>
+        <div className="mt-auto">
+          <Button
+            variant="ghost"
+            size="icon"
+            disabled
+            className="h-9 w-9"
+            title="Add note"
+          >
+            <StickyNote className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b px-4 py-3">
+      <div className="flex items-center justify-between px-4 py-3">
         <h2 className="font-semibold">Studio</h2>
         <Button
           variant="ghost"
@@ -90,7 +117,7 @@ export function StudioPanel({
         </div>
       </div>
 
-      <div className="border-t p-3">
+      <div className="p-3">
         <Button
           disabled
           className="w-full gap-2 rounded-full bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50"

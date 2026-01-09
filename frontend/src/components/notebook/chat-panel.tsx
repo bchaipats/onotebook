@@ -59,7 +59,7 @@ export function ChatPanel({ notebookId, selectedSources }: ChatPanelProps) {
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex items-center justify-between border-b px-4 py-3">
+      <div className="flex items-center justify-between px-4 py-3">
         <h2 className="font-semibold">Chat</h2>
         <div className="flex items-center gap-1">
           <Button
@@ -365,7 +365,7 @@ function ChatContent({
         </div>
       )}
 
-      <div className="border-t bg-card p-4">
+      <div className="border-t border-border/50 p-4">
         <div className="mx-auto max-w-3xl">
           <div className="flex items-center gap-3 rounded-full border bg-background px-4 py-2 shadow-sm transition-shadow focus-within:shadow-md focus-within:ring-1 focus-within:ring-primary/20">
             <textarea
@@ -407,7 +407,7 @@ function ChatContent({
           </div>
         </div>
       </div>
-      <div className="border-t bg-background py-2 text-center">
+      <div className="border-t border-border/50 py-2 text-center">
         <p className="text-xs text-muted-foreground">
           ONotebook may make mistakes. Consider verifying important information.
         </p>

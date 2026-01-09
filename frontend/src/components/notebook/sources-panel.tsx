@@ -57,20 +57,32 @@ export function SourcesPanel({
 
   if (collapsed) {
     return (
-      <div
-        className="flex h-full cursor-pointer flex-col items-center py-4"
-        onClick={onToggleCollapse}
-      >
-        <span className="writing-vertical-lr rotate-180 text-sm font-semibold text-muted-foreground">
-          Sources
-        </span>
+      <div className="flex h-full flex-col items-center gap-1 py-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onToggleCollapse}
+          className="h-9 w-9"
+          title="Expand sources"
+        >
+          <PanelRightOpen className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsUploadOpen(true)}
+          className="h-9 w-9"
+          title="Add source"
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
       </div>
     );
   }
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b px-4 py-3">
+      <div className="flex items-center justify-between px-4 py-3">
         <h2 className="font-semibold">Sources</h2>
         <Button
           variant="ghost"
