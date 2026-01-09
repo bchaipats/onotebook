@@ -1,5 +1,6 @@
 """ChromaDB vector store for embeddings."""
 
+import contextlib
 from functools import lru_cache
 
 import chromadb
@@ -77,11 +78,8 @@ def search_collection(
 def delete_collection(notebook_id: str) -> None:
     """Delete a notebook's collection."""
     client = get_chroma_client()
-    try:
+    with contextlib.suppress(ValueError):
         client.delete_collection(f"notebook_{notebook_id}")
-    except ValueError:
-        # Collection doesn't exist
-        pass
 
 
 def delete_chunks_from_collection(

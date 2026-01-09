@@ -33,9 +33,7 @@ async def list_notebooks(
 ) -> NotebookListResponse:
     """List all notebooks."""
     notebooks = await service.list_notebooks(session)
-    return NotebookListResponse(
-        notebooks=[notebook_to_response(nb) for nb in notebooks]
-    )
+    return NotebookListResponse(notebooks=[notebook_to_response(nb) for nb in notebooks])
 
 
 @router.post("", response_model=NotebookResponse, status_code=status.HTTP_201_CREATED)

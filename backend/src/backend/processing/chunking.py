@@ -2,8 +2,8 @@
 
 from typing import NamedTuple
 
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 import tiktoken
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from src.backend.config import settings
 
@@ -30,7 +30,4 @@ def chunk_text(text: str) -> list[ChunkData]:
 
     chunks = splitter.split_text(text)
 
-    return [
-        ChunkData(content=chunk, token_count=count_tokens(chunk))
-        for chunk in chunks
-    ]
+    return [ChunkData(content=chunk, token_count=count_tokens(chunk)) for chunk in chunks]

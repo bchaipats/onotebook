@@ -39,7 +39,7 @@ export function NotebookCard({ notebook, onSelect }: NotebookCardProps) {
     if (!editName.trim()) return;
     updateNotebook.mutate(
       { id: notebook.id, data: { name: editName.trim() } },
-      { onSuccess: () => setEditDialogOpen(false) }
+      { onSuccess: () => setEditDialogOpen(false) },
     );
   }
 
@@ -149,7 +149,10 @@ export function NotebookCard({ notebook, onSelect }: NotebookCardProps) {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
               Cancel
             </Button>
             <Button
@@ -186,10 +189,7 @@ function NotebookIcon() {
         fill="#F5C869"
       />
       {/* Fold triangle */}
-      <path
-        d="M32 6V14H40L32 6Z"
-        fill="#D4A853"
-      />
+      <path d="M32 6V14H40L32 6Z" fill="#D4A853" />
       {/* Spine highlight */}
       <path
         d="M8 10C8 7.79086 9.79086 6 12 6H14V42H12C9.79086 42 8 40.2091 8 38V10Z"

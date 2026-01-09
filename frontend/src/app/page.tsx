@@ -15,7 +15,7 @@ export default function Home() {
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedNotebook, setSelectedNotebook] = useState<Notebook | null>(
-    null
+    null,
   );
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [ollamaErrorOpen, setOllamaErrorOpen] = useState(false);
@@ -112,7 +112,9 @@ export default function Home() {
             disabled={isRetrying}
             className="gap-2"
           >
-            <RefreshCw className={`h-4 w-4 ${isRetrying ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`h-4 w-4 ${isRetrying ? "animate-spin" : ""}`}
+            />
             Retry
           </Button>
         </div>

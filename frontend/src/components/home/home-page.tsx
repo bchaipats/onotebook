@@ -36,7 +36,9 @@ export function HomePage({ onSelectNotebook, onOpenSettings }: HomePageProps) {
       if (sortBy === "name") {
         return a.name.localeCompare(b.name);
       }
-      return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+      return (
+        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+      );
     });
   }, [notebooks, sortBy]);
 
@@ -48,7 +50,7 @@ export function HomePage({ onSelectNotebook, onOpenSettings }: HomePageProps) {
           setCreateDialogOpen(false);
           onSelectNotebook(notebook);
         },
-      }
+      },
     );
   }
 
@@ -77,7 +79,9 @@ export function HomePage({ onSelectNotebook, onOpenSettings }: HomePageProps) {
                 onClick={() => setViewMode("grid")}
                 className={cn(
                   "flex items-center gap-1 rounded-md px-2 py-1.5",
-                  viewMode === "grid" ? "text-foreground" : "text-muted-foreground"
+                  viewMode === "grid"
+                    ? "text-foreground"
+                    : "text-muted-foreground",
                 )}
               >
                 {viewMode === "grid" && <Check className="h-4 w-4" />}
@@ -87,7 +91,9 @@ export function HomePage({ onSelectNotebook, onOpenSettings }: HomePageProps) {
                 onClick={() => setViewMode("list")}
                 className={cn(
                   "flex items-center gap-1 rounded-md px-2 py-1.5",
-                  viewMode === "list" ? "text-foreground" : "text-muted-foreground"
+                  viewMode === "list"
+                    ? "text-foreground"
+                    : "text-muted-foreground",
                 )}
               >
                 {viewMode === "list" && <Check className="h-4 w-4" />}
@@ -98,7 +104,11 @@ export function HomePage({ onSelectNotebook, onOpenSettings }: HomePageProps) {
             {/* Sort Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1 text-muted-foreground"
+                >
                   {sortBy === "name" ? "Name" : "Most recent"}
                   <ChevronDown className="h-4 w-4" />
                 </Button>
@@ -106,7 +116,9 @@ export function HomePage({ onSelectNotebook, onOpenSettings }: HomePageProps) {
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => setSortBy("date")}>
                   {sortBy === "date" && <Check className="mr-2 h-4 w-4" />}
-                  <span className={sortBy !== "date" ? "ml-6" : ""}>Most recent</span>
+                  <span className={sortBy !== "date" ? "ml-6" : ""}>
+                    Most recent
+                  </span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setSortBy("name")}>
                   {sortBy === "name" && <Check className="mr-2 h-4 w-4" />}
@@ -130,10 +142,7 @@ export function HomePage({ onSelectNotebook, onOpenSettings }: HomePageProps) {
         {isLoading ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="h-48 animate-pulse rounded-xl bg-muted"
-              />
+              <div key={i} className="h-48 animate-pulse rounded-xl bg-muted" />
             ))}
           </div>
         ) : sortedNotebooks.length > 0 ? (

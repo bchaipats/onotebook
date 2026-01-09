@@ -37,7 +37,9 @@ export function NotebookGrid({
           >
             <div className="col-span-6 flex items-center gap-4">
               <NotebookIconSmall />
-              <span className="font-normal text-foreground">{notebook.name}</span>
+              <span className="font-normal text-foreground">
+                {notebook.name}
+              </span>
             </div>
             <div className="col-span-3 text-center text-sm text-muted-foreground">
               {notebook.document_count} sources
@@ -83,10 +85,7 @@ function NotebookIconSmall() {
         d="M8 10C8 7.79086 9.79086 6 12 6H32L40 14V38C40 40.2091 38.2091 42 36 42H12C9.79086 42 8 40.2091 8 38V10Z"
         fill="#F5C869"
       />
-      <path
-        d="M32 6V14H40L32 6Z"
-        fill="#D4A853"
-      />
+      <path d="M32 6V14H40L32 6Z" fill="#D4A853" />
       <path
         d="M8 10C8 7.79086 9.79086 6 12 6H14V42H12C9.79086 42 8 40.2091 8 38V10Z"
         fill="#E8B84A"

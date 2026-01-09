@@ -1,5 +1,4 @@
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from sqlmodel import Field, Relationship, SQLModel
@@ -10,7 +9,7 @@ def generate_uuid() -> str:
 
 
 def utc_now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class Notebook(SQLModel, table=True):
@@ -18,8 +17,8 @@ class Notebook(SQLModel, table=True):
 
     id: str = Field(default_factory=generate_uuid, primary_key=True)
     name: str = Field(nullable=False, index=True)
-    description: Optional[str] = None
-    color: Optional[str] = None
+    description: str | None = None
+    color: str | None = None
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
 
@@ -42,14 +41,14 @@ class Document(SQLModel, table=True):
     file_type: str = Field(nullable=False)
     file_size: int = Field(nullable=False)
     file_path: str = Field(nullable=False)
-    page_count: Optional[int] = None
+    page_count: int | None = None
     chunk_count: int = Field(default=0)
     processing_status: str = Field(default="pending", index=True)
     processing_progress: int = Field(default=0)  # 0-100 percentage
-    processing_error: Optional[str] = None
+    processing_error: str | None = None
     created_at: datetime = Field(default_factory=utc_now)
 
-    notebook: Optional[Notebook] = Relationship(back_populates="documents")
+    notebook: Notebook | None = Relationship(back_populates="documents")
     chunks: list["Chunk"] = Relationship(
         back_populates="document",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
@@ -64,10 +63,10 @@ class Chunk(SQLModel, table=True):
     chunk_index: int = Field(nullable=False)
     content: str = Field(nullable=False)
     token_count: int = Field(nullable=False)
-    page_number: Optional[int] = None
-    embedding_id: Optional[str] = None
+    page_number: int | None = None
+    embedding_id: str | None = None
 
-    document: Optional[Document] = Relationship(back_populates="chunks")
+    document: Document | None = Relationship(back_populates="chunks")
     message_sources: list["MessageSource"] = Relationship(
         back_populates="chunk",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
@@ -79,11 +78,11 @@ class ChatSession(SQLModel, table=True):
 
     id: str = Field(default_factory=generate_uuid, primary_key=True)
     notebook_id: str = Field(foreign_key="notebook.id", nullable=False, index=True)
-    title: Optional[str] = None
+    title: str | None = None
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
 
-    notebook: Optional[Notebook] = Relationship(back_populates="chat_sessions")
+    notebook: Notebook | None = Relationship(back_populates="chat_sessions")
     messages: list["Message"] = Relationship(
         back_populates="chat_session",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
@@ -94,15 +93,13 @@ class Message(SQLModel, table=True):
     __tablename__ = "message"
 
     id: str = Field(default_factory=generate_uuid, primary_key=True)
-    chat_session_id: str = Field(
-        foreign_key="chat_session.id", nullable=False, index=True
-    )
+    chat_session_id: str = Field(foreign_key="chat_session.id", nullable=False, index=True)
     role: str = Field(nullable=False)  # 'user' or 'assistant'
     content: str = Field(nullable=False)
-    model: Optional[str] = None
+    model: str | None = None
     created_at: datetime = Field(default_factory=utc_now)
 
-    chat_session: Optional[ChatSession] = Relationship(back_populates="messages")
+    chat_session: ChatSession | None = Relationship(back_populates="messages")
     sources: list["MessageSource"] = Relationship(
         back_populates="message",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
@@ -118,8 +115,8 @@ class MessageSource(SQLModel, table=True):
     relevance_score: float = Field(nullable=False)
     citation_index: int = Field(nullable=False)
 
-    message: Optional[Message] = Relationship(back_populates="sources")
-    chunk: Optional[Chunk] = Relationship(back_populates="message_sources")
+    message: Message | None = Relationship(back_populates="sources")
+    chunk: Chunk | None = Relationship(back_populates="message_sources")
 
 
 class Setting(SQLModel, table=True):

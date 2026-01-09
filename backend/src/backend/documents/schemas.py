@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel
 
@@ -10,11 +9,11 @@ class DocumentResponse(BaseModel):
     filename: str
     file_type: str
     file_size: int
-    page_count: Optional[int]
+    page_count: int | None
     chunk_count: int
     processing_status: str
     processing_progress: int
-    processing_error: Optional[str]
+    processing_error: str | None
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -29,7 +28,7 @@ class ChunkResponse(BaseModel):
     chunk_index: int
     content: str
     token_count: int
-    page_number: Optional[int]
+    page_number: int | None
 
     model_config = {"from_attributes": True}
 

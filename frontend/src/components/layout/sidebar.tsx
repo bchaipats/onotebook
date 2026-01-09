@@ -6,7 +6,6 @@ import {
   BookOpen,
   Plus,
   MoreHorizontal,
-  Pencil,
   Trash2,
   FileText,
   Palette,
@@ -69,7 +68,7 @@ function ColorPalette({ selectedColor, onSelectColor }: ColorPaletteProps) {
             "h-8 w-8 rounded-full border-2 transition-transform hover:scale-110",
             selectedColor === color
               ? "border-foreground ring-2 ring-foreground ring-offset-2 ring-offset-background"
-              : "border-transparent"
+              : "border-transparent",
           )}
           style={{ backgroundColor: color }}
           onClick={() => onSelectColor(color)}
@@ -103,14 +102,14 @@ export function Sidebar({
 
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [renamingNotebook, setRenamingNotebook] = useState<Notebook | null>(
-    null
+    null,
   );
   const [renameValue, setRenameValue] = useState("");
   const [renameColor, setRenameColor] = useState(PRESET_COLORS[0]);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingNotebook, setDeletingNotebook] = useState<Notebook | null>(
-    null
+    null,
   );
 
   const [sortBy, setSortBy] = useState<"date" | "name">("date");
@@ -122,7 +121,9 @@ export function Sidebar({
         return a.name.localeCompare(b.name);
       }
       // Sort by date (most recent first)
-      return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+      return (
+        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+      );
     });
   }, [notebooks, sortBy]);
 
@@ -138,14 +139,17 @@ export function Sidebar({
           // Auto-select the newly created notebook
           onSelectNotebook?.(notebook);
         },
-      }
+      },
     );
   }
 
   function handleRenameNotebook() {
     if (!renamingNotebook || !renameValue.trim()) return;
     updateNotebook.mutate(
-      { id: renamingNotebook.id, data: { name: renameValue.trim(), color: renameColor } },
+      {
+        id: renamingNotebook.id,
+        data: { name: renameValue.trim(), color: renameColor },
+      },
       {
         onSuccess: () => {
           setRenamingNotebook(null);
@@ -153,7 +157,7 @@ export function Sidebar({
           setRenameColor(PRESET_COLORS[0]);
           setRenameDialogOpen(false);
         },
-      }
+      },
     );
   }
 
@@ -196,7 +200,7 @@ export function Sidebar({
     <aside
       className={cn(
         "flex h-full w-64 flex-col border-r border-border bg-card",
-        className
+        className,
       )}
     >
       {/* Logo */}
@@ -256,9 +260,7 @@ export function Sidebar({
               </Button>
               <Button
                 onClick={handleCreateNotebook}
-                disabled={
-                  !newNotebookName.trim() || createNotebook.isPending
-                }
+                disabled={!newNotebookName.trim() || createNotebook.isPending}
               >
                 {createNotebook.isPending ? "Creating..." : "Create"}
               </Button>
@@ -273,11 +275,16 @@ export function Sidebar({
         {!isLoading && sortedNotebooks.length > 0 && (
           <div className="flex items-center justify-between px-3 py-2 border-b border-border">
             <span className="text-xs text-muted-foreground font-medium">
-              {sortedNotebooks.length} notebook{sortedNotebooks.length !== 1 ? "s" : ""}
+              {sortedNotebooks.length} notebook
+              {sortedNotebooks.length !== 1 ? "s" : ""}
             </span>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs gap-1"
+                >
                   <ArrowUpDown className="h-3 w-3" />
                   {sortBy === "name" ? "Name" : "Date"}
                 </Button>
@@ -451,7 +458,7 @@ function NotebookItem({
     <div
       className={cn(
         "group flex cursor-pointer items-start gap-2 rounded-md p-2 hover:bg-accent",
-        isSelected && "bg-accent"
+        isSelected && "bg-accent",
       )}
       onClick={onSelect}
     >

@@ -49,7 +49,9 @@ export function NotebookView({ notebook }: NotebookViewProps) {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [previewDocument, setPreviewDocument] = useState<Document | null>(null);
   const [activeTab, setActiveTab] = useState<string>("documents");
-  const [selectedSession, setSelectedSession] = useState<ChatSession | null>(null);
+  const [selectedSession, setSelectedSession] = useState<ChatSession | null>(
+    null,
+  );
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -64,27 +66,31 @@ export function NotebookView({ notebook }: NotebookViewProps) {
     return null;
   }
 
-  async function handleUpload(files: FileList | File[]) {
-    setUploadError(null);
-    const fileArray = Array.from(files);
+  const handleUpload = useCallback(
+    async (files: FileList | File[]) => {
+      setUploadError(null);
+      const fileArray = Array.from(files);
 
-    for (const file of fileArray) {
-      const error = validateFile(file);
-      if (error) {
-        setUploadError(error);
-        showToast(error, "error");
-        continue;
-      }
+      for (const file of fileArray) {
+        const error = validateFile(file);
+        if (error) {
+          setUploadError(error);
+          showToast(error, "error");
+          continue;
+        }
 
-      try {
-        await uploadDocument.mutateAsync(file);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Failed to upload file";
-        setUploadError(errorMessage);
-        showToast(`Upload failed: ${errorMessage}`, "error");
+        try {
+          await uploadDocument.mutateAsync(file);
+        } catch (err) {
+          const errorMessage =
+            err instanceof Error ? err.message : "Failed to upload file";
+          setUploadError(errorMessage);
+          showToast(`Upload failed: ${errorMessage}`, "error");
+        }
       }
-    }
-  }
+    },
+    [uploadDocument],
+  );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -104,7 +110,7 @@ export function NotebookView({ notebook }: NotebookViewProps) {
         handleUpload(e.dataTransfer.files);
       }
     },
-    [handleUpload]
+    [handleUpload],
   );
 
   function handleFileInputChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -136,7 +142,11 @@ export function NotebookView({ notebook }: NotebookViewProps) {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-1 flex-col overflow-hidden">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="flex flex-1 flex-col overflow-hidden"
+      >
         <div className="border-b border-border px-6">
           <TabsList className="h-10">
             <TabsTrigger value="documents" className="gap-2">
@@ -150,14 +160,17 @@ export function NotebookView({ notebook }: NotebookViewProps) {
           </TabsList>
         </div>
 
-        <TabsContent value="documents" className="flex-1 overflow-y-auto p-6 mt-0">
+        <TabsContent
+          value="documents"
+          className="flex-1 overflow-y-auto p-6 mt-0"
+        >
           {/* Upload Zone */}
           <div
             className={cn(
               "relative mb-6 rounded-lg border-2 border-dashed p-8 text-center transition-colors",
               isDragging
                 ? "border-primary bg-primary/5"
-                : "border-border hover:border-muted-foreground"
+                : "border-border hover:border-muted-foreground",
             )}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -206,7 +219,10 @@ export function NotebookView({ notebook }: NotebookViewProps) {
           {isLoading ? (
             <div className="space-y-2">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-16 animate-pulse rounded-md bg-muted" />
+                <div
+                  key={i}
+                  className="h-16 animate-pulse rounded-md bg-muted"
+                />
               ))}
             </div>
           ) : documents && documents.length > 0 ? (
@@ -236,7 +252,10 @@ export function NotebookView({ notebook }: NotebookViewProps) {
           )}
         </TabsContent>
 
-        <TabsContent value="chat" className="flex flex-1 flex-col overflow-hidden mt-0">
+        <TabsContent
+          value="chat"
+          className="flex flex-1 flex-col overflow-hidden mt-0"
+        >
           {/* Model Selector Bar */}
           <div className="flex items-center justify-between border-b border-border px-4 py-2">
             <ModelSelector
@@ -267,9 +286,12 @@ export function NotebookView({ notebook }: NotebookViewProps) {
                 <div className="flex h-full items-center justify-center">
                   <div className="text-center">
                     <MessageSquare className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-                    <h2 className="mb-2 text-lg font-semibold">Select or create a chat</h2>
+                    <h2 className="mb-2 text-lg font-semibold">
+                      Select or create a chat
+                    </h2>
                     <p className="text-sm text-muted-foreground">
-                      Choose a chat session from the sidebar or create a new one.
+                      Choose a chat session from the sidebar or create a new
+                      one.
                     </p>
                   </div>
                 </div>
@@ -313,7 +335,10 @@ function DocumentItem({
           <span className="truncate text-sm font-medium">
             {document.filename}
           </span>
-          <StatusBadge status={document.processing_status} progress={document.processing_progress} />
+          <StatusBadge
+            status={document.processing_status}
+            progress={document.processing_progress}
+          />
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>{formatFileSize(document.file_size)}</span>
@@ -326,14 +351,21 @@ function DocumentItem({
           {document.processing_error && (
             <>
               <span>|</span>
-              <span className="text-destructive">{document.processing_error}</span>
+              <span className="text-destructive">
+                {document.processing_error}
+              </span>
             </>
           )}
         </div>
         {document.processing_status === "processing" && (
           <div className="mt-2 flex items-center gap-2">
-            <Progress value={document.processing_progress} className="h-1.5 flex-1" />
-            <span className="text-xs text-muted-foreground w-8">{document.processing_progress}%</span>
+            <Progress
+              value={document.processing_progress}
+              className="h-1.5 flex-1"
+            />
+            <span className="text-xs text-muted-foreground w-8">
+              {document.processing_progress}%
+            </span>
           </div>
         )}
       </div>
@@ -376,7 +408,13 @@ function DocumentItem({
   );
 }
 
-function StatusBadge({ status, progress }: { status: Document["processing_status"]; progress: number }) {
+function StatusBadge({
+  status,
+  progress,
+}: {
+  status: Document["processing_status"];
+  progress: number;
+}) {
   switch (status) {
     case "pending":
       return (
@@ -389,7 +427,11 @@ function StatusBadge({ status, progress }: { status: Document["processing_status
       return (
         <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
           <Loader2 className="h-3 w-3 animate-spin" />
-          {progress < 33 ? "Extracting" : progress < 66 ? "Chunking" : "Embedding"}
+          {progress < 33
+            ? "Extracting"
+            : progress < 66
+              ? "Chunking"
+              : "Embedding"}
         </span>
       );
     case "ready":

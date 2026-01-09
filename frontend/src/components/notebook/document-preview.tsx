@@ -73,7 +73,10 @@ export function DocumentPreview({
           )}
         </SheetHeader>
 
-        <Tabs defaultValue="preview" className="flex flex-1 flex-col overflow-hidden">
+        <Tabs
+          defaultValue="preview"
+          className="flex flex-1 flex-col overflow-hidden"
+        >
           <TabsList className="w-full justify-start">
             <TabsTrigger value="preview">Preview</TabsTrigger>
             <TabsTrigger value="chunks">Chunks</TabsTrigger>
@@ -93,13 +96,19 @@ export function DocumentPreview({
                     <ReactMarkdown
                       components={{
                         h1: ({ children }) => (
-                          <h1 className="mb-4 mt-6 text-2xl font-bold">{children}</h1>
+                          <h1 className="mb-4 mt-6 text-2xl font-bold">
+                            {children}
+                          </h1>
                         ),
                         h2: ({ children }) => (
-                          <h2 className="mb-3 mt-5 text-xl font-semibold">{children}</h2>
+                          <h2 className="mb-3 mt-5 text-xl font-semibold">
+                            {children}
+                          </h2>
                         ),
                         h3: ({ children }) => (
-                          <h3 className="mb-2 mt-4 text-lg font-semibold">{children}</h3>
+                          <h3 className="mb-2 mt-4 text-lg font-semibold">
+                            {children}
+                          </h3>
                         ),
                         p: ({ children }) => (
                           <p className="mb-3 leading-relaxed">{children}</p>
@@ -110,7 +119,9 @@ export function DocumentPreview({
                         ol: ({ children }) => (
                           <ol className="mb-3 list-decimal pl-6">{children}</ol>
                         ),
-                        li: ({ children }) => <li className="mb-1">{children}</li>,
+                        li: ({ children }) => (
+                          <li className="mb-1">{children}</li>
+                        ),
                         code: ({ children }) => (
                           <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">
                             {children}
@@ -129,7 +140,9 @@ export function DocumentPreview({
                         strong: ({ children }) => (
                           <strong className="font-bold">{children}</strong>
                         ),
-                        em: ({ children }) => <em className="italic">{children}</em>,
+                        em: ({ children }) => (
+                          <em className="italic">{children}</em>
+                        ),
                       }}
                     >
                       {fullContent}

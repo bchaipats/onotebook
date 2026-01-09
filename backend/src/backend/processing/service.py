@@ -77,7 +77,7 @@ async def process_document(session: AsyncSession, document: Document) -> None:
         embeddings = embed_texts(texts)
 
         # Update chunks with embedding info
-        for chunk, embedding in zip(chunk_records, embeddings):
+        for chunk, _ in zip(chunk_records, embeddings, strict=True):
             chunk.embedding_id = chunk.id  # Use chunk ID as embedding ID
 
         # Store in ChromaDB

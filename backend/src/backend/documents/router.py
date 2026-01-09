@@ -48,9 +48,7 @@ async def process_document_background(document_id: str) -> None:
             await process_document(session, document)
 
 
-@router.get(
-    "/notebooks/{notebook_id}/documents", response_model=DocumentListResponse
-)
+@router.get("/notebooks/{notebook_id}/documents", response_model=DocumentListResponse)
 async def list_documents(
     notebook_id: str,
     session: AsyncSession = Depends(get_session),
@@ -64,9 +62,7 @@ async def list_documents(
         )
 
     documents = await service.list_documents(session, notebook_id)
-    return DocumentListResponse(
-        documents=[document_to_response(doc) for doc in documents]
-    )
+    return DocumentListResponse(documents=[document_to_response(doc) for doc in documents])
 
 
 @router.post(
@@ -97,7 +93,7 @@ async def upload_document(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
-        )
+        ) from e
 
 
 @router.get("/documents/{document_id}", response_model=DocumentResponse)

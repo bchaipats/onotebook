@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import BaseModel
 
 
@@ -12,8 +10,8 @@ class SettingsResponse(BaseModel):
 
 
 class SettingsUpdate(BaseModel):
-    theme: Optional[str] = None
-    default_model: Optional[str] = None
-    ollama_url: Optional[str] = None
-    top_k: Optional[int] = None
-    temperature: Optional[float] = None
+    theme: str | None = None
+    default_model: str | None = None
+    ollama_url: str | None = None
+    top_k: int | None = None
+    temperature: float | None = None

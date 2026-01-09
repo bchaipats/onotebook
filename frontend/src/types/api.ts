@@ -32,7 +32,6 @@ export interface Document {
   created_at: string;
 }
 
-
 export interface Chunk {
   id: string;
   chunk_index: number;

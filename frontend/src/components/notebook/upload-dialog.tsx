@@ -19,7 +19,9 @@ const ACCEPTED_TYPES = {
   "application/pdf": [".pdf"],
   "text/plain": [".txt"],
   "text/markdown": [".md"],
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [
+    ".docx",
+  ],
   "text/html": [".html"],
 };
 
@@ -36,7 +38,11 @@ interface UploadDialogProps {
   notebookId: string;
 }
 
-export function UploadDialog({ open, onOpenChange, notebookId }: UploadDialogProps) {
+export function UploadDialog({
+  open,
+  onOpenChange,
+  notebookId,
+}: UploadDialogProps) {
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const invalidateDocuments = useInvalidateDocuments(notebookId);
 
@@ -55,8 +61,8 @@ export function UploadDialog({ open, onOpenChange, notebookId }: UploadDialogPro
               prev.map((f) =>
                 f.name === file.name && f.progress < 90
                   ? { ...f, progress: f.progress + 10 }
-                  : f
-              )
+                  : f,
+              ),
             );
           }, 100);
 
@@ -68,8 +74,8 @@ export function UploadDialog({ open, onOpenChange, notebookId }: UploadDialogPro
             prev.map((f) =>
               f.name === file.name
                 ? { ...f, progress: 100, status: "complete" }
-                : f
-            )
+                : f,
+            ),
           );
 
           invalidateDocuments();
@@ -80,15 +86,16 @@ export function UploadDialog({ open, onOpenChange, notebookId }: UploadDialogPro
                 ? {
                     ...f,
                     status: "error",
-                    error: error instanceof Error ? error.message : "Upload failed",
+                    error:
+                      error instanceof Error ? error.message : "Upload failed",
                   }
-                : f
-            )
+                : f,
+            ),
           );
         }
       }
     },
-    [notebookId, invalidateDocuments]
+    [notebookId, invalidateDocuments],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -99,7 +106,9 @@ export function UploadDialog({ open, onOpenChange, notebookId }: UploadDialogPro
 
   function handleClose() {
     // Only close if no uploads are in progress
-    const hasActiveUploads = uploadingFiles.some((f) => f.status === "uploading");
+    const hasActiveUploads = uploadingFiles.some(
+      (f) => f.status === "uploading",
+    );
     if (!hasActiveUploads) {
       setUploadingFiles([]);
       onOpenChange(false);
@@ -110,7 +119,9 @@ export function UploadDialog({ open, onOpenChange, notebookId }: UploadDialogPro
     setUploadingFiles((prev) => prev.filter((f) => f.name !== name));
   }
 
-  const completedCount = uploadingFiles.filter((f) => f.status === "complete").length;
+  const completedCount = uploadingFiles.filter(
+    (f) => f.status === "complete",
+  ).length;
   const totalCount = uploadingFiles.length;
 
   return (
@@ -124,7 +135,8 @@ export function UploadDialog({ open, onOpenChange, notebookId }: UploadDialogPro
 
         <DialogTitle className="text-2xl font-bold">Add sources</DialogTitle>
         <DialogDescription className="mb-6 mt-1">
-          Sources let ONotebook base its responses on the information that matters to you.
+          Sources let ONotebook base its responses on the information that
+          matters to you.
         </DialogDescription>
 
         {/* Drop zone */}
@@ -134,7 +146,7 @@ export function UploadDialog({ open, onOpenChange, notebookId }: UploadDialogPro
             "cursor-pointer rounded-2xl border-2 border-dashed p-12 text-center transition-all duration-200",
             isDragActive
               ? "scale-[1.02] border-primary bg-primary/5"
-              : "border-border hover:border-muted-foreground"
+              : "border-border hover:border-muted-foreground",
           )}
         >
           <input {...getInputProps()} />
@@ -181,7 +193,9 @@ export function UploadDialog({ open, onOpenChange, notebookId }: UploadDialogPro
                     <Progress value={file.progress} className="mt-1 h-1" />
                   )}
                   {file.status === "error" && (
-                    <p className="mt-1 text-xs text-destructive">{file.error}</p>
+                    <p className="mt-1 text-xs text-destructive">
+                      {file.error}
+                    </p>
                   )}
                 </div>
               </div>

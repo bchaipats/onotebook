@@ -36,7 +36,8 @@ interface ChatPanelProps {
 }
 
 export function ChatPanel({ notebookId, selectedSources }: ChatPanelProps) {
-  const { data: sessions, isLoading: sessionsLoading } = useChatSessions(notebookId);
+  const { data: sessions, isLoading: sessionsLoading } =
+    useChatSessions(notebookId);
   const createSession = useCreateChatSession(notebookId);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
@@ -99,7 +100,11 @@ interface ChatContentProps {
   selectedSources: Set<string>;
 }
 
-function ChatContent({ sessionId, notebookId, selectedSources }: ChatContentProps) {
+function ChatContent({
+  sessionId,
+  notebookId,
+  selectedSources,
+}: ChatContentProps) {
   const { data: messages, isLoading } = useMessages(sessionId);
   const invalidateMessages = useInvalidateMessages(sessionId);
   const invalidateSessions = useInvalidateChatSessions(notebookId);
@@ -110,8 +115,12 @@ function ChatContent({ sessionId, notebookId, selectedSources }: ChatContentProp
   const [stoppedContent, setStoppedContent] = useState("");
   const [currentSources, setCurrentSources] = useState<SourceInfo[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [highlightedCitation, setHighlightedCitation] = useState<number | null>(null);
-  const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
+  const [highlightedCitation, setHighlightedCitation] = useState<number | null>(
+    null,
+  );
+  const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(
+    null,
+  );
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -155,7 +164,7 @@ function ChatContent({ sessionId, notebookId, selectedSources }: ChatContentProp
           break;
       }
     },
-    [invalidateMessages, invalidateSessions]
+    [invalidateMessages, invalidateSessions],
   );
 
   async function handleSend(retryContent?: string) {
@@ -176,7 +185,8 @@ function ChatContent({ sessionId, notebookId, selectedSources }: ChatContentProp
     abortControllerRef.current = new AbortController();
 
     // Pass selected document IDs for filtering
-    const documentIds = selectedSources.size > 0 ? Array.from(selectedSources) : undefined;
+    const documentIds =
+      selectedSources.size > 0 ? Array.from(selectedSources) : undefined;
 
     try {
       await sendMessage(
@@ -185,7 +195,7 @@ function ChatContent({ sessionId, notebookId, selectedSources }: ChatContentProp
         null, // model - use default
         handleEvent,
         abortControllerRef.current.signal,
-        documentIds
+        documentIds,
       );
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") {
@@ -226,7 +236,11 @@ function ChatContent({ sessionId, notebookId, selectedSources }: ChatContentProp
     abortControllerRef.current = new AbortController();
 
     try {
-      await regenerateMessage(messageId, handleEvent, abortControllerRef.current.signal);
+      await regenerateMessage(
+        messageId,
+        handleEvent,
+        abortControllerRef.current.signal,
+      );
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") {
         if (stoppedByUserRef.current) {
@@ -254,7 +268,9 @@ function ChatContent({ sessionId, notebookId, selectedSources }: ChatContentProp
   }
 
   const allMessages = messages || [];
-  const lastAssistantMessage = allMessages.findLast((m) => m.role === "assistant");
+  const lastAssistantMessage = allMessages.findLast(
+    (m) => m.role === "assistant",
+  );
 
   if (isLoading) {
     return (
@@ -275,7 +291,8 @@ function ChatContent({ sessionId, notebookId, selectedSources }: ChatContentProp
             </div>
             <h2 className="mb-2 text-xl font-semibold">Start a conversation</h2>
             <p className="mb-8 max-w-md text-muted-foreground">
-              Ask questions about your sources. The AI will reference specific passages to answer.
+              Ask questions about your sources. The AI will reference specific
+              passages to answer.
             </p>
             <div className="flex flex-wrap justify-center gap-2">
               {SUGGESTED_PROMPTS.map((q) => (
@@ -308,9 +325,7 @@ function ChatContent({ sessionId, notebookId, selectedSources }: ChatContentProp
             {isStreaming && streamingContent && (
               <StreamingMessage content={streamingContent} />
             )}
-            {isStreaming && !streamingContent && (
-              <ThinkingIndicator />
-            )}
+            {isStreaming && !streamingContent && <ThinkingIndicator />}
             {!isStreaming && stoppedContent && (
               <StoppedMessage content={stoppedContent} />
             )}
@@ -397,7 +412,8 @@ function ChatContent({ sessionId, notebookId, selectedSources }: ChatContentProp
             </div>
           </div>
           <p className="mt-3 text-center text-xs text-muted-foreground">
-            ONotebook may make mistakes. Consider verifying important information.
+            ONotebook may make mistakes. Consider verifying important
+            information.
           </p>
         </div>
       </div>
@@ -436,7 +452,11 @@ interface MessageBubbleProps {
   onCitationClick?: (index: number) => void;
 }
 
-function MessageBubble({ message, onRegenerate, onCitationClick }: MessageBubbleProps) {
+function MessageBubble({
+  message,
+  onRegenerate,
+  onCitationClick,
+}: MessageBubbleProps) {
   const isUser = message.role === "user";
 
   return (
@@ -444,16 +464,21 @@ function MessageBubble({ message, onRegenerate, onCitationClick }: MessageBubble
       <div
         className={cn(
           "flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-medium",
-          isUser ? "bg-user-avatar text-white" : "bg-primary/10 text-primary"
+          isUser ? "bg-user-avatar text-white" : "bg-primary/10 text-primary",
         )}
       >
         {isUser ? "U" : <Bot className="h-5 w-5" />}
       </div>
-      <div className={cn("max-w-[85%] flex-1", isUser && "flex flex-col items-end")}>
+      <div
+        className={cn(
+          "max-w-[85%] flex-1",
+          isUser && "flex flex-col items-end",
+        )}
+      >
         <div
           className={cn(
             "group inline-block rounded-2xl px-4 py-3",
-            isUser ? "bg-muted text-foreground" : "bg-transparent"
+            isUser ? "bg-muted text-foreground" : "bg-transparent",
           )}
         >
           <div className="prose prose-sm max-w-none dark:prose-invert">
@@ -490,7 +515,12 @@ function MessageBubble({ message, onRegenerate, onCitationClick }: MessageBubble
           </div>
           {onRegenerate && (
             <div className="mt-2 flex justify-end opacity-0 transition-opacity group-hover:opacity-100">
-              <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={onRegenerate}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 gap-1 text-xs"
+                onClick={onRegenerate}
+              >
                 <RefreshCw className="h-3 w-3" />
                 Regenerate
               </Button>
@@ -562,13 +592,21 @@ function StoppedMessage({ content }: { content: string }) {
         <div className="prose prose-sm max-w-none dark:prose-invert">
           <ReactMarkdown>{content}</ReactMarkdown>
         </div>
-        <div className="mt-2 text-xs italic text-muted-foreground">Generation stopped</div>
+        <div className="mt-2 text-xs italic text-muted-foreground">
+          Generation stopped
+        </div>
       </div>
     </div>
   );
 }
 
-function CodeBlock({ language, children }: { language?: string; children: string }) {
+function CodeBlock({
+  language,
+  children,
+}: {
+  language?: string;
+  children: string;
+}) {
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {
@@ -589,7 +627,11 @@ function CodeBlock({ language, children }: { language?: string; children: string
         style={oneDark}
         language={language || "text"}
         PreTag="div"
-        customStyle={{ margin: 0, borderRadius: "0.5rem", fontSize: "0.875rem" }}
+        customStyle={{
+          margin: 0,
+          borderRadius: "0.5rem",
+          fontSize: "0.875rem",
+        }}
       >
         {children}
       </SyntaxHighlighter>
@@ -597,7 +639,13 @@ function CodeBlock({ language, children }: { language?: string; children: string
   );
 }
 
-function CitationLink({ index, onClick }: { index: number; onClick: (index: number) => void }) {
+function CitationLink({
+  index,
+  onClick,
+}: {
+  index: number;
+  onClick: (index: number) => void;
+}) {
   return (
     <button
       onClick={() => onClick(index)}
@@ -608,7 +656,10 @@ function CitationLink({ index, onClick }: { index: number; onClick: (index: numb
   );
 }
 
-function processTextWithCitations(text: string, onCitationClick: (index: number) => void): React.ReactNode[] {
+function processTextWithCitations(
+  text: string,
+  onCitationClick: (index: number) => void,
+): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
   const citationRegex = /\[(\d+)\]/g;
   let lastIndex = 0;
@@ -619,7 +670,13 @@ function processTextWithCitations(text: string, onCitationClick: (index: number)
       parts.push(text.slice(lastIndex, match.index));
     }
     const citationIndex = parseInt(match[1], 10);
-    parts.push(<CitationLink key={`citation-${match.index}`} index={citationIndex} onClick={onCitationClick} />);
+    parts.push(
+      <CitationLink
+        key={`citation-${match.index}`}
+        index={citationIndex}
+        onClick={onCitationClick}
+      />,
+    );
     lastIndex = match.index + match[0].length;
   }
 
@@ -630,11 +687,18 @@ function processTextWithCitations(text: string, onCitationClick: (index: number)
   return parts.length > 0 ? parts : [text];
 }
 
-function processChildren(children: React.ReactNode, onCitationClick: (index: number) => void): React.ReactNode {
+function processChildren(
+  children: React.ReactNode,
+  onCitationClick: (index: number) => void,
+): React.ReactNode {
   return React.Children.map(children, (child, idx) => {
     if (typeof child === "string") {
       const processed = processTextWithCitations(child, onCitationClick);
-      return processed.length === 1 && typeof processed[0] === "string" ? child : <React.Fragment key={idx}>{processed}</React.Fragment>;
+      return processed.length === 1 && typeof processed[0] === "string" ? (
+        child
+      ) : (
+        <React.Fragment key={idx}>{processed}</React.Fragment>
+      );
     }
     return child;
   });
@@ -646,16 +710,31 @@ interface SourcesPanelProps {
   onClearHighlight: () => void;
 }
 
-function SourcesPanel({ sources, highlightedCitation, onClearHighlight }: SourcesPanelProps) {
+function SourcesPanel({
+  sources,
+  highlightedCitation,
+  onClearHighlight,
+}: SourcesPanelProps) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const sourceRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
   useEffect(() => {
-    if (highlightedCitation !== null && sourceRefs.current[highlightedCitation]) {
-      sourceRefs.current[highlightedCitation]?.scrollIntoView({ behavior: "smooth", block: "center" });
-      const highlightedSource = sources.find((s) => s.citation_index === highlightedCitation);
+    if (
+      highlightedCitation !== null &&
+      sourceRefs.current[highlightedCitation]
+    ) {
+      sourceRefs.current[highlightedCitation]?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      const highlightedSource = sources.find(
+        (s) => s.citation_index === highlightedCitation,
+      );
       if (highlightedSource) {
-        setExpanded((prev) => ({ ...prev, [highlightedSource.chunk_id]: true }));
+        setExpanded((prev) => ({
+          ...prev,
+          [highlightedSource.chunk_id]: true,
+        }));
       }
       const timeout = setTimeout(() => onClearHighlight(), 3000);
       return () => clearTimeout(timeout);
@@ -677,11 +756,25 @@ function SourcesPanel({ sources, highlightedCitation, onClearHighlight }: Source
                 }}
                 className={cn(
                   "rounded-xl border p-3 transition-all duration-300",
-                  isHighlighted ? "border-primary bg-primary/5 ring-2 ring-primary ring-offset-2" : "border-border bg-card"
+                  isHighlighted
+                    ? "border-primary bg-primary/5 ring-2 ring-primary ring-offset-2"
+                    : "border-border bg-card",
                 )}
               >
-                <div className="flex cursor-pointer items-center gap-2" onClick={() => setExpanded((prev) => ({ ...prev, [source.chunk_id]: !prev[source.chunk_id] }))}>
-                  {expanded[source.chunk_id] ? <ChevronDown className="h-4 w-4 shrink-0" /> : <ChevronRight className="h-4 w-4 shrink-0" />}
+                <div
+                  className="flex cursor-pointer items-center gap-2"
+                  onClick={() =>
+                    setExpanded((prev) => ({
+                      ...prev,
+                      [source.chunk_id]: !prev[source.chunk_id],
+                    }))
+                  }
+                >
+                  {expanded[source.chunk_id] ? (
+                    <ChevronDown className="h-4 w-4 shrink-0" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 shrink-0" />
+                  )}
                   <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
                   <span className="flex-1 truncate text-sm font-medium">
                     [{source.citation_index}] {source.document_name}
@@ -690,8 +783,16 @@ function SourcesPanel({ sources, highlightedCitation, onClearHighlight }: Source
                     {Math.round(source.relevance_score * 100)}%
                   </span>
                 </div>
-                {expanded[source.chunk_id] && <div className="mt-2 text-sm text-muted-foreground">{source.content}</div>}
-                {!expanded[source.chunk_id] && <p className="mt-1 truncate text-xs text-muted-foreground">{source.content}</p>}
+                {expanded[source.chunk_id] && (
+                  <div className="mt-2 text-sm text-muted-foreground">
+                    {source.content}
+                  </div>
+                )}
+                {!expanded[source.chunk_id] && (
+                  <p className="mt-1 truncate text-xs text-muted-foreground">
+                    {source.content}
+                  </p>
+                )}
               </div>
             );
           })}

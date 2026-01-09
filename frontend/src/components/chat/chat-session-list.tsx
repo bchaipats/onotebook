@@ -18,7 +18,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { useChatSessions, useCreateChatSession, useDeleteChatSession } from "@/hooks/use-chat";
+import {
+  useChatSessions,
+  useCreateChatSession,
+  useDeleteChatSession,
+} from "@/hooks/use-chat";
 import type { ChatSession } from "@/types/api";
 
 interface ChatSessionListProps {
@@ -37,7 +41,9 @@ export function ChatSessionList({
   const deleteSession = useDeleteChatSession(notebookId);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deletingSession, setDeletingSession] = useState<ChatSession | null>(null);
+  const [deletingSession, setDeletingSession] = useState<ChatSession | null>(
+    null,
+  );
 
   async function handleCreateSession() {
     const session = await createSession.mutateAsync(undefined);
@@ -88,7 +94,7 @@ export function ChatSessionList({
                 key={session.id}
                 className={cn(
                   "group flex cursor-pointer items-center gap-2 rounded-md p-2 hover:bg-accent",
-                  selectedSessionId === session.id && "bg-accent"
+                  selectedSessionId === session.id && "bg-accent",
                 )}
                 onClick={() => onSelectSession(session)}
               >

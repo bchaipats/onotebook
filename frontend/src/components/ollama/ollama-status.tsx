@@ -9,14 +9,19 @@ interface OllamaStatusProps {
   showLabel?: boolean;
 }
 
-export function OllamaStatus({ className, showLabel = true }: OllamaStatusProps) {
+export function OllamaStatus({
+  className,
+  showLabel = true,
+}: OllamaStatusProps) {
   const { data, isLoading, isError } = useOllamaStatus();
 
   if (isLoading) {
     return (
       <div className={cn("flex items-center gap-2 text-sm", className)}>
         <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
-        {showLabel && <span className="text-muted-foreground">Checking...</span>}
+        {showLabel && (
+          <span className="text-muted-foreground">Checking...</span>
+        )}
       </div>
     );
   }
@@ -39,11 +44,13 @@ export function OllamaStatus({ className, showLabel = true }: OllamaStatusProps)
           "h-3 w-3",
           isConnected
             ? "fill-green-500 text-green-500"
-            : "fill-red-500 text-red-500"
+            : "fill-red-500 text-red-500",
         )}
       />
       {showLabel && (
-        <span className={isConnected ? "text-muted-foreground" : "text-destructive"}>
+        <span
+          className={isConnected ? "text-muted-foreground" : "text-destructive"}
+        >
           Ollama {isConnected ? "Connected" : "Disconnected"}
         </span>
       )}

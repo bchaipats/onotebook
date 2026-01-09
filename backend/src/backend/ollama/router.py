@@ -35,7 +35,7 @@ async def list_models() -> ModelListResponse:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=f"Failed to connect to Ollama: {str(e)}",
-        )
+        ) from e
 
 
 @router.get("/{model_name}")
@@ -55,7 +55,7 @@ async def get_model(model_name: str) -> dict:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=f"Failed to connect to Ollama: {str(e)}",
-        )
+        ) from e
 
 
 @router.post("/pull")

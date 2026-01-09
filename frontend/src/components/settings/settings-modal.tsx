@@ -1,7 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Monitor, Moon, Sun, ExternalLink, Download, Loader2, CheckCircle2, XCircle } from "lucide-react";
+import {
+  Monitor,
+  Moon,
+  Sun,
+  ExternalLink,
+  Download,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -47,7 +56,9 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
 
   // Model pulling state
   const [modelToPull, setModelToPull] = useState("");
-  const [pullProgress, setPullProgress] = useState<PullProgressEvent | null>(null);
+  const [pullProgress, setPullProgress] = useState<PullProgressEvent | null>(
+    null,
+  );
   const [pullError, setPullError] = useState<string | null>(null);
   const [pullComplete, setPullComplete] = useState(false);
   const pullModel = usePullModel();

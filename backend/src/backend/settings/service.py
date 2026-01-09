@@ -8,7 +8,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.backend.config import settings as app_settings
 from src.backend.models import Setting
 
-
 DEFAULT_SETTINGS = {
     "theme": "system",
     "default_model": app_settings.default_llm_model,

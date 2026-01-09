@@ -5,7 +5,6 @@ import {
   deleteNotebook,
   updateNotebook,
 } from "@/lib/api";
-import type { Notebook } from "@/types/api";
 
 export function useNotebooks() {
   return useQuery({

@@ -15,7 +15,7 @@ import type {
 class ApiError extends Error {
   constructor(
     public status: number,
-    message: string
+    message: string,
   ) {
     super(message);
     this.name = "ApiError";
@@ -24,7 +24,7 @@ class ApiError extends Error {
 
 async function request<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
   const response = await fetch(url, {
@@ -69,7 +69,7 @@ export async function createNotebook(data: {
 
 export async function updateNotebook(
   id: string,
-  data: { name?: string; color?: string }
+  data: { name?: string; color?: string },
 ): Promise<Notebook> {
   return request<Notebook>(`/api/notebooks/${id}`, {
     method: "PUT",
@@ -93,14 +93,14 @@ interface DocumentsResponse {
 
 export async function getDocuments(notebookId: string): Promise<Document[]> {
   const response = await request<DocumentsResponse>(
-    `/api/notebooks/${notebookId}/documents`
+    `/api/notebooks/${notebookId}/documents`,
   );
   return response.documents;
 }
 
 export async function uploadDocument(
   notebookId: string,
-  file: File
+  file: File,
 ): Promise<Document> {
   const formData = new FormData();
   formData.append("file", file);
@@ -141,7 +141,7 @@ interface ChunksResponse {
 
 export async function getChunks(documentId: string): Promise<Chunk[]> {
   const response = await request<ChunksResponse>(
-    `/api/documents/${documentId}/chunks`
+    `/api/documents/${documentId}/chunks`,
   );
   return response.chunks;
 }
@@ -180,7 +180,7 @@ export interface PullProgressEvent {
 
 export async function pullModel(
   modelName: string,
-  onProgress: (event: PullProgressEvent) => void
+  onProgress: (event: PullProgressEvent) => void,
 ): Promise<void> {
   const url = `${API_BASE_URL}/api/models/pull`;
   const response = await fetch(url, {
@@ -226,16 +226,18 @@ export async function pullModel(
 
 // Chat API
 
-export async function getChatSessions(notebookId: string): Promise<ChatSession[]> {
+export async function getChatSessions(
+  notebookId: string,
+): Promise<ChatSession[]> {
   const response = await request<ChatSessionsResponse>(
-    `/api/notebooks/${notebookId}/sessions`
+    `/api/notebooks/${notebookId}/sessions`,
   );
   return response.sessions;
 }
 
 export async function createChatSession(
   notebookId: string,
-  title?: string
+  title?: string,
 ): Promise<ChatSession> {
   return request<ChatSession>(`/api/notebooks/${notebookId}/sessions`, {
     method: "POST",
@@ -255,7 +257,7 @@ export async function deleteChatSession(sessionId: string): Promise<void> {
 
 export async function getMessages(sessionId: string): Promise<ChatMessage[]> {
   const response = await request<MessagesResponse>(
-    `/api/sessions/${sessionId}/messages`
+    `/api/sessions/${sessionId}/messages`,
   );
   return response.messages;
 }
@@ -266,7 +268,7 @@ export async function sendMessage(
   model: string | null,
   onEvent: (event: StreamEvent) => void,
   signal?: AbortSignal,
-  documentIds?: string[]
+  documentIds?: string[],
 ): Promise<void> {
   const url = `${API_BASE_URL}/api/sessions/${sessionId}/messages`;
   const response = await fetch(url, {
@@ -314,7 +316,7 @@ export async function sendMessage(
 export async function regenerateMessage(
   messageId: string,
   onEvent: (event: StreamEvent) => void,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<void> {
   const url = `${API_BASE_URL}/api/messages/${messageId}/regenerate`;
   const response = await fetch(url, {
@@ -357,13 +359,15 @@ export async function regenerateMessage(
 
 // Settings API
 
-import type { Settings, ThemeSetting } from "@/types/api";
+import type { Settings } from "@/types/api";
 
 export async function getSettings(): Promise<Settings> {
   return request<Settings>("/api/settings");
 }
 
-export async function updateSettings(settings: Partial<Settings>): Promise<Settings> {
+export async function updateSettings(
+  settings: Partial<Settings>,
+): Promise<Settings> {
   return request<Settings>("/api/settings", {
     method: "PUT",
     body: JSON.stringify(settings),

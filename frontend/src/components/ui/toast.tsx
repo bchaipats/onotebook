@@ -57,13 +57,18 @@ export function Toaster() {
           key={toast.id}
           className={cn(
             "flex items-center gap-2 rounded-lg px-4 py-3 shadow-lg animate-in slide-in-from-right-full",
-            toast.type === "error" && "bg-destructive text-destructive-foreground",
+            toast.type === "error" &&
+              "bg-destructive text-destructive-foreground",
             toast.type === "success" && "bg-green-600 text-white",
-            toast.type === "info" && "bg-primary text-primary-foreground"
+            toast.type === "info" && "bg-primary text-primary-foreground",
           )}
         >
-          {toast.type === "error" && <AlertCircle className="h-4 w-4 shrink-0" />}
-          {toast.type === "success" && <CheckCircle className="h-4 w-4 shrink-0" />}
+          {toast.type === "error" && (
+            <AlertCircle className="h-4 w-4 shrink-0" />
+          )}
+          {toast.type === "success" && (
+            <CheckCircle className="h-4 w-4 shrink-0" />
+          )}
           {toast.type === "info" && <Info className="h-4 w-4 shrink-0" />}
           <span className="text-sm font-medium">{toast.message}</span>
           <button
@@ -75,6 +80,6 @@ export function Toaster() {
         </div>
       ))}
     </div>,
-    document.body
+    document.body,
   );
 }

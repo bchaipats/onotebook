@@ -12,13 +12,11 @@ from src.backend.chat.schemas import (
     MessageListResponse,
     MessageResponse,
     SendMessageRequest,
-    SourceInfo,
 )
 from src.backend.config import settings
 from src.backend.database import async_session, get_session
 from src.backend.embedding.service import embed_query
 from src.backend.embedding.vectorstore import search_collection
-from src.backend.models import utc_now
 from src.backend.notebooks.service import get_notebook
 from src.backend.ollama.service import chat as ollama_chat
 
@@ -63,9 +61,7 @@ async def list_sessions(
         )
 
     sessions = await service.list_sessions(session, notebook_id)
-    return ChatSessionListResponse(
-        sessions=[session_to_response(s) for s in sessions]
-    )
+    return ChatSessionListResponse(sessions=[session_to_response(s) for s in sessions])
 
 
 @router.post(
@@ -134,9 +130,7 @@ async def get_messages(
         )
 
     messages = await service.get_messages(session, session_id)
-    return MessageListResponse(
-        messages=[message_to_response(m) for m in messages]
-    )
+    return MessageListResponse(messages=[message_to_response(m) for m in messages])
 
 
 def build_rag_prompt(question: str, sources: list[dict]) -> str:
@@ -174,7 +168,7 @@ async def send_message(
     model = request.model or settings.default_llm_model
 
     # Save user message
-    user_message = await service.create_message(
+    await service.create_message(
         db_session,
         session_id,
         role="user",
@@ -212,14 +206,16 @@ async def send_message(
                     distance = distances[i] if i < len(distances) else 1.0
                     relevance_score = 1.0 - distance
 
-                    sources.append({
-                        "chunk_id": chunk_id,
-                        "document_id": metadata.get("document_id", ""),
-                        "document_name": metadata.get("document_name", ""),
-                        "content": content,
-                        "relevance_score": round(relevance_score, 4),
-                        "citation_index": i + 1,
-                    })
+                    sources.append(
+                        {
+                            "chunk_id": chunk_id,
+                            "document_id": metadata.get("document_id", ""),
+                            "document_name": metadata.get("document_name", ""),
+                            "content": content,
+                            "relevance_score": round(relevance_score, 4),
+                            "citation_index": i + 1,
+                        }
+                    )
 
             # Send sources first
             yield f"data: {json.dumps({'type': 'sources', 'sources': sources})}\n\n"
@@ -231,15 +227,19 @@ async def send_message(
             messages_history = await service.get_messages(db_session, session_id)
             ollama_messages = []
             for msg in messages_history[:-1]:  # Exclude the just-added user message
-                ollama_messages.append({
-                    "role": msg.role,
-                    "content": msg.content,
-                })
+                ollama_messages.append(
+                    {
+                        "role": msg.role,
+                        "content": msg.content,
+                    }
+                )
             # Add current message with RAG context
-            ollama_messages.append({
-                "role": "user",
-                "content": prompt,
-            })
+            ollama_messages.append(
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            )
 
             # Stream response from Ollama
             full_response = ""
@@ -335,10 +335,6 @@ async def regenerate_message(
         )
 
     # Regenerate using the last user message
-    request = SendMessageRequest(content=last_user_message.content, model=message.model)
-
-    # We need to temporarily remove the last user message since send_message will add it
-    # Actually, let's just generate inline here
 
     notebook_id = chat_session.notebook_id
     model = message.model or settings.default_llm_model
@@ -368,14 +364,16 @@ async def regenerate_message(
                     distance = distances[i] if i < len(distances) else 1.0
                     relevance_score = 1.0 - distance
 
-                    sources.append({
-                        "chunk_id": chunk_id,
-                        "document_id": metadata.get("document_id", ""),
-                        "document_name": metadata.get("document_name", ""),
-                        "content": content,
-                        "relevance_score": round(relevance_score, 4),
-                        "citation_index": i + 1,
-                    })
+                    sources.append(
+                        {
+                            "chunk_id": chunk_id,
+                            "document_id": metadata.get("document_id", ""),
+                            "document_name": metadata.get("document_name", ""),
+                            "content": content,
+                            "relevance_score": round(relevance_score, 4),
+                            "citation_index": i + 1,
+                        }
+                    )
 
             # Send sources first
             yield f"data: {json.dumps({'type': 'sources', 'sources': sources})}\n\n"
@@ -389,15 +387,19 @@ async def regenerate_message(
             for msg in messages_history:
                 if msg.id == last_user_message.id:
                     # Use RAG prompt for this message
-                    ollama_messages.append({
-                        "role": "user",
-                        "content": prompt,
-                    })
+                    ollama_messages.append(
+                        {
+                            "role": "user",
+                            "content": prompt,
+                        }
+                    )
                 else:
-                    ollama_messages.append({
-                        "role": msg.role,
-                        "content": msg.content,
-                    })
+                    ollama_messages.append(
+                        {
+                            "role": msg.role,
+                            "content": msg.content,
+                        }
+                    )
 
             # Stream response from Ollama
             full_response = ""

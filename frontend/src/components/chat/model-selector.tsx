@@ -12,11 +12,16 @@ import { useModels } from "@/hooks/use-ollama";
 import { cn } from "@/lib/utils";
 
 interface ModelSelectorProps {
-  selectedModel: string | null;
-  onSelectModel: (model: string) => void;
+  selectedModel?: string | null;
+  onSelectModel?: (model: string) => void;
+  className?: string;
 }
 
-export function ModelSelector({ selectedModel, onSelectModel }: ModelSelectorProps) {
+export function ModelSelector({
+  selectedModel,
+  onSelectModel,
+  className,
+}: ModelSelectorProps) {
   const { data: models, isLoading, error } = useModels();
 
   if (error) {
@@ -34,7 +39,7 @@ export function ModelSelector({ selectedModel, onSelectModel }: ModelSelectorPro
         <Button
           variant="outline"
           size="sm"
-          className="h-8 gap-2"
+          className={cn("h-8 gap-2", className)}
           disabled={isLoading}
         >
           <Cpu className="h-4 w-4" />
@@ -49,10 +54,10 @@ export function ModelSelector({ selectedModel, onSelectModel }: ModelSelectorPro
           models.map((model) => (
             <DropdownMenuItem
               key={model.name}
-              onClick={() => onSelectModel(model.name)}
+              onClick={() => onSelectModel?.(model.name)}
               className={cn(
                 "flex flex-col items-start gap-0.5",
-                selectedModel === model.name && "bg-accent"
+                selectedModel === model.name && "bg-accent",
               )}
             >
               <span className="font-medium">{model.name}</span>
@@ -63,9 +68,7 @@ export function ModelSelector({ selectedModel, onSelectModel }: ModelSelectorPro
             </DropdownMenuItem>
           ))
         ) : (
-          <DropdownMenuItem disabled>
-            No models available
-          </DropdownMenuItem>
+          <DropdownMenuItem disabled>No models available</DropdownMenuItem>
         )}
       </DropdownMenuContent>
     </DropdownMenu>

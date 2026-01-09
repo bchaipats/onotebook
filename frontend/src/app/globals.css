@@ -3,39 +3,41 @@
 
 :root {
   /* Core Colors - Warm, approachable NotebookLM palette */
-  --background: 210 17% 98%;        /* #f8f9fa - warm gray */
-  --foreground: 220 13% 13%;        /* #202124 - soft black */
-  --card: 0 0% 100%;                /* pure white cards */
+  --background: 210 17% 98%; /* #f8f9fa - warm gray */
+  --foreground: 220 13% 13%; /* #202124 - soft black */
+  --card: 0 0% 100%; /* pure white cards */
   --card-foreground: 220 13% 13%;
   --popover: 0 0% 100%;
   --popover-foreground: 220 13% 13%;
-  --primary: 217 91% 60%;           /* #4285f4 - Google blue */
+  --primary: 217 91% 60%; /* #4285f4 - Google blue */
   --primary-foreground: 0 0% 100%;
-  --secondary: 210 17% 95%;         /* #eef0f2 */
+  --secondary: 210 17% 95%; /* #eef0f2 */
   --secondary-foreground: 220 13% 13%;
   --muted: 210 17% 95%;
-  --muted-foreground: 220 9% 46%;   /* #5f6368 - gray text */
+  --muted-foreground: 220 9% 46%; /* #5f6368 - gray text */
   --accent: 210 17% 93%;
   --accent-foreground: 220 13% 13%;
-  --destructive: 4 90% 58%;         /* #ea4335 - Google red */
+  --destructive: 4 90% 58%; /* #ea4335 - Google red */
   --destructive-foreground: 0 0% 100%;
-  --border: 220 13% 90%;            /* subtle borders */
+  --border: 220 13% 90%; /* subtle borders */
   --input: 220 13% 90%;
   --ring: 217 91% 60%;
 
   /* Accent Colors */
-  --user-avatar: 28 87% 55%;        /* #f5a623 - warm orange */
-  --success: 142 71% 45%;           /* #34a853 - Google green */
+  --user-avatar: 28 87% 55%; /* #f5a623 - warm orange */
+  --success: 142 71% 45%; /* #34a853 - Google green */
 
   /* Spacing Scale - Larger, more generous */
-  --radius: 0.75rem;                /* 12px base */
-  --radius-card: 1rem;              /* 16px for cards */
-  --radius-pill: 1.5rem;            /* 24px for pills/input */
+  --radius: 0.75rem; /* 12px base */
+  --radius-card: 1rem; /* 16px for cards */
+  --radius-pill: 1.5rem; /* 24px for pills/input */
 
   /* Shadows - Soft, layered */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.08);
+  --shadow-md:
+    0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
+  --shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.08);
 
   /* Transitions */
   --transition-fast: 150ms ease-out;
@@ -44,13 +46,13 @@
 }
 
 .dark {
-  --background: 220 13% 10%;        /* #1a1a1d dark bg */
+  --background: 220 13% 10%; /* #1a1a1d dark bg */
   --foreground: 210 17% 95%;
-  --card: 220 13% 14%;              /* elevated dark cards */
+  --card: 220 13% 14%; /* elevated dark cards */
   --card-foreground: 210 17% 95%;
   --popover: 220 13% 14%;
   --popover-foreground: 210 17% 95%;
-  --primary: 217 91% 65%;           /* lighter blue for dark */
+  --primary: 217 91% 65%; /* lighter blue for dark */
   --primary-foreground: 220 13% 10%;
   --secondary: 220 13% 18%;
   --secondary-foreground: 210 17% 95%;
@@ -67,7 +69,8 @@
   /* Dark mode shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.2);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.2);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+  --shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
 }
 
 @theme inline {
@@ -117,7 +120,9 @@ body {
 
 /* Smooth transitions for theme switching */
 html {
-  transition: background-color var(--transition-base), color var(--transition-base);
+  transition:
+    background-color var(--transition-base),
+    color var(--transition-base);
 }
 
 /* Custom scrollbar for a polished look */
@@ -141,8 +146,12 @@ html {
 
 /* Animation utilities */
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slide-in-from-bottom {

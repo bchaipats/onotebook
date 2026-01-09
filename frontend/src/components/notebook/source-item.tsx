@@ -51,7 +51,7 @@ export function SourceItem({
         "group mb-2 rounded-xl border p-3 transition-all duration-150 animate-slide-in-left",
         isSelected && isReady
           ? "border-primary/30 bg-primary/5"
-          : "border-border hover:border-muted-foreground/30"
+          : "border-border hover:border-muted-foreground/30",
       )}
       style={style}
     >

@@ -12,7 +12,7 @@ function hasProcessingDocuments(documents: Document[] | undefined): boolean {
   return documents.some(
     (doc) =>
       doc.processing_status === "pending" ||
-      doc.processing_status === "processing"
+      doc.processing_status === "processing",
   );
 }
 

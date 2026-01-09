@@ -21,13 +21,15 @@ export function NotebookLayout({
 }: NotebookLayoutProps) {
   const { data: documents } = useDocuments(notebook.id);
   const [selectedSources, setSelectedSources] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
 
   // Initialize with all sources selected when documents load
   useEffect(() => {
     if (documents && documents.length > 0) {
-      const readyDocs = documents.filter((d) => d.processing_status === "ready");
+      const readyDocs = documents.filter(
+        (d) => d.processing_status === "ready",
+      );
       setSelectedSources(new Set(readyDocs.map((d) => d.id)));
     }
   }, [documents]);

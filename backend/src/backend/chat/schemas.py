@@ -1,17 +1,16 @@
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel
 
 
 class ChatSessionCreate(BaseModel):
-    title: Optional[str] = None
+    title: str | None = None
 
 
 class ChatSessionResponse(BaseModel):
     id: str
     notebook_id: str
-    title: Optional[str]
+    title: str | None
     created_at: datetime
     updated_at: datetime
 
@@ -27,7 +26,7 @@ class MessageResponse(BaseModel):
     chat_session_id: str
     role: str
     content: str
-    model: Optional[str]
+    model: str | None
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -39,8 +38,8 @@ class MessageListResponse(BaseModel):
 
 class SendMessageRequest(BaseModel):
     content: str
-    model: Optional[str] = None
-    document_ids: Optional[list[str]] = None
+    model: str | None = None
+    document_ids: list[str] | None = None
 
 
 class SourceInfo(BaseModel):

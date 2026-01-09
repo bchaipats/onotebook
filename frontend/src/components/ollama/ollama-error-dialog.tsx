@@ -74,11 +74,7 @@ export function OllamaErrorDialog({
         </div>
 
         <div className="flex gap-2 justify-end">
-          <Button
-            variant="outline"
-            size="sm"
-            asChild
-          >
+          <Button variant="outline" size="sm" asChild>
             <a
               href="https://ollama.ai"
               target="_blank"

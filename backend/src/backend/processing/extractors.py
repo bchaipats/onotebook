@@ -18,6 +18,7 @@ def extract_pdf(file_path: Path) -> ExtractionResult:
 
     # Get page count
     import pymupdf
+
     doc = pymupdf.open(str(file_path))
     page_count = len(doc)
     doc.close()

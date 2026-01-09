@@ -1,5 +1,3 @@
-import os
-import shutil
 from pathlib import Path
 from uuid import uuid4
 
@@ -9,7 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.backend.config import settings
 from src.backend.models import Chunk, Document
-
 
 ALLOWED_EXTENSIONS = {".pdf", ".txt", ".md", ".docx", ".html"}
 EXTENSION_TO_TYPE = {
@@ -31,9 +28,7 @@ def is_allowed_file(filename: str) -> bool:
     return get_file_extension(filename) in ALLOWED_EXTENSIONS
 
 
-async def list_documents(
-    session: AsyncSession, notebook_id: str
-) -> list[Document]:
+async def list_documents(session: AsyncSession, notebook_id: str) -> list[Document]:
     """List all documents in a notebook."""
     stmt = (
         select(Document)
@@ -51,22 +46,14 @@ async def get_document(session: AsyncSession, document_id: str) -> Document | No
     return result.scalar_one_or_none()
 
 
-async def get_document_chunks(
-    session: AsyncSession, document_id: str
-) -> list[Chunk]:
+async def get_document_chunks(session: AsyncSession, document_id: str) -> list[Chunk]:
     """Get all chunks for a document."""
-    stmt = (
-        select(Chunk)
-        .where(Chunk.document_id == document_id)
-        .order_by(Chunk.chunk_index)
-    )
+    stmt = select(Chunk).where(Chunk.document_id == document_id).order_by(Chunk.chunk_index)
     result = await session.execute(stmt)
     return list(result.scalars().all())
 
 
-async def upload_document(
-    session: AsyncSession, notebook_id: str, file: UploadFile
-) -> Document:
+async def upload_document(session: AsyncSession, notebook_id: str, file: UploadFile) -> Document:
     """Upload a document to a notebook."""
     if not file.filename:
         raise ValueError("File must have a filename")
@@ -86,9 +73,7 @@ async def upload_document(
     file_size = len(content)
 
     if file_size > settings.max_upload_size_bytes:
-        raise ValueError(
-            f"File too large. Maximum size is {settings.max_upload_size_mb}MB"
-        )
+        raise ValueError(f"File too large. Maximum size is {settings.max_upload_size_mb}MB")
 
     with open(file_path, "wb") as f:
         f.write(content)

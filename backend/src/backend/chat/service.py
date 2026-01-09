@@ -6,9 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.backend.models import ChatSession, Message, MessageSource, utc_now
 
 
-async def list_sessions(
-    session: AsyncSession, notebook_id: str
-) -> list[ChatSession]:
+async def list_sessions(session: AsyncSession, notebook_id: str) -> list[ChatSession]:
     """List all chat sessions in a notebook."""
     stmt = (
         select(ChatSession)
@@ -19,9 +17,7 @@ async def list_sessions(
     return list(result.scalars().all())
 
 
-async def get_session(
-    session: AsyncSession, session_id: str
-) -> ChatSession | None:
+async def get_session(session: AsyncSession, session_id: str) -> ChatSession | None:
     """Get a chat session by ID."""
     stmt = select(ChatSession).where(ChatSession.id == session_id)
     result = await session.execute(stmt)
@@ -59,15 +55,9 @@ async def delete_session(session: AsyncSession, chat_session: ChatSession) -> No
     await session.commit()
 
 
-async def get_messages(
-    session: AsyncSession, session_id: str
-) -> list[Message]:
+async def get_messages(session: AsyncSession, session_id: str) -> list[Message]:
     """Get all messages in a chat session."""
-    stmt = (
-        select(Message)
-        .where(Message.chat_session_id == session_id)
-        .order_by(Message.created_at)
-    )
+    stmt = select(Message).where(Message.chat_session_id == session_id).order_by(Message.created_at)
     result = await session.execute(stmt)
     return list(result.scalars().all())
 
@@ -118,9 +108,7 @@ async def add_message_source(
     return source
 
 
-async def get_message_sources(
-    session: AsyncSession, message_id: str
-) -> list[MessageSource]:
+async def get_message_sources(session: AsyncSession, message_id: str) -> list[MessageSource]:
     """Get all sources for a message."""
     stmt = (
         select(MessageSource)

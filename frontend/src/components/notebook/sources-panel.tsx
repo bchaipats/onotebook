@@ -23,7 +23,7 @@ export function SourcesPanel({
   const [isUploadOpen, setIsUploadOpen] = useState(false);
 
   const readyDocuments = documents?.filter(
-    (d) => d.processing_status === "ready"
+    (d) => d.processing_status === "ready",
   );
   const allSelected =
     readyDocuments &&

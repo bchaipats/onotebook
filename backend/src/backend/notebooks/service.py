@@ -39,9 +39,7 @@ async def get_notebook_with_document_count(
     return row if row else None
 
 
-async def create_notebook(
-    session: AsyncSession, data: NotebookCreate
-) -> tuple[Notebook, int]:
+async def create_notebook(session: AsyncSession, data: NotebookCreate) -> tuple[Notebook, int]:
     """Create a new notebook."""
     notebook = Notebook(
         name=data.name,

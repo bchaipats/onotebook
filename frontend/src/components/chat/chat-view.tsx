@@ -18,7 +18,11 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useMessages, useInvalidateMessages, useInvalidateChatSessions } from "@/hooks/use-chat";
+import {
+  useMessages,
+  useInvalidateMessages,
+  useInvalidateChatSessions,
+} from "@/hooks/use-chat";
 import { sendMessage, regenerateMessage } from "@/lib/api";
 import type { ChatMessage, SourceInfo, StreamEvent } from "@/types/api";
 
@@ -28,7 +32,11 @@ interface ChatViewProps {
   selectedModel: string | null;
 }
 
-export function ChatView({ sessionId, notebookId, selectedModel }: ChatViewProps) {
+export function ChatView({
+  sessionId,
+  notebookId,
+  selectedModel,
+}: ChatViewProps) {
   const { data: messages, isLoading } = useMessages(sessionId);
   const invalidateMessages = useInvalidateMessages(sessionId);
   const invalidateSessions = useInvalidateChatSessions(notebookId);
@@ -39,8 +47,12 @@ export function ChatView({ sessionId, notebookId, selectedModel }: ChatViewProps
   const [stoppedContent, setStoppedContent] = useState("");
   const [currentSources, setCurrentSources] = useState<SourceInfo[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [highlightedCitation, setHighlightedCitation] = useState<number | null>(null);
-  const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
+  const [highlightedCitation, setHighlightedCitation] = useState<number | null>(
+    null,
+  );
+  const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(
+    null,
+  );
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -62,27 +74,30 @@ export function ChatView({ sessionId, notebookId, selectedModel }: ChatViewProps
     }
   }, [inputValue]);
 
-  const handleEvent = useCallback((event: StreamEvent) => {
-    switch (event.type) {
-      case "sources":
-        setCurrentSources(event.sources || []);
-        break;
-      case "token":
-        setStreamingContent((prev) => prev + (event.content || ""));
-        break;
-      case "done":
-        setIsStreaming(false);
-        setStreamingContent("");
-        invalidateMessages();
-        invalidateSessions();
-        break;
-      case "error":
-        setError(event.error || "An error occurred");
-        setIsStreaming(false);
-        setStreamingContent("");
-        break;
-    }
-  }, [invalidateMessages, invalidateSessions]);
+  const handleEvent = useCallback(
+    (event: StreamEvent) => {
+      switch (event.type) {
+        case "sources":
+          setCurrentSources(event.sources || []);
+          break;
+        case "token":
+          setStreamingContent((prev) => prev + (event.content || ""));
+          break;
+        case "done":
+          setIsStreaming(false);
+          setStreamingContent("");
+          invalidateMessages();
+          invalidateSessions();
+          break;
+        case "error":
+          setError(event.error || "An error occurred");
+          setIsStreaming(false);
+          setStreamingContent("");
+          break;
+      }
+    },
+    [invalidateMessages, invalidateSessions],
+  );
 
   async function handleSend(retryContent?: string) {
     const content = retryContent || inputValue.trim();
@@ -107,7 +122,7 @@ export function ChatView({ sessionId, notebookId, selectedModel }: ChatViewProps
         content,
         selectedModel,
         handleEvent,
-        abortControllerRef.current.signal
+        abortControllerRef.current.signal,
       );
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") {
@@ -155,7 +170,7 @@ export function ChatView({ sessionId, notebookId, selectedModel }: ChatViewProps
       await regenerateMessage(
         messageId,
         handleEvent,
-        abortControllerRef.current.signal
+        abortControllerRef.current.signal,
       );
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") {
@@ -180,7 +195,9 @@ export function ChatView({ sessionId, notebookId, selectedModel }: ChatViewProps
   }
 
   const allMessages = messages || [];
-  const lastAssistantMessage = allMessages.findLast((m) => m.role === "assistant");
+  const lastAssistantMessage = allMessages.findLast(
+    (m) => m.role === "assistant",
+  );
 
   if (isLoading) {
     return (
@@ -446,7 +463,7 @@ function CitationLink({ index, onClick }: CitationLinkProps) {
 // Helper to process text and replace [1], [2], etc. with clickable citations
 function processTextWithCitations(
   text: string,
-  onCitationClick: (index: number) => void
+  onCitationClick: (index: number) => void,
 ): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
   const citationRegex = /\[(\d+)\]/g;
@@ -465,7 +482,7 @@ function processTextWithCitations(
         key={`citation-${match.index}`}
         index={citationIndex}
         onClick={onCitationClick}
-      />
+      />,
     );
     lastIndex = match.index + match[0].length;
   }
@@ -481,14 +498,16 @@ function processTextWithCitations(
 // Process React children recursively to handle citations in text
 function processChildren(
   children: React.ReactNode,
-  onCitationClick: (index: number) => void
+  onCitationClick: (index: number) => void,
 ): React.ReactNode {
   return React.Children.map(children, (child, idx) => {
     if (typeof child === "string") {
       const processed = processTextWithCitations(child, onCitationClick);
-      return processed.length === 1 && typeof processed[0] === "string"
-        ? child
-        : <React.Fragment key={idx}>{processed}</React.Fragment>;
+      return processed.length === 1 && typeof processed[0] === "string" ? (
+        child
+      ) : (
+        <React.Fragment key={idx}>{processed}</React.Fragment>
+      );
     }
     return child;
   });
@@ -500,7 +519,11 @@ interface MessageBubbleProps {
   onCitationClick?: (index: number) => void;
 }
 
-function MessageBubble({ message, onRegenerate, onCitationClick }: MessageBubbleProps) {
+function MessageBubble({
+  message,
+  onRegenerate,
+  onCitationClick,
+}: MessageBubbleProps) {
   const isUser = message.role === "user";
 
   return (
@@ -510,7 +533,7 @@ function MessageBubble({ message, onRegenerate, onCitationClick }: MessageBubble
           "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
           isUser
             ? "bg-muted text-muted-foreground"
-            : "bg-primary text-primary-foreground"
+            : "bg-primary text-primary-foreground",
         )}
       >
         {isUser ? "U" : <MessageSquare className="h-4 w-4" />}
@@ -518,13 +541,13 @@ function MessageBubble({ message, onRegenerate, onCitationClick }: MessageBubble
       <div
         className={cn(
           "group flex-1 rounded-lg p-3",
-          isUser ? "bg-primary text-primary-foreground" : "bg-muted"
+          isUser ? "bg-primary text-primary-foreground" : "bg-muted",
         )}
       >
         <div
           className={cn(
             "prose prose-sm max-w-none",
-            isUser ? "prose-invert" : "dark:prose-invert"
+            isUser ? "prose-invert" : "dark:prose-invert",
           )}
         >
           <ReactMarkdown
@@ -552,21 +575,13 @@ function MessageBubble({ message, onRegenerate, onCitationClick }: MessageBubble
                 if (!onCitationClick || isUser) {
                   return <p>{children}</p>;
                 }
-                return (
-                  <p>
-                    {processChildren(children, onCitationClick)}
-                  </p>
-                );
+                return <p>{processChildren(children, onCitationClick)}</p>;
               },
               li({ children }) {
                 if (!onCitationClick || isUser) {
                   return <li>{children}</li>;
                 }
-                return (
-                  <li>
-                    {processChildren(children, onCitationClick)}
-                  </li>
-                );
+                return <li>{processChildren(children, onCitationClick)}</li>;
               },
             }}
           >
@@ -635,21 +650,33 @@ interface SourcesPanelProps {
   onClearHighlight: () => void;
 }
 
-function SourcesPanel({ sources, highlightedCitation, onClearHighlight }: SourcesPanelProps) {
+function SourcesPanel({
+  sources,
+  highlightedCitation,
+  onClearHighlight,
+}: SourcesPanelProps) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const sourceRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
   // Scroll to highlighted source when citation is clicked
   useEffect(() => {
-    if (highlightedCitation !== null && sourceRefs.current[highlightedCitation]) {
+    if (
+      highlightedCitation !== null &&
+      sourceRefs.current[highlightedCitation]
+    ) {
       sourceRefs.current[highlightedCitation]?.scrollIntoView({
         behavior: "smooth",
         block: "center",
       });
       // Auto-expand the highlighted source
-      const highlightedSource = sources.find(s => s.citation_index === highlightedCitation);
+      const highlightedSource = sources.find(
+        (s) => s.citation_index === highlightedCitation,
+      );
       if (highlightedSource) {
-        setExpanded(prev => ({ ...prev, [highlightedSource.chunk_id]: true }));
+        setExpanded((prev) => ({
+          ...prev,
+          [highlightedSource.chunk_id]: true,
+        }));
       }
       // Clear highlight after a delay
       const timeout = setTimeout(() => {
@@ -676,16 +703,19 @@ function SourcesPanel({ sources, highlightedCitation, onClearHighlight }: Source
         ) : (
           <div className="space-y-2">
             {sources.map((source) => {
-              const isHighlighted = highlightedCitation === source.citation_index;
+              const isHighlighted =
+                highlightedCitation === source.citation_index;
               return (
                 <div
                   key={source.chunk_id}
-                  ref={(el) => { sourceRefs.current[source.citation_index] = el; }}
+                  ref={(el) => {
+                    sourceRefs.current[source.citation_index] = el;
+                  }}
                   className={cn(
                     "rounded-lg border p-3 transition-all duration-300",
                     isHighlighted
                       ? "border-primary bg-primary/5 ring-2 ring-primary ring-offset-2"
-                      : "border-border bg-background"
+                      : "border-border bg-background",
                   )}
                 >
                   <div
