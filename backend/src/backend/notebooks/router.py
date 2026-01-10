@@ -24,6 +24,11 @@ def notebook_to_response(notebook: tuple) -> NotebookResponse:
         document_count=doc_count,
         created_at=nb.created_at,
         updated_at=nb.updated_at,
+        chat_style=getattr(nb, "chat_style", "default") or "default",
+        response_length=getattr(nb, "response_length", "default") or "default",
+        custom_instructions=getattr(nb, "custom_instructions", None),
+        llm_provider=getattr(nb, "llm_provider", "ollama") or "ollama",
+        llm_model=getattr(nb, "llm_model", "llama3.2") or "llama3.2",
     )
 
 
@@ -87,6 +92,11 @@ async def update_notebook(
         document_count=0,
         created_at=updated.created_at,
         updated_at=updated.updated_at,
+        chat_style=getattr(updated, "chat_style", "default") or "default",
+        response_length=getattr(updated, "response_length", "default") or "default",
+        custom_instructions=getattr(updated, "custom_instructions", None),
+        llm_provider=getattr(updated, "llm_provider", "ollama") or "ollama",
+        llm_model=getattr(updated, "llm_model", "llama3.2") or "llama3.2",
     )
 
 

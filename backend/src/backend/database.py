@@ -62,9 +62,7 @@ async def run_migrations() -> None:
         for table, column, column_def in migrations:
             # Skip if column already exists
             with contextlib.suppress(Exception):
-                await conn.execute(
-                    text(f"ALTER TABLE {table} ADD COLUMN {column} {column_def}")
-                )
+                await conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {column_def}"))
 
 
 async def get_session() -> AsyncGenerator[AsyncSession]:

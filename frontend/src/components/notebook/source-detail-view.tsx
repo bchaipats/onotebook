@@ -353,7 +353,10 @@ function HighlightedContent({
     }
     // Use fuzzy match
     const before = content.slice(0, fuzzyIndex);
-    const highlighted = content.slice(fuzzyIndex, fuzzyIndex + highlightText.length);
+    const highlighted = content.slice(
+      fuzzyIndex,
+      fuzzyIndex + highlightText.length,
+    );
     const after = content.slice(fuzzyIndex + highlightText.length);
 
     return (

@@ -1,13 +1,13 @@
 """OpenAI LLM provider."""
 
+import json
 from collections.abc import AsyncIterator
 
 import httpx
 
 from src.backend.config import settings
-from src.backend.llm.base import ChatMessage, LLMProvider, StreamChunk
+from src.backend.llm.base import ChatMessage, LLMProvider
 
-# Available OpenAI models
 OPENAI_MODELS = [
     "gpt-4o",
     "gpt-4o-mini",
@@ -18,31 +18,20 @@ OPENAI_MODELS = [
 
 
 class OpenAIProvider(LLMProvider):
-    """OpenAI GPT LLM provider."""
-
-    @property
-    def name(self) -> str:
-        return "openai"
-
     def is_available(self) -> bool:
         return bool(settings.openai_api_key)
 
     async def list_models(self) -> list[str]:
-        """List available OpenAI models."""
-        if not self.is_available():
-            return []
-        return OPENAI_MODELS
+        return OPENAI_MODELS if self.is_available() else []
 
     async def chat_stream(
         self,
         messages: list[ChatMessage],
         model: str,
-    ) -> AsyncIterator[StreamChunk]:
-        """Stream chat response from OpenAI."""
+    ) -> AsyncIterator[str]:
         if not settings.openai_api_key:
             raise ValueError("OpenAI API key not configured")
 
-        # Convert messages to OpenAI format
         openai_messages = [{"role": m.role, "content": m.content} for m in messages]
 
         payload = {
@@ -71,12 +60,9 @@ class OpenAIProvider(LLMProvider):
                 if not line or not line.startswith("data: "):
                     continue
 
-                data_str = line[6:]  # Remove "data: " prefix
+                data_str = line[6:]
                 if data_str == "[DONE]":
-                    yield StreamChunk(content="", is_done=True)
                     break
-
-                import json
 
                 try:
                     data = json.loads(data_str)
@@ -88,8 +74,4 @@ class OpenAIProvider(LLMProvider):
                     delta = choices[0].get("delta", {})
                     content = delta.get("content", "")
                     if content:
-                        yield StreamChunk(content=content)
-
-                    # Check if finished
-                    if choices[0].get("finish_reason"):
-                        yield StreamChunk(content="", is_done=True)
+                        yield content

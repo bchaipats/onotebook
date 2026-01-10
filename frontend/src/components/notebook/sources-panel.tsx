@@ -1,15 +1,32 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Plus, FileText, PanelRightOpen, Sparkles } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import {
+  Plus,
+  FileText,
+  PanelRightOpen,
+  Sparkles,
+  ChevronLeft,
+  BookOpen,
+  Info,
+  Loader2,
+  ExternalLink,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SourceItem } from "./source-item";
 import { AddSourcesDialog } from "./add-sources-dialog";
 import { SourceDetailView } from "./source-detail-view";
 import { SourceSearch } from "./source-search";
 import { useDocuments } from "@/hooks/use-documents";
-import { useSourceCount } from "@/hooks/use-sources";
+import {
+  useSourceCount,
+  useSourceGuide,
+  useGenerateSourceGuide,
+  useSourceContent,
+} from "@/hooks/use-sources";
+import { formatFileSize } from "@/lib/utils";
 import type { Document } from "@/types/api";
 import type { HighlightedCitation } from "./chat-panel";
 
@@ -39,24 +56,31 @@ export function SourcesPanel({
   const [highlightedChunkContent, setHighlightedChunkContent] = useState<
     string | null
   >(null);
+  const [showInlineDetail, setShowInlineDetail] = useState(false);
 
-  // Auto-open document when a citation is highlighted
   useEffect(() => {
     if (highlightedCitation && documents) {
-      const doc = documents.find((d) => d.id === highlightedCitation.documentId);
+      const doc = documents.find(
+        (d) => d.id === highlightedCitation.documentId,
+      );
       if (doc) {
         setPreviewDocument(doc);
         setHighlightedChunkContent(highlightedCitation.chunkContent);
+        setShowInlineDetail(true);
       }
     }
   }, [highlightedCitation, documents]);
 
-  // Clear highlight when document is closed
-  const handleClosePreview = (open: boolean) => {
-    if (!open) {
-      setPreviewDocument(null);
-      setHighlightedChunkContent(null);
-    }
+  const handleManualPreview = (doc: Document) => {
+    setPreviewDocument(doc);
+    setHighlightedChunkContent(null);
+    setShowInlineDetail(false);
+  };
+
+  const clearPreview = () => {
+    setPreviewDocument(null);
+    setHighlightedChunkContent(null);
+    setShowInlineDetail(false);
   };
 
   const isAtLimit = sourceCount ? sourceCount.remaining <= 0 : false;
@@ -100,6 +124,23 @@ export function SourcesPanel({
         >
           <Plus className="h-4 w-4" />
         </Button>
+      </div>
+    );
+  }
+
+  if (showInlineDetail && previewDocument) {
+    return (
+      <div className="flex h-full flex-col">
+        <InlineSourceDetail
+          document={previewDocument}
+          highlightedChunkContent={highlightedChunkContent}
+          onClose={clearPreview}
+        />
+        <AddSourcesDialog
+          open={isUploadOpen}
+          onOpenChange={setIsUploadOpen}
+          notebookId={notebookId}
+        />
       </div>
     );
   }
@@ -188,7 +229,7 @@ export function SourcesPanel({
               document={doc}
               isSelected={selectedSources.has(doc.id)}
               onToggle={() => toggleSource(doc.id)}
-              onPreview={() => setPreviewDocument(doc)}
+              onPreview={() => handleManualPreview(doc)}
               style={{ animationDelay: `${index * 50}ms` }}
             />
           ))
@@ -214,10 +255,213 @@ export function SourcesPanel({
 
       <SourceDetailView
         document={previewDocument}
-        open={!!previewDocument}
-        onOpenChange={handleClosePreview}
+        open={!!previewDocument && !showInlineDetail}
+        onOpenChange={(open) => !open && clearPreview()}
         highlightedChunkContent={highlightedChunkContent}
       />
+    </div>
+  );
+}
+
+function InlineSourceDetail({
+  document,
+  highlightedChunkContent,
+  onClose,
+}: {
+  document: Document;
+  highlightedChunkContent: string | null;
+  onClose: () => void;
+}) {
+  const [activeTab, setActiveTab] = useState(
+    highlightedChunkContent ? "content" : "guide",
+  );
+  const { data: guide, isLoading: guideLoading } = useSourceGuide(document.id);
+  const { data: content, isLoading: contentLoading } = useSourceContent(
+    activeTab === "content" ? document.id : null,
+  );
+  const generateGuide = useGenerateSourceGuide(document.id);
+
+  return (
+    <>
+      <div className="flex items-center gap-2 border-b px-4 py-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          className="h-8 w-8 shrink-0"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <div className="min-w-0 flex-1">
+          <h2 className="truncate font-semibold">{document.filename}</h2>
+          {document.source_url && (
+            <a
+              href={document.source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
+            >
+              <ExternalLink className="h-3 w-3" />
+              <span className="truncate">{document.source_url}</span>
+            </a>
+          )}
+        </div>
+      </div>
+
+      <div className="border-b px-4 py-2">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="guide" className="gap-1 text-xs">
+              <BookOpen className="h-3 w-3" />
+              Source Guide
+            </TabsTrigger>
+            <TabsTrigger value="content" className="gap-1 text-xs">
+              <FileText className="h-3 w-3" />
+              Content
+            </TabsTrigger>
+            <TabsTrigger value="info" className="gap-1 text-xs">
+              <Info className="h-3 w-3" />
+              Info
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-4">
+        {activeTab === "guide" && (
+          <>
+            {guideLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : guide?.summary ? (
+              <div className="prose prose-sm dark:prose-invert">
+                <p>{guide.summary}</p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <Sparkles className="mb-3 h-10 w-10 text-muted-foreground/40" />
+                <p className="font-medium text-muted-foreground">
+                  No source guide yet
+                </p>
+                <Button
+                  onClick={() => generateGuide.mutate()}
+                  className="mt-4 gap-2"
+                  disabled={generateGuide.isPending}
+                >
+                  {generateGuide.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4" />
+                      Generate Guide
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+          </>
+        )}
+
+        {activeTab === "content" && (
+          <>
+            {contentLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : content?.content ? (
+              <HighlightedContent
+                content={content.content}
+                highlightText={highlightedChunkContent}
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <FileText className="mb-3 h-10 w-10 text-muted-foreground/40" />
+                <p className="font-medium text-muted-foreground">
+                  No content available
+                </p>
+              </div>
+            )}
+          </>
+        )}
+
+        {activeTab === "info" && (
+          <div className="space-y-3">
+            <InfoRow label="Source Type" value={document.source_type} />
+            <InfoRow
+              label="File Type"
+              value={document.file_type.toUpperCase()}
+            />
+            <InfoRow label="Size" value={formatFileSize(document.file_size)} />
+            <InfoRow label="Chunks" value={`${document.chunk_count} chunks`} />
+            {document.page_count && (
+              <InfoRow label="Pages" value={`${document.page_count} pages`} />
+            )}
+            <InfoRow
+              label="Added"
+              value={new Date(document.created_at).toLocaleString()}
+            />
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between border-b pb-2 text-sm">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-medium">{value}</span>
+    </div>
+  );
+}
+
+function HighlightedContent({
+  content,
+  highlightText,
+}: {
+  content: string;
+  highlightText: string | null;
+}) {
+  const highlightRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    if (highlightRef.current && highlightText) {
+      highlightRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, [highlightText]);
+
+  // Find highlight position (exact match, then fuzzy match with first 50 chars)
+  let matchIndex = highlightText ? content.indexOf(highlightText) : -1;
+  if (matchIndex === -1 && highlightText) {
+    matchIndex = content.indexOf(highlightText.slice(0, 50));
+  }
+
+  const hasHighlight = highlightText && matchIndex !== -1;
+
+  return (
+    <div className="whitespace-pre-wrap rounded-lg bg-muted/50 p-4 font-mono text-sm">
+      {hasHighlight ? (
+        <>
+          {content.slice(0, matchIndex)}
+          <span
+            ref={highlightRef}
+            className="rounded bg-violet-200 px-0.5 dark:bg-violet-900/50"
+          >
+            {content.slice(matchIndex, matchIndex + highlightText.length)}
+          </span>
+          {content.slice(matchIndex + highlightText.length)}
+        </>
+      ) : (
+        content
+      )}
     </div>
   );
 }

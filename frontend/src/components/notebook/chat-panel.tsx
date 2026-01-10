@@ -5,9 +5,6 @@ import {
   Square,
   RefreshCw,
   Loader2,
-  ChevronDown,
-  ChevronRight,
-  FileText,
   Copy,
   Check,
   Bot,
@@ -43,7 +40,12 @@ import {
   useInvalidateChatSessions,
 } from "@/hooks/use-chat";
 import { sendMessage, regenerateMessage } from "@/lib/api";
-import type { ChatMessage, SourceInfo, StreamEvent, Notebook } from "@/types/api";
+import type {
+  ChatMessage,
+  SourceInfo,
+  StreamEvent,
+  Notebook,
+} from "@/types/api";
 import { ChatConfigDialog } from "./chat-config-dialog";
 
 export interface HighlightedCitation {
@@ -57,6 +59,7 @@ interface ChatPanelProps {
   notebookId: string;
   notebook: Notebook;
   selectedSources: Set<string>;
+  hasDocuments: boolean;
   onCitationHighlight?: (citation: HighlightedCitation) => void;
 }
 
@@ -64,6 +67,7 @@ export function ChatPanel({
   notebookId,
   notebook,
   selectedSources,
+  hasDocuments,
   onCitationHighlight,
 }: ChatPanelProps) {
   const { data: sessions, isLoading: sessionsLoading } =
@@ -160,7 +164,10 @@ export function ChatPanel({
           onCitationHighlight={onCitationHighlight}
         />
       ) : (
-        <ChatWelcome onCreateSession={handleNewSession} />
+        <ChatWelcome
+          hasDocuments={hasDocuments}
+          onCreateSession={handleNewSession}
+        />
       )}
     </div>
   );
@@ -189,9 +196,6 @@ function ChatContent({
   const [stoppedContent, setStoppedContent] = useState("");
   const [currentSources, setCurrentSources] = useState<SourceInfo[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [highlightedCitation, setHighlightedCitation] = useState<number | null>(
-    null,
-  );
   const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(
     null,
   );
@@ -201,12 +205,9 @@ function ChatContent({
   const abortControllerRef = useRef<AbortController | null>(null);
   const stoppedByUserRef = useRef(false);
 
-  // Handle citation click - update local state and notify parent
+  // Handle citation click - notify parent for left panel highlighting
   const handleCitationClick = useCallback(
     (index: number) => {
-      setHighlightedCitation(index);
-
-      // Find the source info and notify parent for left panel highlighting
       if (onCitationHighlight && currentSources.length > 0) {
         const source = currentSources.find((s) => s.citation_index === index);
         if (source) {
@@ -399,8 +400,9 @@ function ChatContent({
                 Ask about your sources
               </h2>
               <p className="mb-6 text-sm text-muted-foreground">
-                I can help you understand and analyze your {selectedSources.size}{" "}
-                selected source{selectedSources.size !== 1 ? "s" : ""}.
+                I can help you understand and analyze your{" "}
+                {selectedSources.size} selected source
+                {selectedSources.size !== 1 ? "s" : ""}.
               </p>
               <div className="flex flex-col gap-2">
                 {suggestedQuestions.map((question) => (
@@ -451,14 +453,6 @@ function ChatContent({
           </div>
         )}
       </div>
-
-      {currentSources.length > 0 && (
-        <SourcesPanel
-          sources={currentSources}
-          highlightedCitation={highlightedCitation}
-          onClearHighlight={() => setHighlightedCitation(null)}
-        />
-      )}
 
       {error && (
         <div className="border-t bg-destructive/10 p-3 text-center text-sm text-destructive">
@@ -539,18 +533,37 @@ function ChatContent({
   );
 }
 
-function ChatWelcome({ onCreateSession }: { onCreateSession: () => void }) {
+function ChatWelcome({
+  hasDocuments,
+  onCreateSession,
+}: {
+  hasDocuments: boolean;
+  onCreateSession: () => void;
+}) {
+  if (hasDocuments) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
+        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+          <Bot className="h-7 w-7 text-primary" />
+        </div>
+        <h2 className="mb-3 text-lg font-medium">Ready to chat</h2>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Ask questions about your sources
+        </p>
+        <Button onClick={onCreateSession} className="rounded-full">
+          Start chatting
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
       <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full border-2 border-dashed border-primary/40">
         <Upload className="h-6 w-6 text-primary/60" />
       </div>
       <h2 className="mb-3 text-lg font-medium">Add a source to get started</h2>
-      <Button
-        variant="outline"
-        onClick={onCreateSession}
-        className="rounded-full"
-      >
+      <Button variant="outline" className="rounded-full">
         Upload a source
       </Button>
     </div>
@@ -682,10 +695,7 @@ function MessageBubble({
               <Button
                 variant="ghost"
                 size="icon"
-                className={cn(
-                  "h-7 w-7",
-                  rating === "up" && "text-green-600",
-                )}
+                className={cn("h-7 w-7", rating === "up" && "text-green-600")}
                 onClick={() => handleRate("up")}
                 title="Good response"
               >
@@ -694,10 +704,7 @@ function MessageBubble({
               <Button
                 variant="ghost"
                 size="icon"
-                className={cn(
-                  "h-7 w-7",
-                  rating === "down" && "text-red-600",
-                )}
+                className={cn("h-7 w-7", rating === "down" && "text-red-600")}
                 onClick={() => handleRate("down")}
                 title="Bad response"
               >
@@ -802,7 +809,7 @@ function ThinkingIndicator() {
       </div>
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Loader2 className="h-4 w-4 animate-spin" />
-        Thinking...
+        Searching your sources...
       </div>
     </div>
   );
@@ -1026,102 +1033,4 @@ function processChildren({
     }
     return child;
   });
-}
-
-interface SourcesPanelProps {
-  sources: SourceInfo[];
-  highlightedCitation: number | null;
-  onClearHighlight: () => void;
-}
-
-function SourcesPanel({
-  sources,
-  highlightedCitation,
-  onClearHighlight,
-}: SourcesPanelProps) {
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-  const sourceRefs = useRef<Record<number, HTMLDivElement | null>>({});
-
-  useEffect(() => {
-    if (
-      highlightedCitation !== null &&
-      sourceRefs.current[highlightedCitation]
-    ) {
-      sourceRefs.current[highlightedCitation]?.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-      const highlightedSource = sources.find(
-        (s) => s.citation_index === highlightedCitation,
-      );
-      if (highlightedSource) {
-        setExpanded((prev) => ({
-          ...prev,
-          [highlightedSource.chunk_id]: true,
-        }));
-      }
-      const timeout = setTimeout(() => onClearHighlight(), 3000);
-      return () => clearTimeout(timeout);
-    }
-  }, [highlightedCitation, sources, onClearHighlight]);
-
-  return (
-    <div className="border-t bg-muted/50 p-4">
-      <div className="mx-auto max-w-3xl">
-        <h3 className="mb-3 text-sm font-medium">Sources ({sources.length})</h3>
-        <div className="space-y-2">
-          {sources.map((source) => {
-            const isHighlighted = highlightedCitation === source.citation_index;
-            return (
-              <div
-                key={source.chunk_id}
-                ref={(el) => {
-                  sourceRefs.current[source.citation_index] = el;
-                }}
-                className={cn(
-                  "rounded-xl border p-3 transition-all duration-300",
-                  isHighlighted
-                    ? "border-primary bg-primary/5 ring-2 ring-primary ring-offset-2"
-                    : "border-border bg-card",
-                )}
-              >
-                <div
-                  className="flex cursor-pointer items-center gap-2"
-                  onClick={() =>
-                    setExpanded((prev) => ({
-                      ...prev,
-                      [source.chunk_id]: !prev[source.chunk_id],
-                    }))
-                  }
-                >
-                  {expanded[source.chunk_id] ? (
-                    <ChevronDown className="h-4 w-4 shrink-0" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 shrink-0" />
-                  )}
-                  <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  <span className="flex-1 truncate text-sm font-medium">
-                    [{source.citation_index}] {source.document_name}
-                  </span>
-                  <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                    {Math.round(source.relevance_score * 100)}%
-                  </span>
-                </div>
-                {expanded[source.chunk_id] && (
-                  <div className="mt-2 text-sm text-muted-foreground">
-                    {source.content}
-                  </div>
-                )}
-                {!expanded[source.chunk_id] && (
-                  <p className="mt-1 truncate text-xs text-muted-foreground">
-                    {source.content}
-                  </p>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
 }

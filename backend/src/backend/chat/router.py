@@ -155,16 +155,24 @@ Ask follow-up questions to check understanding when appropriate."""
     elif chat_style == "custom" and custom_instructions:
         style_instruction = custom_instructions
     else:
-        style_instruction = "You are a helpful assistant answering questions based on the provided documents."
+        style_instruction = (
+            "You are a helpful assistant answering questions based on the provided documents."
+        )
 
     # Build length instructions
     length_instruction = ""
     if response_length == "shorter":
-        length_instruction = "Keep your response concise and to the point. Aim for 2-3 sentences when possible."
+        length_instruction = (
+            "Keep your response concise and to the point. Aim for 2-3 sentences when possible."
+        )
     elif response_length == "longer":
-        length_instruction = "Provide detailed, comprehensive responses. Include relevant context and examples."
+        length_instruction = (
+            "Provide detailed, comprehensive responses. Include relevant context and examples."
+        )
     else:
-        length_instruction = "Provide appropriately detailed responses based on the complexity of the question."
+        length_instruction = (
+            "Provide appropriately detailed responses based on the complexity of the question."
+        )
 
     return f"""{style_instruction}
 
@@ -279,9 +287,9 @@ async def send_message(
             provider = get_provider(notebook.llm_provider)
             full_response = ""
             async for chunk in provider.chat_stream(llm_messages, model):
-                if chunk.content:
-                    full_response += chunk.content
-                    yield f"data: {json.dumps({'type': 'token', 'content': chunk.content})}\n\n"
+                if chunk:
+                    full_response += chunk
+                    yield f"data: {json.dumps({'type': 'token', 'content': chunk})}\n\n"
 
             # Save assistant message
             async with async_session() as save_session:
@@ -436,17 +444,15 @@ async def regenerate_message(
                     # Use RAG prompt for this message
                     llm_messages.append(LLMChatMessage(role="user", content=prompt))
                 else:
-                    llm_messages.append(
-                        LLMChatMessage(role=msg.role, content=msg.content)
-                    )
+                    llm_messages.append(LLMChatMessage(role=msg.role, content=msg.content))
 
             # Stream response from LLM provider
             provider = get_provider(notebook.llm_provider)
             full_response = ""
             async for chunk in provider.chat_stream(llm_messages, model):
-                if chunk.content:
-                    full_response += chunk.content
-                    yield f"data: {json.dumps({'type': 'token', 'content': chunk.content})}\n\n"
+                if chunk:
+                    full_response += chunk
+                    yield f"data: {json.dumps({'type': 'token', 'content': chunk})}\n\n"
 
             # Save assistant message
             async with async_session() as save_session:
