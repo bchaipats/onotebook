@@ -29,11 +29,24 @@ class Notebook(SQLModel, table=True):
     llm_provider: str = Field(default="ollama")  # ollama, anthropic, openai
     llm_model: str = Field(default="llama3.2")
 
+    # Notebook summary
+    summary: str | None = None
+    summary_key_terms: str | None = None  # JSON array of key terms
+    summary_generated_at: datetime | None = None
+
     documents: list["Document"] = Relationship(
         back_populates="notebook",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
     chat_sessions: list["ChatSession"] = Relationship(
+        back_populates="notebook",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )
+    notes: list["Note"] = Relationship(
+        back_populates="notebook",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )
+    studio_outputs: list["StudioOutput"] = Relationship(
         back_populates="notebook",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
@@ -112,6 +125,7 @@ class Message(SQLModel, table=True):
     role: str = Field(nullable=False)  # 'user' or 'assistant'
     content: str = Field(nullable=False)
     model: str | None = None
+    feedback: str | None = None  # 'up', 'down', or null
     created_at: datetime = Field(default_factory=utc_now)
 
     chat_session: ChatSession | None = Relationship(back_populates="messages")
@@ -139,3 +153,30 @@ class Setting(SQLModel, table=True):
 
     key: str = Field(primary_key=True)
     value: str = Field(nullable=False)  # JSON string
+
+
+class Note(SQLModel, table=True):
+    __tablename__ = "note"
+
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    notebook_id: str = Field(foreign_key="notebook.id", nullable=False, index=True)
+    title: str | None = None
+    content: str = Field(nullable=False)
+    source_message_id: str | None = Field(foreign_key="message.id", default=None)
+    created_at: datetime = Field(default_factory=utc_now)
+    updated_at: datetime = Field(default_factory=utc_now)
+
+    notebook: Notebook | None = Relationship(back_populates="notes")
+
+
+class StudioOutput(SQLModel, table=True):
+    __tablename__ = "studio_output"
+
+    id: str = Field(default_factory=generate_uuid, primary_key=True)
+    notebook_id: str = Field(foreign_key="notebook.id", nullable=False, index=True)
+    output_type: str = Field(nullable=False, index=True)  # mindmap, flashcards, quiz
+    title: str | None = None
+    data: str = Field(nullable=False)  # JSON blob
+    created_at: datetime = Field(default_factory=utc_now)
+
+    notebook: Notebook | None = Relationship(back_populates="studio_outputs")

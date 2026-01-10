@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -27,6 +28,7 @@ class MessageResponse(BaseModel):
     role: str
     content: str
     model: str | None
+    feedback: str | None
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -49,3 +51,11 @@ class SourceInfo(BaseModel):
     content: str
     relevance_score: float
     citation_index: int
+
+
+class MessageFeedbackRequest(BaseModel):
+    feedback: Literal["up", "down"] | None
+
+
+class SuggestedQuestionsResponse(BaseModel):
+    questions: list[str]

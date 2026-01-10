@@ -11,9 +11,11 @@ from src.backend.database import init_db
 from src.backend.documents import router as documents_router
 from src.backend.health import router as health_router
 from src.backend.notebooks import router as notebooks_router
+from src.backend.notes import router as notes_router
 from src.backend.ollama import router as ollama_router
 from src.backend.settings import router as settings_router
 from src.backend.sources import router as sources_router
+from src.backend.studio import router as studio_router
 
 
 @asynccontextmanager
@@ -55,4 +57,6 @@ app.include_router(documents_router)
 app.include_router(sources_router)
 app.include_router(ollama_router)
 app.include_router(chat_router)
+app.include_router(notes_router)
 app.include_router(settings_router)
+app.include_router(studio_router)

@@ -10,6 +10,11 @@ import type {
   ChatMessage,
   MessagesResponse,
   StreamEvent,
+  MessageFeedback,
+  SuggestedQuestionsResponse,
+  NotebookSummary,
+  Note,
+  NotesResponse,
 } from "@/types/api";
 
 class ApiError extends Error {
@@ -457,6 +462,83 @@ export async function regenerateMessage(
   }
 }
 
+export async function setMessageFeedback(
+  messageId: string,
+  feedback: MessageFeedback,
+): Promise<ChatMessage> {
+  return request<ChatMessage>(`/api/messages/${messageId}/feedback`, {
+    method: "POST",
+    body: JSON.stringify({ feedback }),
+  });
+}
+
+export async function getSuggestedQuestions(
+  notebookId: string,
+): Promise<string[]> {
+  const response = await request<SuggestedQuestionsResponse>(
+    `/api/notebooks/${notebookId}/suggested-questions`,
+  );
+  return response.questions;
+}
+
+// Notebook Summary API
+
+export async function getNotebookSummary(
+  notebookId: string,
+): Promise<NotebookSummary> {
+  return request<NotebookSummary>(`/api/notebooks/${notebookId}/summary`);
+}
+
+export async function generateNotebookSummary(
+  notebookId: string,
+): Promise<NotebookSummary> {
+  return request<NotebookSummary>(
+    `/api/notebooks/${notebookId}/summary/generate`,
+    {
+      method: "POST",
+    },
+  );
+}
+
+// Notes API
+
+export async function getNotes(notebookId: string): Promise<Note[]> {
+  const response = await request<NotesResponse>(
+    `/api/notebooks/${notebookId}/notes`,
+  );
+  return response.notes;
+}
+
+export async function createNote(
+  notebookId: string,
+  content: string,
+  title?: string,
+  sourceMessageId?: string,
+): Promise<Note> {
+  return request<Note>(`/api/notebooks/${notebookId}/notes`, {
+    method: "POST",
+    body: JSON.stringify({
+      content,
+      title,
+      source_message_id: sourceMessageId,
+    }),
+  });
+}
+
+export async function updateNote(
+  noteId: string,
+  data: { title?: string; content?: string },
+): Promise<Note> {
+  return request<Note>(`/api/notes/${noteId}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteNote(noteId: string): Promise<void> {
+  await request(`/api/notes/${noteId}`, { method: "DELETE" });
+}
+
 // Settings API
 
 import type { Settings } from "@/types/api";
@@ -472,6 +554,27 @@ export async function updateSettings(
     method: "PUT",
     body: JSON.stringify(settings),
   });
+}
+
+// Studio API
+
+import type { MindMapResponse } from "@/types/api";
+
+export async function getMindMap(
+  notebookId: string,
+): Promise<MindMapResponse | null> {
+  return request<MindMapResponse | null>(
+    `/api/notebooks/${notebookId}/studio/mindmap`,
+  );
+}
+
+export async function generateMindMap(
+  notebookId: string,
+): Promise<MindMapResponse> {
+  return request<MindMapResponse>(
+    `/api/notebooks/${notebookId}/studio/mindmap/generate`,
+    { method: "POST" },
+  );
 }
 
 export { ApiError };

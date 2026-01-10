@@ -6,7 +6,9 @@ import {
   createChatSession,
   deleteChatSession,
   getMessages,
+  setMessageFeedback,
 } from "@/lib/api";
+import type { MessageFeedback } from "@/types/api";
 
 export function useChatSessions(notebookId: string | undefined) {
   return useQuery({
@@ -60,4 +62,21 @@ export function useInvalidateChatSessions(notebookId: string) {
   return () => {
     queryClient.invalidateQueries({ queryKey: ["chatSessions", notebookId] });
   };
+}
+
+export function useMessageFeedback(sessionId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      messageId,
+      feedback,
+    }: {
+      messageId: string;
+      feedback: MessageFeedback;
+    }) => setMessageFeedback(messageId, feedback),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["messages", sessionId] });
+    },
+  });
 }

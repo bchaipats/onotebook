@@ -4,6 +4,8 @@ import {
   createNotebook,
   deleteNotebook,
   updateNotebook,
+  getNotebookSummary,
+  generateNotebookSummary,
   type UpdateNotebookData,
 } from "@/lib/api";
 
@@ -44,6 +46,27 @@ export function useDeleteNotebook() {
     mutationFn: deleteNotebook,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notebooks"] });
+    },
+  });
+}
+
+export function useNotebookSummary(notebookId: string | undefined) {
+  return useQuery({
+    queryKey: ["notebookSummary", notebookId],
+    queryFn: () => getNotebookSummary(notebookId!),
+    enabled: !!notebookId,
+  });
+}
+
+export function useGenerateNotebookSummary(notebookId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => generateNotebookSummary(notebookId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["notebookSummary", notebookId],
+      });
     },
   });
 }

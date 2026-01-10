@@ -41,3 +41,11 @@ class NotebookResponse(BaseModel):
 
 class NotebookListResponse(BaseModel):
     notebooks: list[NotebookResponse]
+
+
+class NotebookSummaryResponse(BaseModel):
+    summary: str | None
+    key_terms: list[str]
+    generated_at: datetime | None
+
+    model_config = {"from_attributes": True}

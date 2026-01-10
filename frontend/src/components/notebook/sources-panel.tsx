@@ -56,6 +56,7 @@ export function SourcesPanel({
   const [highlightedChunkContent, setHighlightedChunkContent] = useState<
     string | null
   >(null);
+  const [citationIndex, setCitationIndex] = useState<number | null>(null);
   const [showInlineDetail, setShowInlineDetail] = useState(false);
 
   useEffect(() => {
@@ -66,6 +67,7 @@ export function SourcesPanel({
       if (doc) {
         setPreviewDocument(doc);
         setHighlightedChunkContent(highlightedCitation.chunkContent);
+        setCitationIndex(highlightedCitation.citationIndex);
         setShowInlineDetail(true);
       }
     }
@@ -74,12 +76,14 @@ export function SourcesPanel({
   const handleManualPreview = (doc: Document) => {
     setPreviewDocument(doc);
     setHighlightedChunkContent(null);
+    setCitationIndex(null);
     setShowInlineDetail(false);
   };
 
   const clearPreview = () => {
     setPreviewDocument(null);
     setHighlightedChunkContent(null);
+    setCitationIndex(null);
     setShowInlineDetail(false);
   };
 
@@ -134,6 +138,7 @@ export function SourcesPanel({
         <InlineSourceDetail
           document={previewDocument}
           highlightedChunkContent={highlightedChunkContent}
+          citationIndex={citationIndex}
           onClose={clearPreview}
         />
         <AddSourcesDialog
@@ -258,6 +263,7 @@ export function SourcesPanel({
         open={!!previewDocument && !showInlineDetail}
         onOpenChange={(open) => !open && clearPreview()}
         highlightedChunkContent={highlightedChunkContent}
+        citationIndex={citationIndex}
       />
     </div>
   );
@@ -266,10 +272,12 @@ export function SourcesPanel({
 function InlineSourceDetail({
   document,
   highlightedChunkContent,
+  citationIndex,
   onClose,
 }: {
   document: Document;
   highlightedChunkContent: string | null;
+  citationIndex: number | null;
   onClose: () => void;
 }) {
   const [activeTab, setActiveTab] = useState(
@@ -376,6 +384,7 @@ function InlineSourceDetail({
               <HighlightedContent
                 content={content.content}
                 highlightText={highlightedChunkContent}
+                citationIndex={citationIndex}
               />
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-center">
@@ -423,45 +432,94 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 function HighlightedContent({
   content,
   highlightText,
+  citationIndex,
 }: {
   content: string;
   highlightText: string | null;
+  citationIndex?: number | null;
 }) {
   const highlightRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     if (highlightRef.current && highlightText) {
-      highlightRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
+      const timer = setTimeout(() => {
+        highlightRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }, 100);
+      return () => clearTimeout(timer);
     }
   }, [highlightText]);
 
-  // Find highlight position (exact match, then fuzzy match with first 50 chars)
-  let matchIndex = highlightText ? content.indexOf(highlightText) : -1;
-  if (matchIndex === -1 && highlightText) {
-    matchIndex = content.indexOf(highlightText.slice(0, 50));
+  if (!highlightText) {
+    return (
+      <div className="whitespace-pre-wrap rounded-lg bg-muted/50 p-4 font-mono text-sm">
+        {content}
+      </div>
+    );
   }
 
-  const hasHighlight = highlightText && matchIndex !== -1;
+  // Find highlight using exact match, then normalized match, then prefix match
+  function findMatch(): { index: number; length: number } | null {
+    const exactIndex = content.indexOf(highlightText);
+    if (exactIndex !== -1) {
+      return { index: exactIndex, length: highlightText.length };
+    }
+
+    const normalize = (t: string) => t.replace(/\s+/g, " ").trim();
+    const normalizedContent = normalize(content);
+    const normalizedSearch = normalize(highlightText);
+    const normalizedIndex = normalizedContent.indexOf(normalizedSearch);
+    if (normalizedIndex !== -1) {
+      return { index: normalizedIndex, length: highlightText.length };
+    }
+
+    const prefix = normalize(highlightText.slice(0, 100));
+    if (prefix.length >= 20) {
+      const prefixIndex = normalizedContent.indexOf(prefix);
+      if (prefixIndex !== -1) {
+        return {
+          index: prefixIndex,
+          length: Math.min(highlightText.length, 500),
+        };
+      }
+    }
+
+    return null;
+  }
+
+  const match = findMatch();
+
+  if (!match) {
+    return (
+      <div className="whitespace-pre-wrap rounded-lg bg-muted/50 p-4 font-mono text-sm">
+        {content}
+      </div>
+    );
+  }
+
+  const before = content.slice(0, match.index);
+  const highlighted = content.slice(match.index, match.index + match.length);
+  const after = content.slice(match.index + match.length);
 
   return (
-    <div className="whitespace-pre-wrap rounded-lg bg-muted/50 p-4 font-mono text-sm">
-      {hasHighlight ? (
-        <>
-          {content.slice(0, matchIndex)}
-          <span
-            ref={highlightRef}
-            className="rounded bg-violet-200 px-0.5 dark:bg-violet-900/50"
-          >
-            {content.slice(matchIndex, matchIndex + highlightText.length)}
+    <div className="relative whitespace-pre-wrap rounded-lg bg-muted/50 p-4 font-mono text-sm">
+      {before}
+      <span className="relative inline">
+        {citationIndex && (
+          <span className="absolute -left-1 -top-5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold text-primary-foreground">
+            {citationIndex}
           </span>
-          {content.slice(matchIndex + highlightText.length)}
-        </>
-      ) : (
-        content
-      )}
+        )}
+        <span
+          ref={highlightRef}
+          className="animate-highlight-pulse rounded bg-violet-200 px-0.5 ring-2 ring-violet-400 dark:bg-violet-900/70 dark:ring-violet-500"
+        >
+          {highlighted}
+        </span>
+      </span>
+      {after}
     </div>
   );
 }

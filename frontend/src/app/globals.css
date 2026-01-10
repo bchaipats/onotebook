@@ -221,3 +221,18 @@ html {
 .animate-slide-in-top {
   animation: slide-in-from-top var(--transition-base) ease-out;
 }
+
+/* Citation highlight pulse animation */
+@keyframes highlight-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 oklch(from var(--primary) l c h / 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 6px oklch(from var(--primary) l c h / 0);
+  }
+}
+
+.animate-highlight-pulse {
+  animation: highlight-pulse 2s ease-in-out 3;
+}

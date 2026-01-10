@@ -14,6 +14,7 @@ import {
   MoreVertical,
   ThumbsUp,
   ThumbsDown,
+  StickyNote,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -38,13 +39,24 @@ import {
   useMessages,
   useInvalidateMessages,
   useInvalidateChatSessions,
+  useMessageFeedback,
 } from "@/hooks/use-chat";
-import { sendMessage, regenerateMessage } from "@/lib/api";
+import { useCreateNote } from "@/hooks/use-notes";
+import {
+  useNotebookSummary,
+  useGenerateNotebookSummary,
+} from "@/hooks/use-notebooks";
+import {
+  sendMessage,
+  regenerateMessage,
+  getSuggestedQuestions,
+} from "@/lib/api";
 import type {
   ChatMessage,
   SourceInfo,
   StreamEvent,
   Notebook,
+  NotebookSummary,
 } from "@/types/api";
 import { ChatConfigDialog } from "./chat-config-dialog";
 
@@ -189,6 +201,8 @@ function ChatContent({
   const { data: messages, isLoading } = useMessages(sessionId);
   const invalidateMessages = useInvalidateMessages(sessionId);
   const invalidateSessions = useInvalidateChatSessions(notebookId);
+  const { data: notebookSummary } = useNotebookSummary(notebookId);
+  const generateSummary = useGenerateNotebookSummary(notebookId);
 
   const [inputValue, setInputValue] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -199,6 +213,8 @@ function ChatContent({
   const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(
     null,
   );
+  const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -227,6 +243,36 @@ function ChatContent({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingContent]);
 
+  // Fetch initial suggested questions when no messages and sources are selected
+  useEffect(() => {
+    async function fetchInitialSuggestions() {
+      if (
+        messages &&
+        messages.length === 0 &&
+        selectedSources.size > 0 &&
+        suggestedQuestions.length === 0 &&
+        !isLoadingSuggestions
+      ) {
+        setIsLoadingSuggestions(true);
+        try {
+          const questions = await getSuggestedQuestions(notebookId);
+          setSuggestedQuestions(questions);
+        } catch {
+          // Silently fail - will show default questions
+        } finally {
+          setIsLoadingSuggestions(false);
+        }
+      }
+    }
+    fetchInitialSuggestions();
+  }, [
+    messages,
+    selectedSources.size,
+    notebookId,
+    suggestedQuestions.length,
+    isLoadingSuggestions,
+  ]);
+
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
@@ -248,6 +294,9 @@ function ChatContent({
           setStreamingContent("");
           invalidateMessages();
           invalidateSessions();
+          break;
+        case "suggestions":
+          setSuggestedQuestions(event.questions || []);
           break;
         case "error":
           setError(event.error || "An error occurred");
@@ -272,6 +321,7 @@ function ChatContent({
     setStreamingContent("");
     setStoppedContent("");
     setCurrentSources([]);
+    setSuggestedQuestions([]);
     stoppedByUserRef.current = false;
 
     abortControllerRef.current = new AbortController();
@@ -361,11 +411,15 @@ function ChatContent({
     );
   }
 
-  const suggestedQuestions = [
+  const defaultQuestions = [
     "What are the main topics covered in my sources?",
     "Summarize the key points",
     "What questions can you answer based on my sources?",
   ];
+
+  // Use dynamic suggestions if available, otherwise fall back to defaults
+  const displayedQuestions =
+    suggestedQuestions.length > 0 ? suggestedQuestions : defaultQuestions;
 
   function handleSuggestedQuestion(question: string) {
     handleSend(question);
@@ -392,28 +446,69 @@ function ChatContent({
               </Button>
             </div>
           ) : (
-            <div className="flex h-full flex-col items-center justify-center p-8 text-center">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                <Bot className="h-8 w-8 text-primary" />
-              </div>
-              <h2 className="mb-2 text-lg font-medium">
-                Ask about your sources
-              </h2>
-              <p className="mb-6 text-sm text-muted-foreground">
-                I can help you understand and analyze your{" "}
-                {selectedSources.size} selected source
-                {selectedSources.size !== 1 ? "s" : ""}.
-              </p>
-              <div className="flex flex-col gap-2">
-                {suggestedQuestions.map((question) => (
-                  <button
-                    key={question}
-                    onClick={() => handleSuggestedQuestion(question)}
-                    className="rounded-full border bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            <div className="flex h-full flex-col overflow-y-auto p-8">
+              {/* Notebook Summary Card */}
+              {notebookSummary?.summary ? (
+                <NotebookSummaryCard
+                  summary={notebookSummary}
+                  onRegenerate={() => generateSummary.mutate()}
+                  isRegenerating={generateSummary.isPending}
+                />
+              ) : (
+                <div className="mb-8 flex flex-col items-center text-center">
+                  <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                    <Bot className="h-8 w-8 text-primary" />
+                  </div>
+                  <h2 className="mb-2 text-lg font-medium">
+                    Ask about your sources
+                  </h2>
+                  <p className="mb-4 text-sm text-muted-foreground">
+                    I can help you understand and analyze your{" "}
+                    {selectedSources.size} selected source
+                    {selectedSources.size !== 1 ? "s" : ""}.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full"
+                    onClick={() => generateSummary.mutate()}
+                    disabled={generateSummary.isPending}
                   >
-                    {question}
-                  </button>
-                ))}
+                    {generateSummary.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Generating summary...
+                      </>
+                    ) : (
+                      "Generate notebook summary"
+                    )}
+                  </Button>
+                </div>
+              )}
+
+              {/* Suggested Questions */}
+              <div className="mt-auto flex flex-col items-center">
+                <p className="mb-4 text-sm text-muted-foreground">
+                  Try asking:
+                </p>
+                {isLoadingSuggestions ? (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Loading suggestions...
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {displayedQuestions.map((question) => (
+                      <button
+                        key={question}
+                        onClick={() => handleSuggestedQuestion(question)}
+                        className="rounded-full border bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      >
+                        {question}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )
@@ -423,6 +518,8 @@ function ChatContent({
               <MessageBubble
                 key={message.id}
                 message={message}
+                sessionId={sessionId}
+                notebookId={notebookId}
                 sources={
                   message.id === lastAssistantMessage?.id
                     ? currentSources
@@ -449,6 +546,23 @@ function ChatContent({
             {!isStreaming && stoppedContent && (
               <StoppedMessage content={stoppedContent} />
             )}
+            {/* Follow-up questions after response */}
+            {!isStreaming &&
+              !stoppedContent &&
+              suggestedQuestions.length > 0 &&
+              allMessages.length > 0 && (
+                <div className="mt-4 flex flex-wrap justify-center gap-2">
+                  {suggestedQuestions.map((question) => (
+                    <button
+                      key={question}
+                      onClick={() => handleSuggestedQuestion(question)}
+                      className="rounded-full border bg-background px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    >
+                      {question}
+                    </button>
+                  ))}
+                </div>
+              )}
             <div ref={messagesEndRef} />
           </div>
         )}
@@ -533,6 +647,91 @@ function ChatContent({
   );
 }
 
+interface NotebookSummaryCardProps {
+  summary: NotebookSummary;
+  onRegenerate: () => void;
+  isRegenerating: boolean;
+}
+
+function NotebookSummaryCard({
+  summary,
+  onRegenerate,
+  isRegenerating,
+}: NotebookSummaryCardProps) {
+  // Highlight key terms in the summary text
+  function highlightKeyTerms(
+    text: string,
+    keyTerms: string[],
+  ): React.ReactNode {
+    if (!keyTerms.length) return text;
+
+    // Sort by length (longest first) to avoid partial matches
+    const sortedTerms = [...keyTerms].sort((a, b) => b.length - a.length);
+    const escapedTerms = sortedTerms.map((term) =>
+      term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+    );
+    const pattern = new RegExp(`\\b(${escapedTerms.join("|")})\\b`, "gi");
+
+    const parts = text.split(pattern);
+    return parts.map((part, i) => {
+      const isKeyTerm = keyTerms.some(
+        (term) => term.toLowerCase() === part.toLowerCase(),
+      );
+      return isKeyTerm ? (
+        <strong key={i} className="text-foreground">
+          {part}
+        </strong>
+      ) : (
+        part
+      );
+    });
+  }
+
+  return (
+    <div className="mb-6 rounded-lg border bg-muted/30 p-6">
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="font-medium">Notebook Summary</h3>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onRegenerate}
+          disabled={isRegenerating}
+          className="h-8 text-xs"
+        >
+          {isRegenerating ? (
+            <>
+              <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+              Regenerating...
+            </>
+          ) : (
+            <>
+              <RefreshCw className="mr-1 h-3 w-3" />
+              Regenerate
+            </>
+          )}
+        </Button>
+      </div>
+      <div className="prose prose-sm max-w-none text-muted-foreground dark:prose-invert">
+        <p>
+          {highlightKeyTerms(summary.summary || "", summary.key_terms || [])}
+        </p>
+      </div>
+      {summary.key_terms && summary.key_terms.length > 0 && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {summary.key_terms.map((term) => (
+            <span
+              key={term}
+              className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
+            >
+              {term}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ChatWelcome({
   hasDocuments,
   onCreateSession,
@@ -572,6 +771,8 @@ function ChatWelcome({
 
 interface MessageBubbleProps {
   message: ChatMessage;
+  sessionId: string;
+  notebookId: string;
   sources?: SourceInfo[];
   onRegenerate?: () => void;
   onCitationClick?: (index: number) => void;
@@ -579,6 +780,8 @@ interface MessageBubbleProps {
 
 function MessageBubble({
   message,
+  sessionId,
+  notebookId,
   sources,
   onRegenerate,
   onCitationClick,
@@ -586,7 +789,9 @@ function MessageBubble({
   const isUser = message.role === "user";
   const [showAllCitations, setShowAllCitations] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [rating, setRating] = useState<"up" | "down" | null>(null);
+  const [saved, setSaved] = useState(false);
+  const feedbackMutation = useMessageFeedback(sessionId);
+  const createNote = useCreateNote(notebookId);
 
   async function handleCopy() {
     try {
@@ -598,9 +803,22 @@ function MessageBubble({
     }
   }
 
+  function handleSaveToNote() {
+    createNote.mutate(
+      { content: message.content, sourceMessageId: message.id },
+      {
+        onSuccess: () => {
+          setSaved(true);
+          setTimeout(() => setSaved(false), 2000);
+        },
+      },
+    );
+  }
+
   function handleRate(newRating: "up" | "down") {
     // Toggle off if clicking the same rating
-    setRating(rating === newRating ? null : newRating);
+    const feedback = message.feedback === newRating ? null : newRating;
+    feedbackMutation.mutate({ messageId: message.id, feedback });
   }
 
   return (
@@ -695,20 +913,42 @@ function MessageBubble({
               <Button
                 variant="ghost"
                 size="icon"
-                className={cn("h-7 w-7", rating === "up" && "text-green-600")}
+                className={cn(
+                  "h-7 w-7",
+                  message.feedback === "up" && "text-green-600",
+                )}
                 onClick={() => handleRate("up")}
                 title="Good response"
+                disabled={feedbackMutation.isPending}
               >
                 <ThumbsUp className="h-3.5 w-3.5" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
-                className={cn("h-7 w-7", rating === "down" && "text-red-600")}
+                className={cn(
+                  "h-7 w-7",
+                  message.feedback === "down" && "text-red-600",
+                )}
                 onClick={() => handleRate("down")}
                 title="Bad response"
+                disabled={feedbackMutation.isPending}
               >
                 <ThumbsDown className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn("h-7 w-7", saved && "text-green-600")}
+                onClick={handleSaveToNote}
+                title="Save to note"
+                disabled={createNote.isPending || saved}
+              >
+                {saved ? (
+                  <Check className="h-3.5 w-3.5" />
+                ) : (
+                  <StickyNote className="h-3.5 w-3.5" />
+                )}
               </Button>
               {onRegenerate && (
                 <Button

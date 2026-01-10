@@ -109,6 +109,7 @@ export function NotebookLayout({
           )}
         >
           <StudioPanel
+            notebookId={notebook.id}
             collapsed={studioCollapsed}
             onToggleCollapse={() => setStudioCollapsed(!studioCollapsed)}
           />

@@ -34,6 +34,7 @@ interface SourceDetailViewProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   highlightedChunkContent?: string | null;
+  citationIndex?: number | null;
 }
 
 export function SourceDetailView({
@@ -41,6 +42,7 @@ export function SourceDetailView({
   open,
   onOpenChange,
   highlightedChunkContent,
+  citationIndex,
 }: SourceDetailViewProps) {
   // Switch to content tab when there's highlighted content
   const [activeTab, setActiveTab] = useState(
@@ -157,6 +159,7 @@ export function SourceDetailView({
               <HighlightedContent
                 content={content.content}
                 highlightText={highlightedChunkContent}
+                citationIndex={citationIndex}
               />
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-center">
@@ -313,23 +316,26 @@ function formatSourceType(sourceType: string): string {
 function HighlightedContent({
   content,
   highlightText,
+  citationIndex,
 }: {
   content: string;
   highlightText?: string | null;
+  citationIndex?: number | null;
 }) {
   const highlightRef = useRef<HTMLSpanElement>(null);
 
-  // Auto-scroll to highlighted content
   useEffect(() => {
     if (highlightRef.current && highlightText) {
-      highlightRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
+      const timer = setTimeout(() => {
+        highlightRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }, 100);
+      return () => clearTimeout(timer);
     }
   }, [highlightText]);
 
-  // If no highlight text, render content normally
   if (!highlightText) {
     return (
       <div className="whitespace-pre-wrap rounded-lg bg-muted/50 p-4 font-mono text-sm">
@@ -338,53 +344,67 @@ function HighlightedContent({
     );
   }
 
-  // Find and highlight the text
-  const index = content.indexOf(highlightText);
-  if (index === -1) {
-    // Highlight text not found, try fuzzy match with first 50 chars
-    const shortHighlight = highlightText.slice(0, 50);
-    const fuzzyIndex = content.indexOf(shortHighlight);
-    if (fuzzyIndex === -1) {
-      return (
-        <div className="whitespace-pre-wrap rounded-lg bg-muted/50 p-4 font-mono text-sm">
-          {content}
-        </div>
-      );
+  // Find highlight using exact match, then normalized match, then prefix match
+  function findMatch(): { index: number; length: number } | null {
+    // Exact match
+    const exactIndex = content.indexOf(highlightText);
+    if (exactIndex !== -1) {
+      return { index: exactIndex, length: highlightText.length };
     }
-    // Use fuzzy match
-    const before = content.slice(0, fuzzyIndex);
-    const highlighted = content.slice(
-      fuzzyIndex,
-      fuzzyIndex + highlightText.length,
-    );
-    const after = content.slice(fuzzyIndex + highlightText.length);
 
+    // Normalized whitespace match
+    const normalize = (t: string) => t.replace(/\s+/g, " ").trim();
+    const normalizedContent = normalize(content);
+    const normalizedSearch = normalize(highlightText);
+    const normalizedIndex = normalizedContent.indexOf(normalizedSearch);
+    if (normalizedIndex !== -1) {
+      return { index: normalizedIndex, length: highlightText.length };
+    }
+
+    // Prefix match (first 100 chars)
+    const prefix = normalize(highlightText.slice(0, 100));
+    if (prefix.length >= 20) {
+      const prefixIndex = normalizedContent.indexOf(prefix);
+      if (prefixIndex !== -1) {
+        return {
+          index: prefixIndex,
+          length: Math.min(highlightText.length, 500),
+        };
+      }
+    }
+
+    return null;
+  }
+
+  const match = findMatch();
+
+  if (!match) {
     return (
       <div className="whitespace-pre-wrap rounded-lg bg-muted/50 p-4 font-mono text-sm">
-        {before}
-        <span
-          ref={highlightRef}
-          className="rounded bg-violet-200 px-0.5 dark:bg-violet-900/50"
-        >
-          {highlighted}
-        </span>
-        {after}
+        {content}
       </div>
     );
   }
 
-  const before = content.slice(0, index);
-  const highlighted = content.slice(index, index + highlightText.length);
-  const after = content.slice(index + highlightText.length);
+  const before = content.slice(0, match.index);
+  const highlighted = content.slice(match.index, match.index + match.length);
+  const after = content.slice(match.index + match.length);
 
   return (
-    <div className="whitespace-pre-wrap rounded-lg bg-muted/50 p-4 font-mono text-sm">
+    <div className="relative whitespace-pre-wrap rounded-lg bg-muted/50 p-4 font-mono text-sm">
       {before}
-      <span
-        ref={highlightRef}
-        className="rounded bg-violet-200 px-0.5 dark:bg-violet-900/50"
-      >
-        {highlighted}
+      <span className="relative inline">
+        {citationIndex && (
+          <span className="absolute -left-1 -top-5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold text-primary-foreground">
+            {citationIndex}
+          </span>
+        )}
+        <span
+          ref={highlightRef}
+          className="animate-highlight-pulse rounded bg-violet-200 px-0.5 ring-2 ring-violet-400 dark:bg-violet-900/70 dark:ring-violet-500"
+        >
+          {highlighted}
+        </span>
       </span>
       {after}
     </div>

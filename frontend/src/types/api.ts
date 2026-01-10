@@ -133,12 +133,15 @@ export interface ChatSessionsResponse {
   sessions: ChatSession[];
 }
 
+export type MessageFeedback = "up" | "down" | null;
+
 export interface ChatMessage {
   id: string;
   chat_session_id: string;
   role: "user" | "assistant";
   content: string;
   model: string | null;
+  feedback: MessageFeedback;
   created_at: string;
 }
 
@@ -156,11 +159,36 @@ export interface SourceInfo {
 }
 
 export interface StreamEvent {
-  type: "sources" | "token" | "done" | "error";
+  type: "sources" | "token" | "done" | "error" | "suggestions";
   sources?: SourceInfo[];
   content?: string;
   message_id?: string;
   error?: string;
+  questions?: string[];
+}
+
+export interface SuggestedQuestionsResponse {
+  questions: string[];
+}
+
+export interface NotebookSummary {
+  summary: string | null;
+  key_terms: string[];
+  generated_at: string | null;
+}
+
+export interface Note {
+  id: string;
+  notebook_id: string;
+  title: string | null;
+  content: string;
+  source_message_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NotesResponse {
+  notes: Note[];
 }
 
 export type ThemeSetting = "light" | "dark" | "system";
@@ -171,4 +199,25 @@ export interface Settings {
   ollama_url: string;
   top_k: number;
   temperature: number;
+}
+
+// Studio types
+
+export interface MindMapNode {
+  id: string;
+  label: string;
+  children: MindMapNode[];
+}
+
+export interface MindMapData {
+  central_topic: string;
+  nodes: MindMapNode[];
+}
+
+export interface MindMapResponse {
+  id: string;
+  notebook_id: string;
+  title: string | null;
+  data: MindMapData;
+  created_at: string;
 }

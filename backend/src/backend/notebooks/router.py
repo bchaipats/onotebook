@@ -1,3 +1,5 @@
+import json
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -7,6 +9,7 @@ from src.backend.notebooks.schemas import (
     NotebookCreate,
     NotebookListResponse,
     NotebookResponse,
+    NotebookSummaryResponse,
     NotebookUpdate,
 )
 
@@ -113,3 +116,61 @@ async def delete_notebook(
             detail="Notebook not found",
         )
     await service.delete_notebook(session, notebook)
+
+
+@router.get("/{notebook_id}/summary", response_model=NotebookSummaryResponse)
+async def get_notebook_summary(
+    notebook_id: str,
+    session: AsyncSession = Depends(get_session),
+) -> NotebookSummaryResponse:
+    """Get the summary for a notebook."""
+    notebook = await service.get_notebook(session, notebook_id)
+    if not notebook:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Notebook not found",
+        )
+    # Parse key terms from JSON
+    key_terms = []
+    if notebook.summary_key_terms:
+        try:
+            key_terms = json.loads(notebook.summary_key_terms)
+        except json.JSONDecodeError:
+            key_terms = []
+
+    return NotebookSummaryResponse(
+        summary=notebook.summary,
+        key_terms=key_terms,
+        generated_at=notebook.summary_generated_at,
+    )
+
+
+@router.post("/{notebook_id}/summary/generate", response_model=NotebookSummaryResponse)
+async def generate_notebook_summary(
+    notebook_id: str,
+    session: AsyncSession = Depends(get_session),
+) -> NotebookSummaryResponse:
+    """Generate a summary for a notebook based on its sources."""
+    notebook = await service.get_notebook(session, notebook_id)
+    if not notebook:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Notebook not found",
+        )
+
+    # Generate the summary
+    notebook = await service.generate_notebook_summary(session, notebook)
+
+    # Parse key terms from JSON
+    key_terms = []
+    if notebook.summary_key_terms:
+        try:
+            key_terms = json.loads(notebook.summary_key_terms)
+        except json.JSONDecodeError:
+            key_terms = []
+
+    return NotebookSummaryResponse(
+        summary=notebook.summary,
+        key_terms=key_terms,
+        generated_at=notebook.summary_generated_at,
+    )

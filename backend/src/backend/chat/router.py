@@ -9,12 +9,15 @@ from src.backend.chat.schemas import (
     ChatSessionCreate,
     ChatSessionListResponse,
     ChatSessionResponse,
+    MessageFeedbackRequest,
     MessageListResponse,
     MessageResponse,
     SendMessageRequest,
+    SuggestedQuestionsResponse,
 )
 from src.backend.config import settings
 from src.backend.database import async_session, get_session
+from src.backend.documents.service import list_documents
 from src.backend.embedding.service import embed_query
 from src.backend.embedding.vectorstore import search_collection
 from src.backend.llm import get_provider
@@ -41,6 +44,7 @@ def message_to_response(message) -> MessageResponse:
         role=message.role,
         content=message.content,
         model=message.model,
+        feedback=message.feedback,
         created_at=message.created_at,
     )
 
@@ -63,6 +67,46 @@ async def list_sessions(
 
     sessions = await service.list_sessions(session, notebook_id)
     return ChatSessionListResponse(sessions=[session_to_response(s) for s in sessions])
+
+
+@router.get(
+    "/notebooks/{notebook_id}/suggested-questions",
+    response_model=SuggestedQuestionsResponse,
+)
+async def get_suggested_questions(
+    notebook_id: str,
+    db_session: AsyncSession = Depends(get_session),
+) -> SuggestedQuestionsResponse:
+    """Get suggested questions based on notebook sources."""
+    notebook = await get_notebook(db_session, notebook_id)
+    if not notebook:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Notebook not found",
+        )
+
+    # Get ready documents for context
+    documents = await list_documents(db_session, notebook_id)
+    ready_docs = [d for d in documents if d.processing_status == "ready"]
+
+    if not ready_docs:
+        return SuggestedQuestionsResponse(questions=[])
+
+    # Use document summaries or filenames as context
+    source_summaries = []
+    for doc in ready_docs[:5]:  # Limit to 5 documents
+        if doc.summary:
+            source_summaries.append(doc.summary)
+        else:
+            source_summaries.append(f"Document: {doc.filename}")
+
+    questions = await service.generate_suggested_questions(
+        source_summaries=source_summaries,
+        provider_name=notebook.llm_provider,
+        model=notebook.llm_model or settings.default_llm_model,
+    )
+
+    return SuggestedQuestionsResponse(questions=questions)
 
 
 @router.post(
@@ -174,9 +218,18 @@ Ask follow-up questions to check understanding when appropriate."""
             "Provide appropriately detailed responses based on the complexity of the question."
         )
 
+    # Formatting instructions
+    formatting_instruction = """Format your response for readability:
+- Use **bold** for key terms and important concepts
+- Use bullet points or numbered lists when listing multiple items
+- Keep paragraphs concise (2-4 sentences each)
+- Use ### headings to organize distinct topics or sections when the answer covers multiple aspects"""
+
     return f"""{style_instruction}
 
 {length_instruction}
+
+{formatting_instruction}
 
 Use the following context to answer the user's question. If the context doesn't contain relevant information, say so.
 
@@ -312,6 +365,19 @@ async def send_message(
                     )
 
             yield f"data: {json.dumps({'type': 'done', 'message_id': assistant_message.id})}\n\n"
+
+            # Generate follow-up questions based on the response
+            try:
+                suggested_questions = await service.generate_suggested_questions(
+                    source_summaries=[],  # Not needed for follow-up
+                    previous_response=full_response,
+                    provider_name=notebook.llm_provider,
+                    model=model,
+                )
+                if suggested_questions:
+                    yield f"data: {json.dumps({'type': 'suggestions', 'questions': suggested_questions})}\n\n"
+            except Exception:
+                pass  # Don't fail the request if suggestions fail
 
         except Exception as e:
             yield f"data: {json.dumps({'type': 'error', 'error': str(e)})}\n\n"
@@ -476,6 +542,19 @@ async def regenerate_message(
 
             yield f"data: {json.dumps({'type': 'done', 'message_id': assistant_message.id})}\n\n"
 
+            # Generate follow-up questions based on the response
+            try:
+                suggested_questions = await service.generate_suggested_questions(
+                    source_summaries=[],
+                    previous_response=full_response,
+                    provider_name=notebook.llm_provider,
+                    model=model,
+                )
+                if suggested_questions:
+                    yield f"data: {json.dumps({'type': 'suggestions', 'questions': suggested_questions})}\n\n"
+            except Exception:
+                pass  # Don't fail the request if suggestions fail
+
         except Exception as e:
             yield f"data: {json.dumps({'type': 'error', 'error': str(e)})}\n\n"
 
@@ -487,6 +566,34 @@ async def regenerate_message(
             "Connection": "keep-alive",
         },
     )
+
+
+@router.post("/messages/{message_id}/feedback", response_model=MessageResponse)
+async def set_message_feedback(
+    message_id: str,
+    request: MessageFeedbackRequest,
+    db_session: AsyncSession = Depends(get_session),
+) -> MessageResponse:
+    """Set feedback (thumbs up/down) on a message."""
+    message = await service.get_message(db_session, message_id)
+    if not message:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Message not found",
+        )
+
+    if message.role != "assistant":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Can only give feedback on assistant messages",
+        )
+
+    message.feedback = request.feedback
+    db_session.add(message)
+    await db_session.commit()
+    await db_session.refresh(message)
+
+    return message_to_response(message)
 
 
 @router.get("/llm/providers")
