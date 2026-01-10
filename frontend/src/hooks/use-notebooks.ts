@@ -4,6 +4,7 @@ import {
   createNotebook,
   deleteNotebook,
   updateNotebook,
+  type UpdateNotebookData,
 } from "@/lib/api";
 
 export function useNotebooks() {
@@ -28,13 +29,8 @@ export function useUpdateNotebook() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      id,
-      data,
-    }: {
-      id: string;
-      data: { name?: string; color?: string };
-    }) => updateNotebook(id, data),
+    mutationFn: ({ id, data }: { id: string; data: UpdateNotebookData }) =>
+      updateNotebook(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notebooks"] });
     },

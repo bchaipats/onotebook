@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, FileText, PanelRightOpen, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -11,6 +11,7 @@ import { SourceSearch } from "./source-search";
 import { useDocuments } from "@/hooks/use-documents";
 import { useSourceCount } from "@/hooks/use-sources";
 import type { Document } from "@/types/api";
+import type { HighlightedCitation } from "./chat-panel";
 
 interface SourcesPanelProps {
   notebookId: string;
@@ -19,6 +20,7 @@ interface SourcesPanelProps {
   autoOpenAddSources?: boolean;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
+  highlightedCitation?: HighlightedCitation | null;
 }
 
 export function SourcesPanel({
@@ -28,11 +30,34 @@ export function SourcesPanel({
   autoOpenAddSources = false,
   collapsed = false,
   onToggleCollapse,
+  highlightedCitation,
 }: SourcesPanelProps) {
   const { data: documents, isLoading } = useDocuments(notebookId);
   const { data: sourceCount } = useSourceCount(notebookId);
   const [isUploadOpen, setIsUploadOpen] = useState(autoOpenAddSources);
   const [previewDocument, setPreviewDocument] = useState<Document | null>(null);
+  const [highlightedChunkContent, setHighlightedChunkContent] = useState<
+    string | null
+  >(null);
+
+  // Auto-open document when a citation is highlighted
+  useEffect(() => {
+    if (highlightedCitation && documents) {
+      const doc = documents.find((d) => d.id === highlightedCitation.documentId);
+      if (doc) {
+        setPreviewDocument(doc);
+        setHighlightedChunkContent(highlightedCitation.chunkContent);
+      }
+    }
+  }, [highlightedCitation, documents]);
+
+  // Clear highlight when document is closed
+  const handleClosePreview = (open: boolean) => {
+    if (!open) {
+      setPreviewDocument(null);
+      setHighlightedChunkContent(null);
+    }
+  };
 
   const isAtLimit = sourceCount ? sourceCount.remaining <= 0 : false;
 
@@ -190,7 +215,8 @@ export function SourcesPanel({
       <SourceDetailView
         document={previewDocument}
         open={!!previewDocument}
-        onOpenChange={(open) => !open && setPreviewDocument(null)}
+        onOpenChange={handleClosePreview}
+        highlightedChunkContent={highlightedChunkContent}
       />
     </div>
   );

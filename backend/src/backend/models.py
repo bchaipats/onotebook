@@ -22,6 +22,13 @@ class Notebook(SQLModel, table=True):
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
 
+    # Chat configuration
+    chat_style: str = Field(default="default")  # default, learning_guide, custom
+    response_length: str = Field(default="default")  # shorter, default, longer
+    custom_instructions: str | None = None
+    llm_provider: str = Field(default="ollama")  # ollama, anthropic, openai
+    llm_model: str = Field(default="llama3.2")
+
     documents: list["Document"] = Relationship(
         back_populates="notebook",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},

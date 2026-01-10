@@ -4,6 +4,10 @@ export interface HealthResponse {
   ollama_connected: boolean;
 }
 
+export type ChatStyle = "default" | "learning_guide" | "custom";
+export type ResponseLength = "shorter" | "default" | "longer";
+export type LLMProvider = "ollama" | "anthropic" | "openai";
+
 export interface Notebook {
   id: string;
   name: string;
@@ -12,6 +16,12 @@ export interface Notebook {
   created_at: string;
   updated_at: string;
   document_count: number;
+  // Chat configuration
+  chat_style: ChatStyle;
+  response_length: ResponseLength;
+  custom_instructions: string | null;
+  llm_provider: LLMProvider;
+  llm_model: string;
 }
 
 export interface NotebooksResponse {

@@ -17,8 +17,9 @@ from src.backend.config import settings
 from src.backend.database import async_session, get_session
 from src.backend.embedding.service import embed_query
 from src.backend.embedding.vectorstore import search_collection
+from src.backend.llm import get_provider
+from src.backend.llm.base import ChatMessage as LLMChatMessage
 from src.backend.notebooks.service import get_notebook
-from src.backend.ollama.service import chat as ollama_chat
 
 router = APIRouter(prefix="/api", tags=["chat"])
 
@@ -133,13 +134,42 @@ async def get_messages(
     return MessageListResponse(messages=[message_to_response(m) for m in messages])
 
 
-def build_rag_prompt(question: str, sources: list[dict]) -> str:
-    """Build the RAG prompt with sources."""
+def build_rag_prompt(
+    question: str,
+    sources: list[dict],
+    chat_style: str = "default",
+    response_length: str = "default",
+    custom_instructions: str | None = None,
+) -> str:
+    """Build the RAG prompt with sources and style configuration."""
     source_text = ""
     for i, source in enumerate(sources, 1):
         source_text += f'\n[{i}] From "{source["document_name"]}":\n{source["content"]}\n'
 
-    return f"""You are a helpful assistant answering questions based on the provided documents.
+    # Build style instructions
+    style_instruction = ""
+    if chat_style == "learning_guide":
+        style_instruction = """You are a knowledgeable tutor helping someone learn from these materials.
+Break down complex concepts into clear explanations. Use analogies and examples when helpful.
+Ask follow-up questions to check understanding when appropriate."""
+    elif chat_style == "custom" and custom_instructions:
+        style_instruction = custom_instructions
+    else:
+        style_instruction = "You are a helpful assistant answering questions based on the provided documents."
+
+    # Build length instructions
+    length_instruction = ""
+    if response_length == "shorter":
+        length_instruction = "Keep your response concise and to the point. Aim for 2-3 sentences when possible."
+    elif response_length == "longer":
+        length_instruction = "Provide detailed, comprehensive responses. Include relevant context and examples."
+    else:
+        length_instruction = "Provide appropriately detailed responses based on the complexity of the question."
+
+    return f"""{style_instruction}
+
+{length_instruction}
+
 Use the following context to answer the user's question. If the context doesn't contain relevant information, say so.
 
 When using information from the context, cite your sources using [1], [2], etc. corresponding to the source numbers provided.
@@ -164,8 +194,16 @@ async def send_message(
             detail="Session not found",
         )
 
-    notebook_id = chat_session.notebook_id
-    model = request.model or settings.default_llm_model
+    # Get notebook with chat configuration
+    notebook = await get_notebook(db_session, chat_session.notebook_id)
+    if not notebook:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Notebook not found",
+        )
+
+    notebook_id = notebook.id
+    model = request.model or notebook.llm_model or settings.default_llm_model
 
     # Save user message
     await service.create_message(
@@ -220,34 +258,30 @@ async def send_message(
             # Send sources first
             yield f"data: {json.dumps({'type': 'sources', 'sources': sources})}\n\n"
 
-            # Build prompt
-            prompt = build_rag_prompt(request.content, sources)
+            # Build prompt with notebook's chat configuration
+            prompt = build_rag_prompt(
+                request.content,
+                sources,
+                chat_style=notebook.chat_style,
+                response_length=notebook.response_length,
+                custom_instructions=notebook.custom_instructions,
+            )
 
             # Get conversation history
             messages_history = await service.get_messages(db_session, session_id)
-            ollama_messages = []
+            llm_messages: list[LLMChatMessage] = []
             for msg in messages_history[:-1]:  # Exclude the just-added user message
-                ollama_messages.append(
-                    {
-                        "role": msg.role,
-                        "content": msg.content,
-                    }
-                )
+                llm_messages.append(LLMChatMessage(role=msg.role, content=msg.content))
             # Add current message with RAG context
-            ollama_messages.append(
-                {
-                    "role": "user",
-                    "content": prompt,
-                }
-            )
+            llm_messages.append(LLMChatMessage(role="user", content=prompt))
 
-            # Stream response from Ollama
+            # Stream response from LLM provider
+            provider = get_provider(notebook.llm_provider)
             full_response = ""
-            async for chunk in ollama_chat(model, ollama_messages):
-                if "message" in chunk and "content" in chunk["message"]:
-                    token = chunk["message"]["content"]
-                    full_response += token
-                    yield f"data: {json.dumps({'type': 'token', 'content': token})}\n\n"
+            async for chunk in provider.chat_stream(llm_messages, model):
+                if chunk.content:
+                    full_response += chunk.content
+                    yield f"data: {json.dumps({'type': 'token', 'content': chunk.content})}\n\n"
 
             # Save assistant message
             async with async_session() as save_session:
@@ -335,9 +369,16 @@ async def regenerate_message(
         )
 
     # Regenerate using the last user message
+    # Get notebook with chat configuration
+    notebook = await get_notebook(db_session, chat_session.notebook_id)
+    if not notebook:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Notebook not found",
+        )
 
-    notebook_id = chat_session.notebook_id
-    model = message.model or settings.default_llm_model
+    notebook_id = notebook.id
+    model = message.model or notebook.llm_model or settings.default_llm_model
 
     async def generate_response():
         sources: list[dict] = []
@@ -378,36 +419,34 @@ async def regenerate_message(
             # Send sources first
             yield f"data: {json.dumps({'type': 'sources', 'sources': sources})}\n\n"
 
-            # Build prompt
-            prompt = build_rag_prompt(last_user_message.content, sources)
+            # Build prompt with notebook's chat configuration
+            prompt = build_rag_prompt(
+                last_user_message.content,
+                sources,
+                chat_style=notebook.chat_style,
+                response_length=notebook.response_length,
+                custom_instructions=notebook.custom_instructions,
+            )
 
             # Get conversation history (without the deleted assistant message)
             messages_history = await service.get_messages(db_session, chat_session.id)
-            ollama_messages = []
+            llm_messages: list[LLMChatMessage] = []
             for msg in messages_history:
                 if msg.id == last_user_message.id:
                     # Use RAG prompt for this message
-                    ollama_messages.append(
-                        {
-                            "role": "user",
-                            "content": prompt,
-                        }
-                    )
+                    llm_messages.append(LLMChatMessage(role="user", content=prompt))
                 else:
-                    ollama_messages.append(
-                        {
-                            "role": msg.role,
-                            "content": msg.content,
-                        }
+                    llm_messages.append(
+                        LLMChatMessage(role=msg.role, content=msg.content)
                     )
 
-            # Stream response from Ollama
+            # Stream response from LLM provider
+            provider = get_provider(notebook.llm_provider)
             full_response = ""
-            async for chunk in ollama_chat(model, ollama_messages):
-                if "message" in chunk and "content" in chunk["message"]:
-                    token = chunk["message"]["content"]
-                    full_response += token
-                    yield f"data: {json.dumps({'type': 'token', 'content': token})}\n\n"
+            async for chunk in provider.chat_stream(llm_messages, model):
+                if chunk.content:
+                    full_response += chunk.content
+                    yield f"data: {json.dumps({'type': 'token', 'content': chunk.content})}\n\n"
 
             # Save assistant message
             async with async_session() as save_session:
@@ -442,3 +481,21 @@ async def regenerate_message(
             "Connection": "keep-alive",
         },
     )
+
+
+@router.get("/llm/providers")
+async def list_llm_providers():
+    """List available LLM providers and their models."""
+    providers = []
+    for provider_name in ["ollama", "anthropic", "openai"]:
+        provider = get_provider(provider_name)
+        is_available = provider.is_available()
+        models = await provider.list_models() if is_available else []
+        providers.append(
+            {
+                "name": provider_name,
+                "available": is_available,
+                "models": models,
+            }
+        )
+    return {"providers": providers}

@@ -67,9 +67,19 @@ export async function createNotebook(data: {
   });
 }
 
+export interface UpdateNotebookData {
+  name?: string;
+  color?: string;
+  chat_style?: "default" | "learning_guide" | "custom";
+  response_length?: "shorter" | "default" | "longer";
+  custom_instructions?: string | null;
+  llm_provider?: "ollama" | "anthropic" | "openai";
+  llm_model?: string;
+}
+
 export async function updateNotebook(
   id: string,
-  data: { name?: string; color?: string },
+  data: UpdateNotebookData,
 ): Promise<Notebook> {
   return request<Notebook>(`/api/notebooks/${id}`, {
     method: "PUT",
@@ -230,6 +240,23 @@ export async function getSourceCount(
   return request<SourceCountResponse>(
     `/api/notebooks/${notebookId}/sources/count`,
   );
+}
+
+// LLM Providers API
+
+export interface LLMProviderInfo {
+  name: "ollama" | "anthropic" | "openai";
+  available: boolean;
+  models: string[];
+}
+
+export interface LLMProvidersResponse {
+  providers: LLMProviderInfo[];
+}
+
+export async function getLLMProviders(): Promise<LLMProviderInfo[]> {
+  const response = await request<LLMProvidersResponse>("/api/llm/providers");
+  return response.providers;
 }
 
 // Ollama/Models API

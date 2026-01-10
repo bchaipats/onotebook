@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { NotebookHeader } from "./notebook-header";
 import { SourcesPanel } from "./sources-panel";
 import { StudioPanel } from "./studio-panel";
-import { ChatPanel } from "./chat-panel";
+import { ChatPanel, type HighlightedCitation } from "./chat-panel";
 import { useDocuments } from "@/hooks/use-documents";
 import { cn } from "@/lib/utils";
 import type { Notebook } from "@/types/api";
@@ -28,6 +28,8 @@ export function NotebookLayout({
   );
   const [sourcesCollapsed, setSourcesCollapsed] = useState(false);
   const [studioCollapsed, setStudioCollapsed] = useState(false);
+  const [highlightedCitation, setHighlightedCitation] =
+    useState<HighlightedCitation | null>(null);
 
   // Initialize with all sources selected when documents load
   useEffect(() => {
@@ -38,6 +40,28 @@ export function NotebookLayout({
       setSelectedSources(new Set(readyDocs.map((d) => d.id)));
     }
   }, [documents]);
+
+  // Handle citation highlight from chat panel
+  const handleCitationHighlight = useCallback(
+    (citation: HighlightedCitation) => {
+      setHighlightedCitation(citation);
+      // Expand sources panel if collapsed
+      if (sourcesCollapsed) {
+        setSourcesCollapsed(false);
+      }
+    },
+    [sourcesCollapsed],
+  );
+
+  // Clear highlight after a delay
+  useEffect(() => {
+    if (highlightedCitation) {
+      const timeout = setTimeout(() => {
+        setHighlightedCitation(null);
+      }, 5000);
+      return () => clearTimeout(timeout);
+    }
+  }, [highlightedCitation]);
 
   return (
     <div className="flex h-screen flex-col bg-background">
@@ -62,6 +86,7 @@ export function NotebookLayout({
             autoOpenAddSources={autoOpenAddSources}
             collapsed={sourcesCollapsed}
             onToggleCollapse={() => setSourcesCollapsed(!sourcesCollapsed)}
+            highlightedCitation={highlightedCitation}
           />
         </aside>
 
@@ -69,7 +94,9 @@ export function NotebookLayout({
         <main className="flex flex-1 flex-col overflow-hidden rounded-2xl bg-card">
           <ChatPanel
             notebookId={notebook.id}
+            notebook={notebook}
             selectedSources={selectedSources}
+            onCitationHighlight={handleCitationHighlight}
           />
         </main>
 

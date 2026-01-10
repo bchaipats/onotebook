@@ -40,6 +40,31 @@ async def init_db() -> None:
     """Initialize the database, creating all tables."""
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
+    await run_migrations()
+
+
+async def run_migrations() -> None:
+    """Run database migrations for schema changes."""
+    import contextlib
+
+    from sqlalchemy import text
+
+    migrations = [
+        # Add chat configuration columns to notebook table
+        ("notebook", "chat_style", "VARCHAR DEFAULT 'default'"),
+        ("notebook", "response_length", "VARCHAR DEFAULT 'default'"),
+        ("notebook", "custom_instructions", "TEXT"),
+        ("notebook", "llm_provider", "VARCHAR DEFAULT 'ollama'"),
+        ("notebook", "llm_model", "VARCHAR DEFAULT 'llama3.2'"),
+    ]
+
+    async with engine.begin() as conn:
+        for table, column, column_def in migrations:
+            # Skip if column already exists
+            with contextlib.suppress(Exception):
+                await conn.execute(
+                    text(f"ALTER TABLE {table} ADD COLUMN {column} {column_def}")
+                )
 
 
 async def get_session() -> AsyncGenerator[AsyncSession]:

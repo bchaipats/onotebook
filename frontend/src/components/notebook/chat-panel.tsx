@@ -15,32 +15,78 @@ import {
   Upload,
   SlidersHorizontal,
   MoreVertical,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   useChatSessions,
   useCreateChatSession,
+  useDeleteChatSession,
   useMessages,
   useInvalidateMessages,
   useInvalidateChatSessions,
 } from "@/hooks/use-chat";
 import { sendMessage, regenerateMessage } from "@/lib/api";
-import type { ChatMessage, SourceInfo, StreamEvent } from "@/types/api";
+import type { ChatMessage, SourceInfo, StreamEvent, Notebook } from "@/types/api";
+import { ChatConfigDialog } from "./chat-config-dialog";
+
+export interface HighlightedCitation {
+  documentId: string;
+  documentName: string;
+  chunkContent: string;
+  citationIndex: number;
+}
 
 interface ChatPanelProps {
   notebookId: string;
+  notebook: Notebook;
   selectedSources: Set<string>;
+  onCitationHighlight?: (citation: HighlightedCitation) => void;
 }
 
-export function ChatPanel({ notebookId, selectedSources }: ChatPanelProps) {
+export function ChatPanel({
+  notebookId,
+  notebook,
+  selectedSources,
+  onCitationHighlight,
+}: ChatPanelProps) {
   const { data: sessions, isLoading: sessionsLoading } =
     useChatSessions(notebookId);
   const createSession = useCreateChatSession(notebookId);
+  const deleteSession = useDeleteChatSession(notebookId);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [configDialogOpen, setConfigDialogOpen] = useState(false);
+
+  function handleDeleteChat() {
+    if (!activeSessionId) return;
+    deleteSession.mutate(activeSessionId, {
+      onSuccess: () => {
+        // Switch to next session or create new one
+        const otherSessions = sessions?.filter((s) => s.id !== activeSessionId);
+        if (otherSessions && otherSessions.length > 0) {
+          setActiveSessionId(otherSessions[0].id);
+        } else {
+          setActiveSessionId(null);
+        }
+      },
+    });
+  }
 
   useEffect(() => {
     if (sessions && sessions.length > 0 && !activeSessionId) {
@@ -65,20 +111,42 @@ export function ChatPanel({ notebookId, selectedSources }: ChatPanelProps) {
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            title="Configure notebook"
+            title="Configure chat"
+            onClick={() => setConfigDialogOpen(true)}
           >
             <SlidersHorizontal className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            title="Chat options"
-          >
-            <MoreVertical className="h-4 w-4" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                title="Chat options"
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={handleDeleteChat}
+                disabled={!activeSessionId || deleteSession.isPending}
+                className="text-destructive focus:text-destructive"
+              >
+                {deleteSession.isPending
+                  ? "Deleting..."
+                  : "Delete chat history"}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
+
+      <ChatConfigDialog
+        notebook={notebook}
+        open={configDialogOpen}
+        onOpenChange={setConfigDialogOpen}
+      />
 
       {sessionsLoading ? (
         <div className="flex flex-1 items-center justify-center">
@@ -89,6 +157,7 @@ export function ChatPanel({ notebookId, selectedSources }: ChatPanelProps) {
           sessionId={activeSessionId}
           notebookId={notebookId}
           selectedSources={selectedSources}
+          onCitationHighlight={onCitationHighlight}
         />
       ) : (
         <ChatWelcome onCreateSession={handleNewSession} />
@@ -101,12 +170,14 @@ interface ChatContentProps {
   sessionId: string;
   notebookId: string;
   selectedSources: Set<string>;
+  onCitationHighlight?: (citation: HighlightedCitation) => void;
 }
 
 function ChatContent({
   sessionId,
   notebookId,
   selectedSources,
+  onCitationHighlight,
 }: ChatContentProps) {
   const { data: messages, isLoading } = useMessages(sessionId);
   const invalidateMessages = useInvalidateMessages(sessionId);
@@ -129,6 +200,27 @@ function ChatContent({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const stoppedByUserRef = useRef(false);
+
+  // Handle citation click - update local state and notify parent
+  const handleCitationClick = useCallback(
+    (index: number) => {
+      setHighlightedCitation(index);
+
+      // Find the source info and notify parent for left panel highlighting
+      if (onCitationHighlight && currentSources.length > 0) {
+        const source = currentSources.find((s) => s.citation_index === index);
+        if (source) {
+          onCitationHighlight({
+            documentId: source.document_id,
+            documentName: source.document_name,
+            chunkContent: source.content,
+            citationIndex: index,
+          });
+        }
+      }
+    },
+    [currentSources, onCitationHighlight],
+  );
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -293,6 +385,11 @@ function ChatContent({
               <MessageBubble
                 key={message.id}
                 message={message}
+                sources={
+                  message.id === lastAssistantMessage?.id
+                    ? currentSources
+                    : undefined
+                }
                 onRegenerate={
                   message.role === "assistant" &&
                   message.id === lastAssistantMessage?.id &&
@@ -300,11 +397,15 @@ function ChatContent({
                     ? () => handleRegenerate(message.id)
                     : undefined
                 }
-                onCitationClick={setHighlightedCitation}
+                onCitationClick={handleCitationClick}
               />
             ))}
             {isStreaming && streamingContent && (
-              <StreamingMessage content={streamingContent} />
+              <StreamingMessage
+                content={streamingContent}
+                sources={currentSources}
+                onCitationClick={handleCitationClick}
+              />
             )}
             {isStreaming && !streamingContent && <ThinkingIndicator />}
             {!isStreaming && stoppedContent && (
@@ -422,16 +523,36 @@ function ChatWelcome({ onCreateSession }: { onCreateSession: () => void }) {
 
 interface MessageBubbleProps {
   message: ChatMessage;
+  sources?: SourceInfo[];
   onRegenerate?: () => void;
   onCitationClick?: (index: number) => void;
 }
 
 function MessageBubble({
   message,
+  sources,
   onRegenerate,
   onCitationClick,
 }: MessageBubbleProps) {
   const isUser = message.role === "user";
+  const [showAllCitations, setShowAllCitations] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [rating, setRating] = useState<"up" | "down" | null>(null);
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(message.content);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard API not available
+    }
+  }
+
+  function handleRate(newRating: "up" | "down") {
+    // Toggle off if clicking the same rating
+    setRating(rating === newRating ? null : newRating);
+  }
 
   return (
     <div className={cn("flex gap-4", isUser && "flex-row-reverse")}>
@@ -476,28 +597,87 @@ function MessageBubble({
                 },
                 p({ children }) {
                   if (!onCitationClick || isUser) return <p>{children}</p>;
-                  return <p>{processChildren(children, onCitationClick)}</p>;
+                  return (
+                    <p>
+                      {processChildren({
+                        children,
+                        onCitationClick,
+                        sources,
+                        showAllCitations,
+                        onShowMore: () => setShowAllCitations(true),
+                      })}
+                    </p>
+                  );
                 },
                 li({ children }) {
                   if (!onCitationClick || isUser) return <li>{children}</li>;
-                  return <li>{processChildren(children, onCitationClick)}</li>;
+                  return (
+                    <li>
+                      {processChildren({
+                        children,
+                        onCitationClick,
+                        sources,
+                        showAllCitations,
+                        onShowMore: () => setShowAllCitations(true),
+                      })}
+                    </li>
+                  );
                 },
               }}
             >
               {message.content}
             </ReactMarkdown>
           </div>
-          {onRegenerate && (
-            <div className="mt-2 flex justify-end opacity-0 transition-opacity group-hover:opacity-100">
+          {!isUser && (
+            <div className="mt-2 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
               <Button
                 variant="ghost"
-                size="sm"
-                className="h-7 gap-1 text-xs"
-                onClick={onRegenerate}
+                size="icon"
+                className="h-7 w-7"
+                onClick={handleCopy}
+                title="Copy response"
               >
-                <RefreshCw className="h-3 w-3" />
-                Regenerate
+                {copied ? (
+                  <Check className="h-3.5 w-3.5 text-green-600" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5" />
+                )}
               </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "h-7 w-7",
+                  rating === "up" && "text-green-600",
+                )}
+                onClick={() => handleRate("up")}
+                title="Good response"
+              >
+                <ThumbsUp className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "h-7 w-7",
+                  rating === "down" && "text-red-600",
+                )}
+                onClick={() => handleRate("down")}
+                title="Bad response"
+              >
+                <ThumbsDown className="h-3.5 w-3.5" />
+              </Button>
+              {onRegenerate && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="ml-1 h-7 gap-1 text-xs"
+                  onClick={onRegenerate}
+                >
+                  <RefreshCw className="h-3 w-3" />
+                  Regenerate
+                </Button>
+              )}
             </div>
           )}
         </div>
@@ -506,7 +686,17 @@ function MessageBubble({
   );
 }
 
-function StreamingMessage({ content }: { content: string }) {
+interface StreamingMessageProps {
+  content: string;
+  sources?: SourceInfo[];
+  onCitationClick?: (index: number) => void;
+}
+
+function StreamingMessage({
+  content,
+  sources,
+  onCitationClick,
+}: StreamingMessageProps) {
   return (
     <div className="flex gap-4">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -530,6 +720,32 @@ function StreamingMessage({ content }: { content: string }) {
                   <CodeBlock language={match?.[1]}>
                     {String(children).replace(/\n$/, "")}
                   </CodeBlock>
+                );
+              },
+              p({ children }) {
+                if (!onCitationClick) return <p>{children}</p>;
+                return (
+                  <p>
+                    {processChildren({
+                      children,
+                      onCitationClick,
+                      sources,
+                      showAllCitations: true, // Always show all during streaming
+                    })}
+                  </p>
+                );
+              },
+              li({ children }) {
+                if (!onCitationClick) return <li>{children}</li>;
+                return (
+                  <li>
+                    {processChildren({
+                      children,
+                      onCitationClick,
+                      sources,
+                      showAllCitations: true, // Always show all during streaming
+                    })}
+                  </li>
                 );
               },
             }}
@@ -613,44 +829,125 @@ function CodeBlock({
   );
 }
 
-function CitationLink({
-  index,
+interface CitationButtonProps {
+  index: number;
+  sourceName?: string;
+  onClick: (index: number) => void;
+}
+
+function CitationButton({ index, sourceName, onClick }: CitationButtonProps) {
+  const button = (
+    <button
+      onClick={() => onClick(index)}
+      className="mx-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary/20 px-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/30"
+    >
+      {index}
+    </button>
+  );
+
+  if (sourceName) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{button}</TooltipTrigger>
+        <TooltipContent side="top" className="max-w-xs">
+          <span className="font-medium">{index}:</span> {sourceName}
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return button;
+}
+
+function ShowMoreCitationsButton({
+  count,
   onClick,
 }: {
-  index: number;
-  onClick: (index: number) => void;
+  count: number;
+  onClick: () => void;
 }) {
   return (
     <button
-      onClick={() => onClick(index)}
-      className="inline-flex items-center justify-center rounded bg-primary/20 px-1.5 py-0.5 text-xs font-medium text-primary transition-colors hover:bg-primary/30"
+      onClick={onClick}
+      className="mx-0.5 inline-flex h-5 items-center justify-center rounded-full bg-muted px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground"
     >
-      [{index}]
+      +{count} more
     </button>
   );
 }
 
-function processTextWithCitations(
-  text: string,
-  onCitationClick: (index: number) => void,
-): React.ReactNode[] {
+interface ProcessCitationsOptions {
+  text: string;
+  onCitationClick: (index: number) => void;
+  sources?: SourceInfo[];
+  maxCitations?: number;
+  showAllCitations?: boolean;
+  onShowMore?: () => void;
+}
+
+function processTextWithCitations({
+  text,
+  onCitationClick,
+  sources,
+  maxCitations = 3,
+  showAllCitations = false,
+  onShowMore,
+}: ProcessCitationsOptions): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
   const citationRegex = /\[(\d+)\]/g;
   let lastIndex = 0;
   let match;
+  let citationCount = 0;
+  const allCitations: Array<{
+    index: number;
+    matchIndex: number;
+    source?: SourceInfo;
+  }> = [];
 
+  // First pass: collect all citations
+  while ((match = citationRegex.exec(text)) !== null) {
+    const citationIndex = parseInt(match[1], 10);
+    const source = sources?.find((s) => s.citation_index === citationIndex);
+    allCitations.push({
+      index: citationIndex,
+      matchIndex: match.index,
+      source,
+    });
+  }
+
+  // Second pass: build parts with potential truncation
+  citationRegex.lastIndex = 0;
   while ((match = citationRegex.exec(text)) !== null) {
     if (match.index > lastIndex) {
       parts.push(text.slice(lastIndex, match.index));
     }
     const citationIndex = parseInt(match[1], 10);
-    parts.push(
-      <CitationLink
-        key={`citation-${match.index}`}
-        index={citationIndex}
-        onClick={onCitationClick}
-      />,
-    );
+    const source = sources?.find((s) => s.citation_index === citationIndex);
+
+    citationCount++;
+    const shouldShow = showAllCitations || citationCount <= maxCitations;
+
+    if (shouldShow) {
+      parts.push(
+        <CitationButton
+          key={`citation-${match.index}`}
+          index={citationIndex}
+          sourceName={source?.document_name}
+          onClick={onCitationClick}
+        />,
+      );
+    } else if (citationCount === maxCitations + 1 && onShowMore) {
+      // Add "Show more" button at the first hidden citation
+      parts.push(
+        <ShowMoreCitationsButton
+          key="show-more"
+          count={allCitations.length - maxCitations}
+          onClick={onShowMore}
+        />,
+      );
+    }
+    // Skip other hidden citations (don't add them to parts)
+
     lastIndex = match.index + match[0].length;
   }
 
@@ -661,13 +958,30 @@ function processTextWithCitations(
   return parts.length > 0 ? parts : [text];
 }
 
-function processChildren(
-  children: React.ReactNode,
-  onCitationClick: (index: number) => void,
-): React.ReactNode {
+interface ProcessChildrenOptions {
+  children: React.ReactNode;
+  onCitationClick: (index: number) => void;
+  sources?: SourceInfo[];
+  showAllCitations?: boolean;
+  onShowMore?: () => void;
+}
+
+function processChildren({
+  children,
+  onCitationClick,
+  sources,
+  showAllCitations,
+  onShowMore,
+}: ProcessChildrenOptions): React.ReactNode {
   return React.Children.map(children, (child, idx) => {
     if (typeof child === "string") {
-      const processed = processTextWithCitations(child, onCitationClick);
+      const processed = processTextWithCitations({
+        text: child,
+        onCitationClick,
+        sources,
+        showAllCitations,
+        onShowMore,
+      });
       return processed.length === 1 && typeof processed[0] === "string" ? (
         child
       ) : (

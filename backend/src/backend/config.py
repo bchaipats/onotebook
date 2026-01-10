@@ -15,6 +15,14 @@ class Settings(BaseSettings):
     ollama_timeout: int = 300
     default_llm_model: str = "llama3.2"
 
+    # Anthropic (Claude)
+    anthropic_api_key: str | None = None
+    anthropic_default_model: str = "claude-sonnet-4-20250514"
+
+    # OpenAI
+    openai_api_key: str | None = None
+    openai_default_model: str = "gpt-4o"
+
     # Storage
     chroma_persist_directory: str = "./data/chroma"
     upload_directory: str = "./data/uploads"

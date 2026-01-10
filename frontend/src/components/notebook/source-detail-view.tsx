@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   BookOpen,
   FileText,
@@ -33,14 +33,26 @@ interface SourceDetailViewProps {
   document: Document | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  highlightedChunkContent?: string | null;
 }
 
 export function SourceDetailView({
   document,
   open,
   onOpenChange,
+  highlightedChunkContent,
 }: SourceDetailViewProps) {
-  const [activeTab, setActiveTab] = useState("guide");
+  // Switch to content tab when there's highlighted content
+  const [activeTab, setActiveTab] = useState(
+    highlightedChunkContent ? "content" : "guide",
+  );
+
+  // Update tab when highlighted content changes
+  useEffect(() => {
+    if (highlightedChunkContent) {
+      setActiveTab("content");
+    }
+  }, [highlightedChunkContent]);
   const { data: guide, isLoading: guideLoading } = useSourceGuide(
     document?.id ?? null,
   );
@@ -142,9 +154,10 @@ export function SourceDetailView({
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             ) : content?.content ? (
-              <div className="whitespace-pre-wrap rounded-lg bg-muted/50 p-4 font-mono text-sm">
-                {content.content}
-              </div>
+              <HighlightedContent
+                content={content.content}
+                highlightText={highlightedChunkContent}
+              />
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-center">
                 <FileText className="mb-3 h-10 w-10 text-muted-foreground/40" />
@@ -295,4 +308,82 @@ function formatSourceType(sourceType: string): string {
     default:
       return sourceType;
   }
+}
+
+function HighlightedContent({
+  content,
+  highlightText,
+}: {
+  content: string;
+  highlightText?: string | null;
+}) {
+  const highlightRef = useRef<HTMLSpanElement>(null);
+
+  // Auto-scroll to highlighted content
+  useEffect(() => {
+    if (highlightRef.current && highlightText) {
+      highlightRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, [highlightText]);
+
+  // If no highlight text, render content normally
+  if (!highlightText) {
+    return (
+      <div className="whitespace-pre-wrap rounded-lg bg-muted/50 p-4 font-mono text-sm">
+        {content}
+      </div>
+    );
+  }
+
+  // Find and highlight the text
+  const index = content.indexOf(highlightText);
+  if (index === -1) {
+    // Highlight text not found, try fuzzy match with first 50 chars
+    const shortHighlight = highlightText.slice(0, 50);
+    const fuzzyIndex = content.indexOf(shortHighlight);
+    if (fuzzyIndex === -1) {
+      return (
+        <div className="whitespace-pre-wrap rounded-lg bg-muted/50 p-4 font-mono text-sm">
+          {content}
+        </div>
+      );
+    }
+    // Use fuzzy match
+    const before = content.slice(0, fuzzyIndex);
+    const highlighted = content.slice(fuzzyIndex, fuzzyIndex + highlightText.length);
+    const after = content.slice(fuzzyIndex + highlightText.length);
+
+    return (
+      <div className="whitespace-pre-wrap rounded-lg bg-muted/50 p-4 font-mono text-sm">
+        {before}
+        <span
+          ref={highlightRef}
+          className="rounded bg-violet-200 px-0.5 dark:bg-violet-900/50"
+        >
+          {highlighted}
+        </span>
+        {after}
+      </div>
+    );
+  }
+
+  const before = content.slice(0, index);
+  const highlighted = content.slice(index, index + highlightText.length);
+  const after = content.slice(index + highlightText.length);
+
+  return (
+    <div className="whitespace-pre-wrap rounded-lg bg-muted/50 p-4 font-mono text-sm">
+      {before}
+      <span
+        ref={highlightRef}
+        className="rounded bg-violet-200 px-0.5 dark:bg-violet-900/50"
+      >
+        {highlighted}
+      </span>
+      {after}
+    </div>
+  );
 }
