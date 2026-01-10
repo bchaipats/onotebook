@@ -1,70 +1,235 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* =============================================================================
+   MATERIAL DESIGN 3 REFERENCE PALETTE
+   Complete tonal scales for dynamic color generation
+   ============================================================================= */
+
 :root {
-  /* NotebookLM Light Theme - Pure white background */
-  --background: oklch(100% 0 0);
-  --background-notebook: #EEEEF9;
-  --background-panel: oklch(100% 0 0);
-  --foreground: oklch(20% 0 0);
-  --card: oklch(100% 0 0);
-  --card-foreground: oklch(20% 0 0);
-  --popover: var(--card);
-  --popover-foreground: var(--card-foreground);
-  --primary: oklch(48% 0.28 265);
-  --primary-foreground: oklch(100% 0 0);
-  --secondary: oklch(100% 0 0);
-  --secondary-foreground: oklch(45% 0.005 250);
-  --muted: oklch(96% 0 0);
-  --muted-foreground: oklch(52% 0 0);
-  --accent: oklch(96% 0 0);
-  --accent-foreground: oklch(20% 0 0);
-  --destructive: oklch(45% 0.18 25);
-  --destructive-foreground: oklch(100% 0 0);
+  /* ===== PRIMARY TONAL PALETTE (Indigo - hue 265) ===== */
+  --ref-primary-0: oklch(0% 0 265);
+  --ref-primary-5: oklch(12% 0.03 265);
+  --ref-primary-10: oklch(20% 0.05 265);
+  --ref-primary-20: oklch(30% 0.1 265);
+  --ref-primary-25: oklch(35% 0.12 265);
+  --ref-primary-30: oklch(40% 0.14 265);
+  --ref-primary-35: oklch(45% 0.16 265);
+  --ref-primary-40: oklch(50% 0.18 265);
+  --ref-primary-50: oklch(60% 0.2 265);
+  --ref-primary-60: oklch(70% 0.16 265);
+  --ref-primary-70: oklch(78% 0.12 265);
+  --ref-primary-80: oklch(86% 0.08 265);
+  --ref-primary-90: oklch(92% 0.05 265);
+  --ref-primary-95: oklch(96% 0.03 265);
+  --ref-primary-99: oklch(99% 0.01 265);
+  --ref-primary-100: oklch(100% 0 0);
+
+  /* ===== SECONDARY TONAL PALETTE (Neutral-violet - subtle) ===== */
+  --ref-secondary-0: oklch(0% 0 265);
+  --ref-secondary-10: oklch(20% 0.02 265);
+  --ref-secondary-20: oklch(30% 0.025 265);
+  --ref-secondary-30: oklch(40% 0.03 265);
+  --ref-secondary-40: oklch(50% 0.035 265);
+  --ref-secondary-50: oklch(60% 0.03 265);
+  --ref-secondary-60: oklch(70% 0.025 265);
+  --ref-secondary-70: oklch(78% 0.02 265);
+  --ref-secondary-80: oklch(86% 0.015 265);
+  --ref-secondary-90: oklch(92% 0.01 265);
+  --ref-secondary-95: oklch(96% 0.005 265);
+  --ref-secondary-100: oklch(100% 0 0);
+
+  /* ===== TERTIARY TONAL PALETTE (Warm amber/gold - hue 85) ===== */
+  --ref-tertiary-0: oklch(0% 0 85);
+  --ref-tertiary-10: oklch(20% 0.04 85);
+  --ref-tertiary-20: oklch(30% 0.06 85);
+  --ref-tertiary-30: oklch(40% 0.08 85);
+  --ref-tertiary-40: oklch(50% 0.1 85);
+  --ref-tertiary-50: oklch(60% 0.12 85);
+  --ref-tertiary-60: oklch(70% 0.1 85);
+  --ref-tertiary-70: oklch(78% 0.08 85);
+  --ref-tertiary-80: oklch(86% 0.06 85);
+  --ref-tertiary-90: oklch(92% 0.04 85);
+  --ref-tertiary-95: oklch(96% 0.02 85);
+  --ref-tertiary-100: oklch(100% 0 0);
+
+  /* ===== ERROR TONAL PALETTE (Red - hue 25) ===== */
+  --ref-error-0: oklch(0% 0 25);
+  --ref-error-10: oklch(20% 0.1 25);
+  --ref-error-20: oklch(30% 0.14 25);
+  --ref-error-30: oklch(40% 0.16 25);
+  --ref-error-40: oklch(50% 0.18 25);
+  --ref-error-50: oklch(60% 0.16 25);
+  --ref-error-60: oklch(70% 0.12 25);
+  --ref-error-70: oklch(78% 0.08 25);
+  --ref-error-80: oklch(86% 0.05 25);
+  --ref-error-90: oklch(92% 0.03 25);
+  --ref-error-95: oklch(96% 0.02 25);
+  --ref-error-100: oklch(100% 0 0);
+
+  /* ===== NEUTRAL TONAL PALETTE (Warm gray with slight primary tint) ===== */
+  --ref-neutral-0: oklch(0% 0 0);
+  --ref-neutral-4: oklch(10% 0.003 265);
+  --ref-neutral-6: oklch(14% 0.004 265);
+  --ref-neutral-10: oklch(20% 0.005 265);
+  --ref-neutral-12: oklch(22% 0.005 265);
+  --ref-neutral-17: oklch(28% 0.006 265);
+  --ref-neutral-20: oklch(32% 0.006 265);
+  --ref-neutral-22: oklch(34% 0.006 265);
+  --ref-neutral-24: oklch(36% 0.006 265);
+  --ref-neutral-30: oklch(42% 0.005 265);
+  --ref-neutral-40: oklch(52% 0.004 265);
+  --ref-neutral-50: oklch(62% 0.003 265);
+  --ref-neutral-60: oklch(72% 0.003 265);
+  --ref-neutral-70: oklch(80% 0.002 265);
+  --ref-neutral-80: oklch(87% 0.002 265);
+  --ref-neutral-87: oklch(91% 0.002 265);
+  --ref-neutral-90: oklch(93% 0.002 265);
+  --ref-neutral-92: oklch(94% 0.002 265);
+  --ref-neutral-94: oklch(95% 0.002 265);
+  --ref-neutral-95: oklch(96% 0.001 265);
+  --ref-neutral-96: oklch(97% 0.001 265);
+  --ref-neutral-98: oklch(99% 0.001 265);
+  --ref-neutral-100: oklch(100% 0 0);
+
+  /* ===== NEUTRAL-VARIANT (More chromatic neutral) ===== */
+  --ref-neutral-variant-0: oklch(0% 0 265);
+  --ref-neutral-variant-10: oklch(20% 0.015 265);
+  --ref-neutral-variant-20: oklch(30% 0.02 265);
+  --ref-neutral-variant-30: oklch(40% 0.025 265);
+  --ref-neutral-variant-40: oklch(50% 0.025 265);
+  --ref-neutral-variant-50: oklch(60% 0.02 265);
+  --ref-neutral-variant-60: oklch(70% 0.018 265);
+  --ref-neutral-variant-70: oklch(78% 0.015 265);
+  --ref-neutral-variant-80: oklch(86% 0.012 265);
+  --ref-neutral-variant-90: oklch(92% 0.008 265);
+  --ref-neutral-variant-95: oklch(96% 0.005 265);
+  --ref-neutral-variant-100: oklch(100% 0 0);
+
+  /* ===== SOURCE TYPE COLORS (Semantic tokens for document types) ===== */
+  --ref-source-url: oklch(55% 0.15 230); /* Ocean blue */
+  --ref-source-youtube: oklch(55% 0.18 25); /* YouTube red */
+  --ref-source-paste: oklch(55% 0.15 300); /* Purple */
+  --ref-source-pdf: oklch(55% 0.16 15); /* Rose/coral */
+  --ref-source-doc: oklch(55% 0.14 230); /* Doc blue */
+  --ref-source-text: oklch(50% 0.01 265); /* Slate */
+  --ref-source-html: oklch(58% 0.14 50); /* Orange */
+
+  /* =============================================================================
+   MATERIAL DESIGN 3 SYSTEM TOKENS - LIGHT THEME
+   Semantic color roles derived from reference palette
+   ============================================================================= */
+
+  /* ===== PRIMARY ===== */
+  --primary: var(--ref-primary-40);
+  --on-primary: var(--ref-primary-100);
+  --primary-container: var(--ref-primary-90);
+  --on-primary-container: var(--ref-primary-10);
+  --primary-fixed: var(--ref-primary-90);
+  --primary-fixed-dim: var(--ref-primary-80);
+  --on-primary-fixed: var(--ref-primary-10);
+  --on-primary-fixed-variant: var(--ref-primary-30);
+
+  /* ===== SECONDARY ===== */
+  --secondary: var(--ref-secondary-40);
+  --on-secondary: var(--ref-secondary-100);
+  --secondary-container: var(--ref-secondary-90);
+  --on-secondary-container: var(--ref-secondary-10);
+  --secondary-fixed: var(--ref-secondary-90);
+  --secondary-fixed-dim: var(--ref-secondary-80);
+  --on-secondary-fixed: var(--ref-secondary-10);
+  --on-secondary-fixed-variant: var(--ref-secondary-30);
+
+  /* ===== TERTIARY ===== */
+  --tertiary: var(--ref-tertiary-40);
+  --on-tertiary: var(--ref-tertiary-100);
+  --tertiary-container: var(--ref-tertiary-90);
+  --on-tertiary-container: var(--ref-tertiary-10);
+  --tertiary-fixed: var(--ref-tertiary-90);
+  --tertiary-fixed-dim: var(--ref-tertiary-80);
+  --on-tertiary-fixed: var(--ref-tertiary-10);
+  --on-tertiary-fixed-variant: var(--ref-tertiary-30);
+
+  /* ===== ERROR ===== */
+  --error: var(--ref-error-40);
+  --on-error: var(--ref-error-100);
+  --error-container: var(--ref-error-90);
+  --on-error-container: var(--ref-error-10);
+
+  /* ===== SURFACE ===== */
+  --surface: var(--ref-neutral-98);
+  --surface-dim: var(--ref-neutral-87);
+  --surface-bright: var(--ref-neutral-98);
+  --surface-container-lowest: var(--ref-neutral-100);
+  --surface-container-low: var(--ref-neutral-96);
+  --surface-container: var(--ref-neutral-94);
+  --surface-container-high: var(--ref-neutral-92);
+  --surface-container-highest: var(--ref-neutral-90);
+  --on-surface: var(--ref-neutral-10);
+  --on-surface-variant: var(--ref-neutral-variant-30);
+  --surface-tint: var(--primary);
+
+  /* ===== OUTLINE ===== */
+  --outline: var(--ref-neutral-variant-50);
+  --outline-variant: var(--ref-neutral-variant-80);
+
+  /* ===== INVERSE ===== */
+  --inverse-surface: var(--ref-neutral-20);
+  --inverse-on-surface: var(--ref-neutral-95);
+  --inverse-primary: var(--ref-primary-80);
+
+  /* ===== BACKGROUND ===== */
+  --background: var(--ref-neutral-98);
+  --on-background: var(--ref-neutral-10);
+
+  /* ===== SCRIM & SHADOW ===== */
+  --scrim: var(--ref-neutral-0);
+  --shadow-color: oklch(0% 0 0 / 0.15);
+
+  /* ===== LEGACY COMPATIBILITY TOKENS ===== */
+  --background-notebook: oklch(96% 0.008 265);
+  --background-panel: var(--surface-container-lowest);
+  --foreground: var(--on-surface);
+  --card: var(--surface-container-lowest);
+  --card-foreground: var(--on-surface);
+  --popover: var(--surface-container);
+  --popover-foreground: var(--on-surface);
+  --primary-foreground: var(--on-primary);
+  --secondary-foreground: var(--on-secondary);
+  --muted: var(--surface-container);
+  --muted-foreground: var(--ref-neutral-40);
+  --accent: var(--surface-container);
+  --accent-foreground: var(--on-surface);
+  --destructive: var(--error);
+  --destructive-foreground: var(--on-error);
   --success: oklch(45% 0.15 145);
   --success-foreground: oklch(100% 0 0);
-  --warning: oklch(55% 0.12 85);
-  --warning-foreground: oklch(20% 0 0);
+  --warning: var(--tertiary);
+  --warning-foreground: var(--on-tertiary);
   --info: oklch(48% 0.15 255);
   --info-foreground: oklch(100% 0 0);
-  --border: oklch(92% 0 0);
-  --border-muted: oklch(88% 0 0);
-  --input: var(--border);
+  --border: var(--outline-variant);
+  --border-muted: var(--ref-neutral-90);
+  --input: var(--outline-variant);
   --ring: var(--primary);
   --link: var(--primary);
   --user-avatar: oklch(78% 0.18 75);
-  --tab-active: var(--background-panel);
-  --card-notebook: oklch(100% 0 0);
-  --card-create: oklch(100% 0 0);
-  --card-create-border: oklch(85% 0 0);
+  --tab-active: var(--surface-container-lowest);
+  --card-notebook: var(--surface-container-lowest);
+  --card-create: var(--surface-container-lowest);
+  --card-create-border: var(--outline-variant);
 
-  /* Material Design 3 Surface Hierarchy */
-  --surface-dim: oklch(95% 0.005 265);
-  --surface-bright: oklch(100% 0 0);
-  --surface-container-lowest: oklch(100% 0 0);
-  --surface-container-low: oklch(98% 0.003 265);
-  --surface-container: oklch(96% 0.005 265);
-  --surface-container-high: oklch(94% 0.008 265);
-  --surface-container-highest: oklch(92% 0.01 265);
-
-  /* Primary Tonal Palette */
-  --primary-5: oklch(97% 0.02 265);
-  --primary-10: oklch(94% 0.04 265);
-  --primary-20: oklch(88% 0.08 265);
-  --primary-30: oklch(75% 0.15 265);
-  --primary-40: oklch(60% 0.22 265);
-  --primary-50: oklch(48% 0.28 265);
-  --primary-60: oklch(42% 0.25 265);
-  --primary-70: oklch(35% 0.20 265);
-  --primary-80: oklch(28% 0.15 265);
-  --primary-90: oklch(22% 0.10 265);
-
-  /* Secondary Tonal (Neutral with hint of primary) */
-  --secondary-5: oklch(97% 0.008 265);
-  --secondary-10: oklch(94% 0.012 265);
-  --secondary-20: oklch(88% 0.015 265);
-  --secondary-container: oklch(92% 0.02 265);
-  --on-secondary-container: oklch(25% 0.08 265);
+  /* Primary tonal palette shortcuts (for component use) */
+  --primary-5: var(--ref-primary-95);
+  --primary-10: var(--ref-primary-90);
+  --primary-20: var(--ref-primary-80);
+  --primary-30: var(--ref-primary-70);
+  --primary-40: var(--ref-primary-60);
+  --primary-50: var(--ref-primary-50);
+  --primary-60: var(--ref-primary-40);
+  --primary-70: var(--ref-primary-30);
+  --primary-80: var(--ref-primary-20);
+  --primary-90: var(--ref-primary-10);
 
   /* Typography */
   --font-heading: var(--font-poppins), system-ui, sans-serif;
@@ -90,11 +255,12 @@
 
   /* Material Design 3 Elevation System */
   --elevation-0: none;
-  --elevation-1: 0 1px 2px oklch(0% 0 0 / 0.1), 0 1px 3px oklch(0% 0 0 / 0.08);
-  --elevation-2: 0 2px 4px oklch(0% 0 0 / 0.1), 0 2px 6px oklch(0% 0 0 / 0.08);
-  --elevation-3: 0 4px 8px oklch(0% 0 0 / 0.1), 0 4px 12px oklch(0% 0 0 / 0.08);
-  --elevation-4: 0 6px 12px oklch(0% 0 0 / 0.12), 0 8px 24px oklch(0% 0 0 / 0.1);
-  --elevation-5: 0 8px 16px oklch(0% 0 0 / 0.14), 0 12px 32px oklch(0% 0 0 / 0.12);
+  --elevation-1: 0 1px 2px var(--shadow-color), 0 1px 3px oklch(0% 0 0 / 0.08);
+  --elevation-2: 0 2px 4px var(--shadow-color), 0 2px 6px oklch(0% 0 0 / 0.08);
+  --elevation-3: 0 4px 8px var(--shadow-color), 0 4px 12px oklch(0% 0 0 / 0.08);
+  --elevation-4: 0 6px 12px var(--shadow-color), 0 8px 24px oklch(0% 0 0 / 0.1);
+  --elevation-5:
+    0 8px 16px var(--shadow-color), 0 12px 32px oklch(0% 0 0 / 0.12);
 
   /* Legacy shadows (for compatibility) */
   --shadow-sm: var(--elevation-1);
@@ -109,88 +275,144 @@
   --transition-material: 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* =============================================================================
+   MATERIAL DESIGN 3 SYSTEM TOKENS - DARK THEME
+   ============================================================================= */
+
 .dark {
-  /* NotebookLM Dark Theme */
-  /* Page: #37383B, Panels/Cards: #22262B */
-  --background: oklch(29% 0.005 250);
-  --background-notebook: oklch(25% 0.005 250);
-  --background-panel: oklch(21% 0.01 240);
-  --foreground: oklch(82% 0 0);
-  --card: oklch(21% 0.01 240);
-  --card-foreground: oklch(93% 0.005 250);
-  --popover: var(--card);
-  --popover-foreground: var(--card-foreground);
-  --primary: oklch(70% 0.18 265);
-  --primary-foreground: oklch(15% 0.05 265);
-  --secondary: oklch(21% 0.01 240);
-  --secondary-foreground: oklch(93% 0.005 250);
-  --muted: oklch(26% 0.01 245);
-  --muted-foreground: oklch(62% 0.005 250);
-  --accent: oklch(26% 0.01 245);
-  --accent-foreground: oklch(93% 0.005 250);
-  --destructive: oklch(55% 0.18 25);
-  --destructive-foreground: oklch(100% 0 0);
-  --success: oklch(55% 0.15 145);
-  --success-foreground: oklch(100% 0 0);
-  --warning: oklch(65% 0.12 85);
-  --warning-foreground: oklch(20% 0 0);
-  --info: oklch(55% 0.15 255);
-  --info-foreground: oklch(100% 0 0);
-  --border: oklch(32% 0.008 250);
-  --border-muted: oklch(26% 0.01 245);
-  --input: var(--border);
+  /* ===== PRIMARY ===== */
+  --primary: var(--ref-primary-80);
+  --on-primary: var(--ref-primary-20);
+  --primary-container: var(--ref-primary-30);
+  --on-primary-container: var(--ref-primary-90);
+  --primary-fixed: var(--ref-primary-90);
+  --primary-fixed-dim: var(--ref-primary-80);
+  --on-primary-fixed: var(--ref-primary-10);
+  --on-primary-fixed-variant: var(--ref-primary-30);
+
+  /* ===== SECONDARY ===== */
+  --secondary: var(--ref-secondary-80);
+  --on-secondary: var(--ref-secondary-20);
+  --secondary-container: var(--ref-secondary-30);
+  --on-secondary-container: var(--ref-secondary-90);
+  --secondary-fixed: var(--ref-secondary-90);
+  --secondary-fixed-dim: var(--ref-secondary-80);
+  --on-secondary-fixed: var(--ref-secondary-10);
+  --on-secondary-fixed-variant: var(--ref-secondary-30);
+
+  /* ===== TERTIARY ===== */
+  --tertiary: var(--ref-tertiary-80);
+  --on-tertiary: var(--ref-tertiary-20);
+  --tertiary-container: var(--ref-tertiary-30);
+  --on-tertiary-container: var(--ref-tertiary-90);
+  --tertiary-fixed: var(--ref-tertiary-90);
+  --tertiary-fixed-dim: var(--ref-tertiary-80);
+  --on-tertiary-fixed: var(--ref-tertiary-10);
+  --on-tertiary-fixed-variant: var(--ref-tertiary-30);
+
+  /* ===== ERROR ===== */
+  --error: var(--ref-error-80);
+  --on-error: var(--ref-error-20);
+  --error-container: var(--ref-error-30);
+  --on-error-container: var(--ref-error-90);
+
+  /* ===== SURFACE ===== */
+  --surface: var(--ref-neutral-6);
+  --surface-dim: var(--ref-neutral-6);
+  --surface-bright: var(--ref-neutral-24);
+  --surface-container-lowest: var(--ref-neutral-4);
+  --surface-container-low: var(--ref-neutral-10);
+  --surface-container: var(--ref-neutral-12);
+  --surface-container-high: var(--ref-neutral-17);
+  --surface-container-highest: var(--ref-neutral-22);
+  --on-surface: var(--ref-neutral-90);
+  --on-surface-variant: var(--ref-neutral-variant-80);
+  --surface-tint: var(--primary);
+
+  /* ===== OUTLINE ===== */
+  --outline: var(--ref-neutral-variant-60);
+  --outline-variant: var(--ref-neutral-variant-30);
+
+  /* ===== INVERSE ===== */
+  --inverse-surface: var(--ref-neutral-90);
+  --inverse-on-surface: var(--ref-neutral-20);
+  --inverse-primary: var(--ref-primary-40);
+
+  /* ===== BACKGROUND ===== */
+  --background: var(--ref-neutral-6);
+  --on-background: var(--ref-neutral-90);
+
+  /* ===== SCRIM & SHADOW ===== */
+  --scrim: var(--ref-neutral-0);
+  --shadow-color: oklch(0% 0 0 / 0.4);
+
+  /* ===== LEGACY COMPATIBILITY TOKENS ===== */
+  --background-notebook: var(--ref-neutral-10);
+  --background-panel: var(--surface-container-low);
+  --foreground: var(--on-surface);
+  --card: var(--surface-container-low);
+  --card-foreground: var(--on-surface);
+  --popover: var(--surface-container-high);
+  --popover-foreground: var(--on-surface);
+  --primary-foreground: var(--on-primary);
+  --secondary-foreground: var(--on-secondary);
+  --muted: var(--surface-container-high);
+  --muted-foreground: var(--ref-neutral-60);
+  --accent: var(--surface-container-high);
+  --accent-foreground: var(--on-surface);
+  --destructive: var(--error);
+  --destructive-foreground: var(--on-error);
+  --success: oklch(65% 0.15 145);
+  --success-foreground: oklch(15% 0.05 145);
+  --warning: var(--tertiary);
+  --warning-foreground: var(--on-tertiary);
+  --info: oklch(70% 0.12 255);
+  --info-foreground: oklch(15% 0.05 255);
+  --border: var(--outline-variant);
+  --border-muted: var(--ref-neutral-17);
+  --input: var(--outline-variant);
   --ring: var(--primary);
   --link: var(--primary);
   --user-avatar: oklch(87% 0.15 85);
-  --tab-active: var(--background-panel);
-  --card-notebook: var(--background-panel);
-  --card-create: oklch(21% 0.02 265);
-  --card-create-border: oklch(40% 0.08 265);
+  --tab-active: var(--surface-container-low);
+  --card-notebook: var(--surface-container-low);
+  --card-create: var(--surface-container);
+  --card-create-border: var(--outline);
 
-  /* Dark Surface Hierarchy */
-  --surface-dim: oklch(18% 0.008 250);
-  --surface-bright: oklch(30% 0.01 250);
-  --surface-container-lowest: oklch(15% 0.005 250);
-  --surface-container-low: oklch(19% 0.008 250);
-  --surface-container: oklch(22% 0.01 250);
-  --surface-container-high: oklch(25% 0.012 250);
-  --surface-container-highest: oklch(28% 0.015 250);
+  /* Primary tonal palette shortcuts (inverted for dark theme) */
+  --primary-5: var(--ref-primary-10);
+  --primary-10: var(--ref-primary-20);
+  --primary-20: var(--ref-primary-30);
+  --primary-30: var(--ref-primary-40);
+  --primary-40: var(--ref-primary-50);
+  --primary-50: var(--ref-primary-60);
+  --primary-60: var(--ref-primary-70);
+  --primary-70: var(--ref-primary-80);
+  --primary-80: var(--ref-primary-90);
+  --primary-90: var(--ref-primary-95);
 
-  /* Dark Primary Tonal Palette */
-  --primary-5: oklch(20% 0.03 265);
-  --primary-10: oklch(25% 0.05 265);
-  --primary-20: oklch(32% 0.08 265);
-  --primary-30: oklch(40% 0.12 265);
-  --primary-40: oklch(50% 0.18 265);
-  --primary-50: oklch(60% 0.22 265);
-  --primary-60: oklch(70% 0.18 265);
-  --primary-70: oklch(78% 0.14 265);
-  --primary-80: oklch(85% 0.10 265);
-  --primary-90: oklch(92% 0.05 265);
-
-  /* Dark Secondary Tonal */
-  --secondary-5: oklch(18% 0.01 265);
-  --secondary-10: oklch(22% 0.015 265);
-  --secondary-20: oklch(28% 0.02 265);
-  --secondary-container: oklch(30% 0.04 265);
-  --on-secondary-container: oklch(90% 0.04 265);
-
-  /* Dark Elevation (using lighter overlays) */
+  /* Dark Elevation (stronger shadows for dark backgrounds) */
   --elevation-0: none;
-  --elevation-1: 0 1px 2px oklch(0% 0 0 / 0.3), 0 1px 3px oklch(0% 0 0 / 0.24);
-  --elevation-2: 0 2px 4px oklch(0% 0 0 / 0.3), 0 2px 6px oklch(0% 0 0 / 0.24);
-  --elevation-3: 0 4px 8px oklch(0% 0 0 / 0.3), 0 4px 12px oklch(0% 0 0 / 0.24);
-  --elevation-4: 0 6px 12px oklch(0% 0 0 / 0.35), 0 8px 24px oklch(0% 0 0 / 0.28);
-  --elevation-5: 0 8px 16px oklch(0% 0 0 / 0.4), 0 12px 32px oklch(0% 0 0 / 0.32);
+  --elevation-1: 0 1px 2px var(--shadow-color), 0 1px 3px oklch(0% 0 0 / 0.32);
+  --elevation-2: 0 2px 4px var(--shadow-color), 0 2px 6px oklch(0% 0 0 / 0.32);
+  --elevation-3: 0 4px 8px var(--shadow-color), 0 4px 12px oklch(0% 0 0 / 0.32);
+  --elevation-4:
+    0 6px 12px var(--shadow-color), 0 8px 24px oklch(0% 0 0 / 0.36);
+  --elevation-5:
+    0 8px 16px var(--shadow-color), 0 12px 32px oklch(0% 0 0 / 0.4);
 
   --shadow-sm: var(--elevation-1);
   --shadow-md: var(--elevation-2);
   --shadow-lg: var(--elevation-3);
 }
 
-/* Tailwind v4 Theme */
+/* =============================================================================
+   TAILWIND V4 THEME MAPPING
+   Maps CSS variables to Tailwind utility classes
+   ============================================================================= */
+
 @theme inline {
-  /* Core Colors */
+  /* ===== CORE COLORS ===== */
   --color-background: var(--background);
   --color-background-notebook: var(--background-notebook);
   --color-background-panel: var(--background-panel);
@@ -199,10 +421,71 @@
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
+
+  /* ===== PRIMARY ===== */
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-on-primary: var(--on-primary);
+  --color-primary-container: var(--primary-container);
+  --color-on-primary-container: var(--on-primary-container);
+  --color-primary-fixed: var(--primary-fixed);
+  --color-primary-fixed-dim: var(--primary-fixed-dim);
+  --color-on-primary-fixed: var(--on-primary-fixed);
+  --color-on-primary-fixed-variant: var(--on-primary-fixed-variant);
+
+  /* ===== SECONDARY ===== */
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
+  --color-on-secondary: var(--on-secondary);
+  --color-secondary-container: var(--secondary-container);
+  --color-on-secondary-container: var(--on-secondary-container);
+  --color-secondary-fixed: var(--secondary-fixed);
+  --color-secondary-fixed-dim: var(--secondary-fixed-dim);
+  --color-on-secondary-fixed: var(--on-secondary-fixed);
+  --color-on-secondary-fixed-variant: var(--on-secondary-fixed-variant);
+
+  /* ===== TERTIARY ===== */
+  --color-tertiary: var(--tertiary);
+  --color-on-tertiary: var(--on-tertiary);
+  --color-tertiary-container: var(--tertiary-container);
+  --color-on-tertiary-container: var(--on-tertiary-container);
+  --color-tertiary-fixed: var(--tertiary-fixed);
+  --color-tertiary-fixed-dim: var(--tertiary-fixed-dim);
+  --color-on-tertiary-fixed: var(--on-tertiary-fixed);
+  --color-on-tertiary-fixed-variant: var(--on-tertiary-fixed-variant);
+
+  /* ===== ERROR ===== */
+  --color-error: var(--error);
+  --color-on-error: var(--on-error);
+  --color-error-container: var(--error-container);
+  --color-on-error-container: var(--on-error-container);
+
+  /* ===== SURFACE ===== */
+  --color-surface: var(--surface);
+  --color-surface-dim: var(--surface-dim);
+  --color-surface-bright: var(--surface-bright);
+  --color-surface-container-lowest: var(--surface-container-lowest);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-container-highest: var(--surface-container-highest);
+  --color-on-surface: var(--on-surface);
+  --color-on-surface-variant: var(--on-surface-variant);
+  --color-surface-tint: var(--surface-tint);
+
+  /* ===== OUTLINE ===== */
+  --color-outline: var(--outline);
+  --color-outline-variant: var(--outline-variant);
+
+  /* ===== INVERSE ===== */
+  --color-inverse-surface: var(--inverse-surface);
+  --color-inverse-on-surface: var(--inverse-on-surface);
+  --color-inverse-primary: var(--inverse-primary);
+
+  /* ===== SCRIM ===== */
+  --color-scrim: var(--scrim);
+
+  /* ===== LEGACY COMPATIBILITY ===== */
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
@@ -226,16 +509,7 @@
   --color-card-create: var(--card-create);
   --color-card-create-border: var(--card-create-border);
 
-  /* Material Design 3 Surface Colors */
-  --color-surface-dim: var(--surface-dim);
-  --color-surface-bright: var(--surface-bright);
-  --color-surface-container-lowest: var(--surface-container-lowest);
-  --color-surface-container-low: var(--surface-container-low);
-  --color-surface-container: var(--surface-container);
-  --color-surface-container-high: var(--surface-container-high);
-  --color-surface-container-highest: var(--surface-container-highest);
-
-  /* Primary Tonal Colors */
+  /* ===== PRIMARY TONAL SHORTCUTS ===== */
   --color-primary-5: var(--primary-5);
   --color-primary-10: var(--primary-10);
   --color-primary-20: var(--primary-20);
@@ -247,21 +521,23 @@
   --color-primary-80: var(--primary-80);
   --color-primary-90: var(--primary-90);
 
-  /* Secondary Tonal Colors */
-  --color-secondary-5: var(--secondary-5);
-  --color-secondary-10: var(--secondary-10);
-  --color-secondary-20: var(--secondary-20);
-  --color-secondary-container: var(--secondary-container);
-  --color-on-secondary-container: var(--on-secondary-container);
+  /* ===== SOURCE TYPE COLORS ===== */
+  --color-source-url: var(--ref-source-url);
+  --color-source-youtube: var(--ref-source-youtube);
+  --color-source-paste: var(--ref-source-paste);
+  --color-source-pdf: var(--ref-source-pdf);
+  --color-source-doc: var(--ref-source-doc);
+  --color-source-text: var(--ref-source-text);
+  --color-source-html: var(--ref-source-html);
 
-  /* Layout */
+  /* ===== LAYOUT ===== */
   --h-button-lg: var(--h-button-lg);
   --spacing-panel-width-sources: var(--panel-width-sources);
   --spacing-panel-width-studio: var(--panel-width-studio);
   --spacing-panel-width-collapsed: var(--panel-width-collapsed);
   --spacing-panel-gap: var(--panel-gap);
 
-  /* Radii */
+  /* ===== RADII ===== */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -271,7 +547,7 @@
   --radius-pill: var(--radius-pill);
   --radius-pill-inner: var(--radius-pill-inner);
 
-  /* Shadows / Elevation */
+  /* ===== SHADOWS / ELEVATION ===== */
   --shadow-sm: var(--shadow-sm);
   --shadow-md: var(--shadow-md);
   --shadow-lg: var(--shadow-lg);
@@ -281,7 +557,7 @@
   --shadow-elevation-4: var(--elevation-4);
   --shadow-elevation-5: var(--elevation-5);
 
-  /* Typography */
+  /* ===== TYPOGRAPHY ===== */
   --font-sans: var(--font-inter);
   --font-mono: var(--font-mono);
   --font-heading: var(--font-heading);
@@ -450,14 +726,30 @@ html {
 }
 
 /* Stagger animation delays */
-.stagger-1 { animation-delay: 30ms; }
-.stagger-2 { animation-delay: 60ms; }
-.stagger-3 { animation-delay: 90ms; }
-.stagger-4 { animation-delay: 120ms; }
-.stagger-5 { animation-delay: 150ms; }
-.stagger-6 { animation-delay: 180ms; }
-.stagger-7 { animation-delay: 210ms; }
-.stagger-8 { animation-delay: 240ms; }
+.stagger-1 {
+  animation-delay: 30ms;
+}
+.stagger-2 {
+  animation-delay: 60ms;
+}
+.stagger-3 {
+  animation-delay: 90ms;
+}
+.stagger-4 {
+  animation-delay: 120ms;
+}
+.stagger-5 {
+  animation-delay: 150ms;
+}
+.stagger-6 {
+  animation-delay: 180ms;
+}
+.stagger-7 {
+  animation-delay: 210ms;
+}
+.stagger-8 {
+  animation-delay: 240ms;
+}
 
 /* Material transition utilities */
 .transition-spring {

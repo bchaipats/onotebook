@@ -8,7 +8,8 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-foreground text-background shadow-sm hover:bg-foreground/90",
+        default:
+          "bg-foreground text-background shadow-sm hover:bg-foreground/90",
         destructive:
           "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
         outline:
@@ -19,15 +20,27 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         // Material Design 3 variants
         filled:
-          "bg-primary text-primary-foreground shadow-elevation-1 hover:shadow-elevation-2 hover:bg-primary/90 active:shadow-elevation-1",
+          "bg-primary text-on-primary shadow-elevation-1 hover:shadow-elevation-2 hover:bg-primary/90 active:shadow-elevation-1",
         tonal:
           "bg-secondary-container text-on-secondary-container hover:bg-primary-10 active:bg-primary-20",
         elevated:
-          "bg-surface-container-low text-foreground shadow-elevation-1 hover:shadow-elevation-2 hover:bg-surface-container active:shadow-elevation-1",
-        fab:
-          "bg-primary-10 text-primary shadow-elevation-3 hover:shadow-elevation-4 hover:bg-primary-20 active:shadow-elevation-3",
+          "bg-surface-container-low text-on-surface shadow-elevation-1 hover:shadow-elevation-2 hover:bg-surface-container active:shadow-elevation-1",
+        // Tertiary variants
+        tertiary:
+          "bg-tertiary text-on-tertiary shadow-elevation-1 hover:shadow-elevation-2 hover:bg-tertiary/90 active:shadow-elevation-1",
+        "tertiary-tonal":
+          "bg-tertiary-container text-on-tertiary-container hover:bg-tertiary-container/80 active:bg-tertiary-container/70",
+        // Error variants
+        error:
+          "bg-error text-on-error shadow-elevation-1 hover:shadow-elevation-2 hover:bg-error/90 active:shadow-elevation-1",
+        "error-tonal":
+          "bg-error-container text-on-error-container hover:bg-error-container/80 active:bg-error-container/70",
+        // FAB variants
+        fab: "bg-primary-container text-on-primary-container shadow-elevation-3 hover:shadow-elevation-4 hover:bg-primary-container/90 active:shadow-elevation-3",
         "fab-secondary":
-          "bg-surface-container text-foreground shadow-elevation-3 hover:shadow-elevation-4 hover:bg-surface-container-high active:shadow-elevation-3",
+          "bg-surface-container text-on-surface shadow-elevation-3 hover:shadow-elevation-4 hover:bg-surface-container-high active:shadow-elevation-3",
+        "fab-tertiary":
+          "bg-tertiary-container text-on-tertiary-container shadow-elevation-3 hover:shadow-elevation-4 hover:bg-tertiary-container/90 active:shadow-elevation-3",
       },
       size: {
         default: "h-9 px-4 py-2",

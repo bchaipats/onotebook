@@ -90,7 +90,10 @@ export function SourceItem({
           {/* Processing progress */}
           {isProcessing && (
             <div className="mt-2">
-              <Progress value={document.processing_progress} className="h-1.5 rounded-full" />
+              <Progress
+                value={document.processing_progress}
+                className="h-1.5 rounded-full"
+              />
               <span className="mt-1 block text-xs text-muted-foreground">
                 Processing... {document.processing_progress}%
               </span>
@@ -122,16 +125,22 @@ export function SourceItem({
             <div className="mt-2 space-y-1.5 rounded-xl bg-surface-container-high p-3 text-xs text-muted-foreground animate-spring-in">
               <p className="flex justify-between">
                 <span>Size</span>
-                <span className="font-medium text-foreground">{formatFileSize(document.file_size)}</span>
+                <span className="font-medium text-foreground">
+                  {formatFileSize(document.file_size)}
+                </span>
               </p>
               <p className="flex justify-between">
                 <span>Chunks</span>
-                <span className="font-medium text-foreground">{document.chunk_count}</span>
+                <span className="font-medium text-foreground">
+                  {document.chunk_count}
+                </span>
               </p>
               {document.page_count && (
                 <p className="flex justify-between">
                   <span>Pages</span>
-                  <span className="font-medium text-foreground">{document.page_count}</span>
+                  <span className="font-medium text-foreground">
+                    {document.page_count}
+                  </span>
                 </p>
               )}
             </div>
@@ -201,26 +210,51 @@ function SourceIcon({
   fileType: string;
 }) {
   const iconClass = "h-4 w-4";
-  const wrapperClass = "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl";
+  const wrapperClass =
+    "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl";
 
   // Handle source type first (URL, YouTube, paste)
   switch (sourceType) {
     case "url":
       return (
-        <div className={cn(wrapperClass, "bg-blue-100 dark:bg-blue-900/30")}>
-          <Globe className={cn(iconClass, "text-blue-600 dark:text-blue-400")} />
+        <div
+          className={cn(wrapperClass)}
+          style={{
+            backgroundColor: "oklch(from var(--ref-source-url) 92% 0.04 h)",
+          }}
+        >
+          <Globe
+            className={iconClass}
+            style={{ color: "var(--ref-source-url)" }}
+          />
         </div>
       );
     case "youtube":
       return (
-        <div className={cn(wrapperClass, "bg-red-100 dark:bg-red-900/30")}>
-          <Youtube className={cn(iconClass, "text-red-600 dark:text-red-400")} />
+        <div
+          className={cn(wrapperClass)}
+          style={{
+            backgroundColor: "oklch(from var(--ref-source-youtube) 92% 0.04 h)",
+          }}
+        >
+          <Youtube
+            className={iconClass}
+            style={{ color: "var(--ref-source-youtube)" }}
+          />
         </div>
       );
     case "paste":
       return (
-        <div className={cn(wrapperClass, "bg-purple-100 dark:bg-purple-900/30")}>
-          <StickyNote className={cn(iconClass, "text-purple-600 dark:text-purple-400")} />
+        <div
+          className={cn(wrapperClass)}
+          style={{
+            backgroundColor: "oklch(from var(--ref-source-paste) 92% 0.04 h)",
+          }}
+        >
+          <StickyNote
+            className={iconClass}
+            style={{ color: "var(--ref-source-paste)" }}
+          />
         </div>
       );
   }
@@ -229,28 +263,60 @@ function SourceIcon({
   switch (fileType) {
     case "pdf":
       return (
-        <div className={cn(wrapperClass, "bg-rose-100 dark:bg-rose-900/30")}>
-          <FileText className={cn(iconClass, "text-rose-600 dark:text-rose-400")} />
+        <div
+          className={cn(wrapperClass)}
+          style={{
+            backgroundColor: "oklch(from var(--ref-source-pdf) 92% 0.04 h)",
+          }}
+        >
+          <FileText
+            className={iconClass}
+            style={{ color: "var(--ref-source-pdf)" }}
+          />
         </div>
       );
     case "docx":
     case "doc":
       return (
-        <div className={cn(wrapperClass, "bg-blue-100 dark:bg-blue-900/30")}>
-          <FileType className={cn(iconClass, "text-blue-600 dark:text-blue-400")} />
+        <div
+          className={cn(wrapperClass)}
+          style={{
+            backgroundColor: "oklch(from var(--ref-source-doc) 92% 0.04 h)",
+          }}
+        >
+          <FileType
+            className={iconClass}
+            style={{ color: "var(--ref-source-doc)" }}
+          />
         </div>
       );
     case "md":
     case "txt":
       return (
-        <div className={cn(wrapperClass, "bg-slate-100 dark:bg-slate-800/50")}>
-          <FileCode className={cn(iconClass, "text-slate-600 dark:text-slate-400")} />
+        <div
+          className={cn(wrapperClass)}
+          style={{
+            backgroundColor: "oklch(from var(--ref-source-text) 92% 0.02 h)",
+          }}
+        >
+          <FileCode
+            className={iconClass}
+            style={{ color: "var(--ref-source-text)" }}
+          />
         </div>
       );
     case "html":
       return (
-        <div className={cn(wrapperClass, "bg-orange-100 dark:bg-orange-900/30")}>
-          <FileCode className={cn(iconClass, "text-orange-600 dark:text-orange-400")} />
+        <div
+          className={cn(wrapperClass)}
+          style={{
+            backgroundColor: "oklch(from var(--ref-source-html) 92% 0.04 h)",
+          }}
+        >
+          <FileCode
+            className={iconClass}
+            style={{ color: "var(--ref-source-html)" }}
+          />
         </div>
       );
     default:

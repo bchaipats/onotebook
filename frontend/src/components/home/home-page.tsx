@@ -76,8 +76,12 @@ export function HomePage({ onOpenSettings }: HomePageProps) {
             }
             className="rounded-full bg-surface-container p-1"
           >
-            <ToggleGroupItem value="all" className="rounded-full px-4">All</ToggleGroupItem>
-            <ToggleGroupItem value="recent" className="rounded-full px-4">Recent</ToggleGroupItem>
+            <ToggleGroupItem value="all" className="rounded-full px-4">
+              All
+            </ToggleGroupItem>
+            <ToggleGroupItem value="recent" className="rounded-full px-4">
+              Recent
+            </ToggleGroupItem>
           </ToggleGroup>
 
           <div className="flex items-center gap-3">
@@ -137,7 +141,10 @@ export function HomePage({ onOpenSettings }: HomePageProps) {
         {isLoading ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-56 animate-pulse rounded-3xl bg-surface-container" />
+              <div
+                key={i}
+                className="h-56 animate-pulse rounded-3xl bg-surface-container"
+              />
             ))}
           </div>
         ) : sortedNotebooks.length > 0 ? (

@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono, Poppins, Source_Serif_4 } from "next/font/google";
+import {
+  Inter,
+  JetBrains_Mono,
+  Poppins,
+  Source_Serif_4,
+} from "next/font/google";
 import "./globals.css";
 import { APP_NAME } from "@/lib/constants";
 import { Providers } from "@/components/providers";

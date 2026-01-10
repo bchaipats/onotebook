@@ -846,7 +846,9 @@ function MessageBubble({
         <div
           className={cn(
             "group inline-block rounded-2xl px-4 py-3",
-            isUser ? "bg-surface-container-high text-foreground shadow-elevation-1" : "bg-transparent",
+            isUser
+              ? "bg-surface-container-high text-foreground shadow-elevation-1"
+              : "bg-transparent",
           )}
         >
           <div className="prose prose-sm max-w-none dark:prose-invert">
@@ -1059,7 +1061,9 @@ function ThinkingIndicator() {
           <span className="h-2 w-2 animate-[typing-dots_1.4s_ease-in-out_infinite_0.2s] rounded-full bg-primary" />
           <span className="h-2 w-2 animate-[typing-dots_1.4s_ease-in-out_infinite_0.4s] rounded-full bg-primary" />
         </div>
-        <span className="text-sm text-muted-foreground">Searching your sources...</span>
+        <span className="text-sm text-muted-foreground">
+          Searching your sources...
+        </span>
       </div>
     </div>
   );

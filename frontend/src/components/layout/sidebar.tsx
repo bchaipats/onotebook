@@ -31,7 +31,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { APP_NAME } from "@/lib/constants";
+import {
+  APP_NAME,
+  NOTEBOOK_ACCENT_COLORS,
+  PRESET_COLORS,
+} from "@/lib/constants";
 import {
   useNotebooks,
   useCreateNotebook,
@@ -41,17 +45,6 @@ import {
 import { OllamaStatus } from "@/components/ollama/ollama-status";
 import type { Notebook } from "@/types/api";
 
-const PRESET_COLORS = [
-  "#6366f1", // indigo (default)
-  "#f43f5e", // rose
-  "#10b981", // emerald
-  "#f59e0b", // amber
-  "#3b82f6", // blue
-  "#8b5cf6", // violet
-  "#ec4899", // pink
-  "#14b8a6", // teal
-];
-
 interface ColorPaletteProps {
   selectedColor: string;
   onSelectColor: (color: string) => void;
@@ -59,21 +52,35 @@ interface ColorPaletteProps {
 
 function ColorPalette({ selectedColor, onSelectColor }: ColorPaletteProps) {
   return (
-    <div className="flex flex-wrap gap-2">
-      {PRESET_COLORS.map((color) => (
-        <button
-          key={color}
-          type="button"
-          className={cn(
-            "h-8 w-8 rounded-full border-2 transition-transform hover:scale-110",
-            selectedColor === color
-              ? "border-foreground ring-2 ring-foreground ring-offset-2 ring-offset-background"
-              : "border-transparent",
-          )}
-          style={{ backgroundColor: color }}
-          onClick={() => onSelectColor(color)}
-        />
-      ))}
+    <div className="grid grid-cols-4 gap-2">
+      {NOTEBOOK_ACCENT_COLORS.map((accent, index) => {
+        const previewColor = PRESET_COLORS[index];
+        const isSelected = selectedColor === previewColor;
+        return (
+          <button
+            key={accent.name}
+            type="button"
+            className={cn(
+              "group flex flex-col items-center gap-1.5 rounded-xl p-2 transition-all",
+              isSelected
+                ? "bg-primary-10 ring-2 ring-primary ring-offset-2 ring-offset-background"
+                : "hover:bg-surface-container-high",
+            )}
+            onClick={() => onSelectColor(previewColor)}
+          >
+            <div
+              className={cn(
+                "h-8 w-8 rounded-full transition-transform group-hover:scale-110",
+                isSelected && "ring-2 ring-white/50",
+              )}
+              style={{ backgroundColor: previewColor }}
+            />
+            <span className="text-[10px] font-medium text-muted-foreground">
+              {accent.name}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }
