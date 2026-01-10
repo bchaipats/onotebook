@@ -61,8 +61,8 @@ export function HomePage({ onOpenSettings }: HomePageProps) {
     <div className="min-h-screen bg-background">
       <HomeHeader onOpenSettings={onOpenSettings} />
 
-      <main className="mx-auto max-w-5xl px-6 py-6 md:px-8 md:py-8">
-        <h1 className="mb-8 text-4xl font-normal tracking-tight text-foreground md:text-5xl">
+      <main className="mx-auto max-w-5xl px-6 py-8 md:px-8 md:py-12">
+        <h1 className="mb-10 font-heading text-4xl font-semibold tracking-tight text-foreground md:text-5xl">
           Welcome to ONotebook
         </h1>
 
@@ -74,12 +74,13 @@ export function HomePage({ onOpenSettings }: HomePageProps) {
             onValueChange={(value) =>
               value && setFilter(value as "all" | "recent")
             }
+            className="rounded-full bg-surface-container p-1"
           >
-            <ToggleGroupItem value="all">All</ToggleGroupItem>
-            <ToggleGroupItem value="recent">Recent</ToggleGroupItem>
+            <ToggleGroupItem value="all" className="rounded-full px-4">All</ToggleGroupItem>
+            <ToggleGroupItem value="recent" className="rounded-full px-4">Recent</ToggleGroupItem>
           </ToggleGroup>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <ToggleGroup
               type="single"
               variant="outline"
@@ -87,12 +88,13 @@ export function HomePage({ onOpenSettings }: HomePageProps) {
               onValueChange={(value) =>
                 value && setViewMode(value as "grid" | "list")
               }
+              className="rounded-xl"
             >
-              <ToggleGroupItem value="grid">
+              <ToggleGroupItem value="grid" className="rounded-l-xl">
                 {viewMode === "grid" && <Check className="h-4 w-4" />}
                 <LayoutGrid className="h-4 w-4" />
               </ToggleGroupItem>
-              <ToggleGroupItem value="list">
+              <ToggleGroupItem value="list" className="rounded-r-xl">
                 {viewMode === "list" && <Check className="h-4 w-4" />}
                 <List className="h-4 w-4" />
               </ToggleGroupItem>
@@ -120,11 +122,13 @@ export function HomePage({ onOpenSettings }: HomePageProps) {
             </DropdownMenu>
 
             <Button
+              variant="filled"
               size="pill"
               onClick={handleCreateNotebook}
               disabled={createNotebook.isPending}
+              className="gap-2"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-5 w-5" />
               Create new
             </Button>
           </div>
@@ -133,7 +137,7 @@ export function HomePage({ onOpenSettings }: HomePageProps) {
         {isLoading ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-56 animate-pulse rounded-xl bg-muted" />
+              <div key={i} className="h-56 animate-pulse rounded-3xl bg-surface-container" />
             ))}
           </div>
         ) : sortedNotebooks.length > 0 ? (

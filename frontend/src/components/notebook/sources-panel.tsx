@@ -110,24 +110,23 @@ export function SourcesPanel({
 
   if (collapsed) {
     return (
-      <div className="flex h-full flex-col items-center gap-1 py-3">
+      <div className="flex h-full flex-col items-center gap-2 py-4">
         <Button
           variant="ghost"
           size="icon"
           onClick={onToggleCollapse}
-          className="h-9 w-9"
+          className="h-10 w-10 rounded-xl text-muted-foreground hover:text-foreground"
           title="Expand sources"
         >
-          <PanelRightOpen className="h-4 w-4" />
+          <PanelRightOpen className="h-5 w-5" />
         </Button>
         <Button
-          variant="ghost"
-          size="icon"
+          variant="fab"
+          size="fab-sm"
           onClick={() => setIsUploadOpen(true)}
-          className="h-9 w-9"
           title="Add source"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-5 w-5" />
         </Button>
       </div>
     );
@@ -159,42 +158,44 @@ export function SourcesPanel({
         onToggleCollapse={onToggleCollapse}
       >
         {sourceCount && (
-          <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+          <span className="rounded-full bg-primary-10 px-2.5 py-1 text-xs font-medium text-primary">
             {sourceCount.count}/{sourceCount.limit}
           </span>
         )}
       </PanelHeader>
 
-      <div className="px-3 pt-4">
+      <div className="px-4 pt-4">
         <Button
-          variant="outline"
+          variant="tonal"
           onClick={() => setIsUploadOpen(true)}
           disabled={isAtLimit}
-          className="w-full justify-center gap-1.5 rounded-full"
+          className="w-full justify-center gap-2 rounded-full py-5 font-medium"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-5 w-5" />
           {isAtLimit ? "Source limit reached" : "Add sources"}
         </Button>
       </div>
 
-      <div className="mx-3 mt-4 rounded-lg bg-violet-50 p-3 dark:bg-violet-950/30">
-        <div className="flex items-start gap-2">
-          <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-violet-600" />
-          <p className="text-xs text-violet-800 dark:text-violet-200">
-            <span className="font-medium text-violet-600">
-              Try Deep Research
-            </span>{" "}
-            for an in-depth report and new sources!
-          </p>
+      <div className="mx-4 mt-4 overflow-hidden rounded-2xl bg-gradient-to-r from-primary-5 to-primary-10 p-4">
+        <div className="flex items-start gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary-20">
+            <Sparkles className="h-4 w-4 text-primary" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-primary">Deep Research</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Get an in-depth report and discover new sources
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="mx-3 mt-4">
+      <div className="mx-4 mt-4">
         <SourceSearch notebookId={notebookId} />
       </div>
 
       {documents && documents.length > 0 && (
-        <div className="mt-2 flex items-center gap-3 border-b px-4 py-3">
+        <div className="mt-3 flex items-center gap-3 border-b border-border/50 px-4 pb-3">
           <Checkbox
             checked={allSelected}
             onCheckedChange={(checked) =>
@@ -202,44 +203,50 @@ export function SourcesPanel({
                 ? onSelectionChange(new Set(readyDocuments?.map((d) => d.id)))
                 : onSelectionChange(new Set())
             }
-            className="rounded"
+            className="rounded-md border-2 data-[state=checked]:border-primary data-[state=checked]:bg-primary"
           />
           <span className="text-sm text-muted-foreground">
             Select all sources
-            <span className="ml-1 text-xs">
-              ({selectedSources.size}/{readyDocuments?.length || 0})
+            <span className="ml-2 rounded-full bg-surface-container px-2 py-0.5 text-xs font-medium">
+              {selectedSources.size}/{readyDocuments?.length || 0}
             </span>
           </span>
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto p-2">
+      <div className="flex-1 overflow-y-auto px-3 py-2">
         {isLoading ? (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-20 animate-pulse rounded-xl bg-muted" />
+              <div
+                key={i}
+                className="h-20 animate-pulse rounded-2xl bg-surface-container"
+              />
             ))}
           </div>
         ) : documents && documents.length > 0 ? (
-          documents.map((doc, index) => (
-            <SourceItem
-              key={doc.id}
-              document={doc}
-              isSelected={selectedSources.has(doc.id)}
-              onToggle={() => toggleSource(doc.id)}
-              onPreview={() => handleManualPreview(doc)}
-              style={{ animationDelay: `${index * 50}ms` }}
-            />
-          ))
+          <div className="space-y-2">
+            {documents.map((doc, index) => (
+              <SourceItem
+                key={doc.id}
+                document={doc}
+                isSelected={selectedSources.has(doc.id)}
+                onToggle={() => toggleSource(doc.id)}
+                onPreview={() => handleManualPreview(doc)}
+                className={`animate-spring-in-up stagger-${Math.min(index + 1, 8)}`}
+              />
+            ))}
+          </div>
         ) : (
-          <div className="flex flex-1 flex-col items-center justify-center p-6 text-center">
-            <FileText className="mb-3 h-12 w-12 text-muted-foreground/40" />
-            <p className="font-medium text-muted-foreground">
-              Saved sources will appear here
+          <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-container">
+              <FileText className="h-8 w-8 text-muted-foreground/50" />
+            </div>
+            <p className="font-heading text-base font-semibold text-foreground">
+              No sources yet
             </p>
-            <p className="mt-1 text-xs text-muted-foreground/70">
-              Click Add source above to add PDFs, websites, text, videos, or
-              audio files.
+            <p className="mt-2 max-w-[200px] text-sm text-muted-foreground">
+              Add PDFs, websites, text, videos, or audio files to get started
             </p>
           </div>
         )}

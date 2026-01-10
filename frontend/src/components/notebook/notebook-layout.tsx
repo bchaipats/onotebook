@@ -71,11 +71,11 @@ export function NotebookLayout({
         onOpenSettings={onOpenSettings}
       />
 
-      <div className="flex flex-1 gap-[var(--panel-gap)] overflow-hidden px-4 pb-4 pt-1">
+      <div className="flex flex-1 gap-3 overflow-hidden px-4 pb-4 pt-1">
         {/* Left: Sources Panel */}
         <aside
           className={cn(
-            "hidden shrink-0 rounded-2xl border border-border/50 bg-card shadow-sm transition-all duration-300 ease-out md:flex md:flex-col",
+            "hidden shrink-0 rounded-3xl bg-surface-container-lowest shadow-elevation-1 transition-spring md:flex md:flex-col",
             sourcesCollapsed
               ? "w-[var(--panel-width-collapsed)]"
               : "w-[var(--panel-width-sources)]",
@@ -93,7 +93,7 @@ export function NotebookLayout({
         </aside>
 
         {/* Center: Chat Panel */}
-        <main className="flex flex-1 flex-col overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm">
+        <main className="flex flex-1 flex-col overflow-hidden rounded-3xl bg-surface-container-lowest shadow-elevation-1">
           <ChatPanel
             notebookId={notebook.id}
             notebook={notebook}
@@ -106,7 +106,7 @@ export function NotebookLayout({
         {/* Right: Studio Panel */}
         <aside
           className={cn(
-            "hidden shrink-0 rounded-2xl border border-border/50 bg-card shadow-sm transition-all duration-300 ease-out lg:flex lg:flex-col",
+            "hidden shrink-0 rounded-3xl bg-surface-container-lowest shadow-elevation-1 transition-spring lg:flex lg:flex-col",
             studioCollapsed
               ? "w-[var(--panel-width-collapsed)]"
               : "w-[var(--panel-width-studio)]",

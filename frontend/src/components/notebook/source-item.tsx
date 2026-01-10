@@ -26,7 +26,7 @@ interface SourceItemProps {
   isSelected: boolean;
   onToggle: () => void;
   onPreview?: () => void;
-  style?: React.CSSProperties;
+  className?: string;
 }
 
 export function SourceItem({
@@ -34,7 +34,7 @@ export function SourceItem({
   isSelected,
   onToggle,
   onPreview,
-  style,
+  className,
 }: SourceItemProps) {
   const deleteDocument = useDeleteDocument(document.notebook_id);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -51,23 +51,23 @@ export function SourceItem({
   return (
     <div
       className={cn(
-        "group mb-2 rounded-xl border p-3 transition-all duration-150 animate-slide-in-left",
+        "group rounded-2xl p-3 transition-all duration-200",
         isSelected && isReady
-          ? "border-primary/30 bg-primary/5"
-          : "border-border hover:border-muted-foreground/30",
+          ? "bg-primary-10 shadow-elevation-1"
+          : "bg-surface-container hover:bg-surface-container-high hover:shadow-elevation-1",
+        className,
       )}
-      style={style}
     >
       <div className="flex items-start gap-3">
         <Checkbox
           checked={isSelected && isReady}
           onCheckedChange={onToggle}
           disabled={!isReady}
-          className="mt-0.5 rounded"
+          className="mt-1 rounded-md border-2 data-[state=checked]:border-primary data-[state=checked]:bg-primary"
         />
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <SourceIcon
               sourceType={document.source_type}
               fileType={document.file_type}
@@ -77,18 +77,28 @@ export function SourceItem({
             </span>
           </div>
 
-          {/* Processing status */}
+          {/* Status indicator */}
+          <div className="mt-2 flex items-center gap-2">
+            <StatusPill status={document.processing_status} />
+            {isReady && (
+              <span className="text-xs text-muted-foreground">
+                {document.chunk_count} chunks
+              </span>
+            )}
+          </div>
+
+          {/* Processing progress */}
           {isProcessing && (
             <div className="mt-2">
-              <Progress value={document.processing_progress} className="h-1" />
-              <span className="text-xs text-muted-foreground">
+              <Progress value={document.processing_progress} className="h-1.5 rounded-full" />
+              <span className="mt-1 block text-xs text-muted-foreground">
                 Processing... {document.processing_progress}%
               </span>
             </div>
           )}
 
           {isFailed && (
-            <p className="mt-1 text-xs text-destructive">
+            <p className="mt-2 rounded-lg bg-destructive/10 px-2 py-1 text-xs text-destructive">
               {document.processing_error || "Processing failed"}
             </p>
           )}
@@ -97,7 +107,7 @@ export function SourceItem({
           {isReady && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="mt-1 flex items-center gap-1 text-xs text-primary hover:underline"
+              className="mt-2 flex items-center gap-1 text-xs font-medium text-primary hover:underline"
             >
               {isExpanded ? (
                 <ChevronDown className="h-3 w-3" />
@@ -109,10 +119,21 @@ export function SourceItem({
           )}
 
           {isExpanded && isReady && (
-            <div className="mt-2 space-y-1 text-xs text-muted-foreground animate-slide-in-top">
-              <p>{formatFileSize(document.file_size)}</p>
-              <p>{document.chunk_count} chunks</p>
-              {document.page_count && <p>{document.page_count} pages</p>}
+            <div className="mt-2 space-y-1.5 rounded-xl bg-surface-container-high p-3 text-xs text-muted-foreground animate-spring-in">
+              <p className="flex justify-between">
+                <span>Size</span>
+                <span className="font-medium text-foreground">{formatFileSize(document.file_size)}</span>
+              </p>
+              <p className="flex justify-between">
+                <span>Chunks</span>
+                <span className="font-medium text-foreground">{document.chunk_count}</span>
+              </p>
+              {document.page_count && (
+                <p className="flex justify-between">
+                  <span>Pages</span>
+                  <span className="font-medium text-foreground">{document.page_count}</span>
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -122,8 +143,8 @@ export function SourceItem({
           {onPreview && isReady && (
             <Button
               variant="ghost"
-              size="icon"
-              className="h-7 w-7"
+              size="icon-sm"
+              className="rounded-xl"
               onClick={(e) => {
                 e.stopPropagation();
                 onPreview();
@@ -134,8 +155,8 @@ export function SourceItem({
           )}
           <Button
             variant="ghost"
-            size="icon"
-            className="h-7 w-7 text-destructive hover:text-destructive"
+            size="icon-sm"
+            className="rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive"
             onClick={handleDelete}
             disabled={deleteDocument.isPending}
           >
@@ -147,6 +168,31 @@ export function SourceItem({
   );
 }
 
+function StatusPill({ status }: { status: string }) {
+  const styles = {
+    ready: "bg-success/15 text-success",
+    processing: "bg-warning/15 text-warning animate-subtle-pulse",
+    failed: "bg-destructive/15 text-destructive",
+  };
+
+  const labels = {
+    ready: "Ready",
+    processing: "Processing",
+    failed: "Failed",
+  };
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+        styles[status as keyof typeof styles] || styles.ready,
+      )}
+    >
+      {labels[status as keyof typeof labels] || status}
+    </span>
+  );
+}
+
 function SourceIcon({
   sourceType,
   fileType,
@@ -154,33 +200,64 @@ function SourceIcon({
   sourceType: string;
   fileType: string;
 }) {
-  const baseClass = "h-4 w-4 shrink-0";
+  const iconClass = "h-4 w-4";
+  const wrapperClass = "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl";
 
   // Handle source type first (URL, YouTube, paste)
   switch (sourceType) {
     case "url":
-      return <Globe className={cn(baseClass, "text-blue-500")} />;
+      return (
+        <div className={cn(wrapperClass, "bg-blue-100 dark:bg-blue-900/30")}>
+          <Globe className={cn(iconClass, "text-blue-600 dark:text-blue-400")} />
+        </div>
+      );
     case "youtube":
-      return <Youtube className={cn(baseClass, "text-red-500")} />;
+      return (
+        <div className={cn(wrapperClass, "bg-red-100 dark:bg-red-900/30")}>
+          <Youtube className={cn(iconClass, "text-red-600 dark:text-red-400")} />
+        </div>
+      );
     case "paste":
-      return <StickyNote className={cn(baseClass, "text-purple-500")} />;
+      return (
+        <div className={cn(wrapperClass, "bg-purple-100 dark:bg-purple-900/30")}>
+          <StickyNote className={cn(iconClass, "text-purple-600 dark:text-purple-400")} />
+        </div>
+      );
   }
 
   // Fall back to file type icons
-  const iconClass = cn(baseClass, "text-muted-foreground");
-
   switch (fileType) {
     case "pdf":
-      return <FileText className={iconClass} />;
+      return (
+        <div className={cn(wrapperClass, "bg-rose-100 dark:bg-rose-900/30")}>
+          <FileText className={cn(iconClass, "text-rose-600 dark:text-rose-400")} />
+        </div>
+      );
     case "docx":
     case "doc":
-      return <FileType className={iconClass} />;
+      return (
+        <div className={cn(wrapperClass, "bg-blue-100 dark:bg-blue-900/30")}>
+          <FileType className={cn(iconClass, "text-blue-600 dark:text-blue-400")} />
+        </div>
+      );
     case "md":
     case "txt":
-      return <FileCode className={iconClass} />;
+      return (
+        <div className={cn(wrapperClass, "bg-slate-100 dark:bg-slate-800/50")}>
+          <FileCode className={cn(iconClass, "text-slate-600 dark:text-slate-400")} />
+        </div>
+      );
     case "html":
-      return <FileCode className={iconClass} />;
+      return (
+        <div className={cn(wrapperClass, "bg-orange-100 dark:bg-orange-900/30")}>
+          <FileCode className={cn(iconClass, "text-orange-600 dark:text-orange-400")} />
+        </div>
+      );
     default:
-      return <File className={iconClass} />;
+      return (
+        <div className={cn(wrapperClass, "bg-surface-container-high")}>
+          <File className={cn(iconClass, "text-muted-foreground")} />
+        </div>
+      );
   }
 }

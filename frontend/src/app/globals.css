@@ -38,6 +38,39 @@
   --card-create: oklch(100% 0 0);
   --card-create-border: oklch(85% 0 0);
 
+  /* Material Design 3 Surface Hierarchy */
+  --surface-dim: oklch(95% 0.005 265);
+  --surface-bright: oklch(100% 0 0);
+  --surface-container-lowest: oklch(100% 0 0);
+  --surface-container-low: oklch(98% 0.003 265);
+  --surface-container: oklch(96% 0.005 265);
+  --surface-container-high: oklch(94% 0.008 265);
+  --surface-container-highest: oklch(92% 0.01 265);
+
+  /* Primary Tonal Palette */
+  --primary-5: oklch(97% 0.02 265);
+  --primary-10: oklch(94% 0.04 265);
+  --primary-20: oklch(88% 0.08 265);
+  --primary-30: oklch(75% 0.15 265);
+  --primary-40: oklch(60% 0.22 265);
+  --primary-50: oklch(48% 0.28 265);
+  --primary-60: oklch(42% 0.25 265);
+  --primary-70: oklch(35% 0.20 265);
+  --primary-80: oklch(28% 0.15 265);
+  --primary-90: oklch(22% 0.10 265);
+
+  /* Secondary Tonal (Neutral with hint of primary) */
+  --secondary-5: oklch(97% 0.008 265);
+  --secondary-10: oklch(94% 0.012 265);
+  --secondary-20: oklch(88% 0.015 265);
+  --secondary-container: oklch(92% 0.02 265);
+  --on-secondary-container: oklch(25% 0.08 265);
+
+  /* Typography */
+  --font-heading: var(--font-poppins), system-ui, sans-serif;
+  --font-body: var(--font-inter), system-ui, sans-serif;
+  --font-reading: var(--font-reading), Georgia, serif;
+
   /* Layout */
   --panel-width-sources: 425px;
   --panel-width-studio: 430px;
@@ -51,16 +84,29 @@
   --h-button-lg: 2.5rem;
   --radius: 0.75rem;
   --radius-card: 1rem;
+  --radius-panel: 1.25rem;
   --radius-pill: 9999px;
   --radius-pill-inner: 1.5rem;
-  --shadow-sm: 0 1px 2px 0 oklch(0% 0 0 / 0.05);
-  --shadow-md:
-    0 4px 6px -1px oklch(0% 0 0 / 0.07), 0 2px 4px -2px oklch(0% 0 0 / 0.07);
-  --shadow-lg:
-    0 10px 15px -3px oklch(0% 0 0 / 0.08), 0 4px 6px -4px oklch(0% 0 0 / 0.08);
+
+  /* Material Design 3 Elevation System */
+  --elevation-0: none;
+  --elevation-1: 0 1px 2px oklch(0% 0 0 / 0.1), 0 1px 3px oklch(0% 0 0 / 0.08);
+  --elevation-2: 0 2px 4px oklch(0% 0 0 / 0.1), 0 2px 6px oklch(0% 0 0 / 0.08);
+  --elevation-3: 0 4px 8px oklch(0% 0 0 / 0.1), 0 4px 12px oklch(0% 0 0 / 0.08);
+  --elevation-4: 0 6px 12px oklch(0% 0 0 / 0.12), 0 8px 24px oklch(0% 0 0 / 0.1);
+  --elevation-5: 0 8px 16px oklch(0% 0 0 / 0.14), 0 12px 32px oklch(0% 0 0 / 0.12);
+
+  /* Legacy shadows (for compatibility) */
+  --shadow-sm: var(--elevation-1);
+  --shadow-md: var(--elevation-2);
+  --shadow-lg: var(--elevation-3);
+
+  /* Transitions */
   --transition-fast: 150ms ease-out;
   --transition-base: 200ms ease-out;
   --transition-slow: 300ms ease-out;
+  --transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-material: 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .dark {
@@ -74,8 +120,8 @@
   --card-foreground: oklch(93% 0.005 250);
   --popover: var(--card);
   --popover-foreground: var(--card-foreground);
-  --primary: oklch(48% 0.28 265);
-  --primary-foreground: oklch(100% 0 0);
+  --primary: oklch(70% 0.18 265);
+  --primary-foreground: oklch(15% 0.05 265);
   --secondary: oklch(21% 0.01 240);
   --secondary-foreground: oklch(93% 0.005 250);
   --muted: oklch(26% 0.01 245);
@@ -90,7 +136,7 @@
   --warning-foreground: oklch(20% 0 0);
   --info: oklch(55% 0.15 255);
   --info-foreground: oklch(100% 0 0);
-  --border: oklch(29% 0.005 250);
+  --border: oklch(32% 0.008 250);
   --border-muted: oklch(26% 0.01 245);
   --input: var(--border);
   --ring: var(--primary);
@@ -100,15 +146,51 @@
   --card-notebook: var(--background-panel);
   --card-create: oklch(21% 0.02 265);
   --card-create-border: oklch(40% 0.08 265);
-  --shadow-sm: 0 1px 2px 0 oklch(0% 0 0 / 0.2);
-  --shadow-md:
-    0 4px 6px -1px oklch(0% 0 0 / 0.3), 0 2px 4px -2px oklch(0% 0 0 / 0.2);
-  --shadow-lg:
-    0 10px 15px -3px oklch(0% 0 0 / 0.4), 0 4px 6px -4px oklch(0% 0 0 / 0.3);
+
+  /* Dark Surface Hierarchy */
+  --surface-dim: oklch(18% 0.008 250);
+  --surface-bright: oklch(30% 0.01 250);
+  --surface-container-lowest: oklch(15% 0.005 250);
+  --surface-container-low: oklch(19% 0.008 250);
+  --surface-container: oklch(22% 0.01 250);
+  --surface-container-high: oklch(25% 0.012 250);
+  --surface-container-highest: oklch(28% 0.015 250);
+
+  /* Dark Primary Tonal Palette */
+  --primary-5: oklch(20% 0.03 265);
+  --primary-10: oklch(25% 0.05 265);
+  --primary-20: oklch(32% 0.08 265);
+  --primary-30: oklch(40% 0.12 265);
+  --primary-40: oklch(50% 0.18 265);
+  --primary-50: oklch(60% 0.22 265);
+  --primary-60: oklch(70% 0.18 265);
+  --primary-70: oklch(78% 0.14 265);
+  --primary-80: oklch(85% 0.10 265);
+  --primary-90: oklch(92% 0.05 265);
+
+  /* Dark Secondary Tonal */
+  --secondary-5: oklch(18% 0.01 265);
+  --secondary-10: oklch(22% 0.015 265);
+  --secondary-20: oklch(28% 0.02 265);
+  --secondary-container: oklch(30% 0.04 265);
+  --on-secondary-container: oklch(90% 0.04 265);
+
+  /* Dark Elevation (using lighter overlays) */
+  --elevation-0: none;
+  --elevation-1: 0 1px 2px oklch(0% 0 0 / 0.3), 0 1px 3px oklch(0% 0 0 / 0.24);
+  --elevation-2: 0 2px 4px oklch(0% 0 0 / 0.3), 0 2px 6px oklch(0% 0 0 / 0.24);
+  --elevation-3: 0 4px 8px oklch(0% 0 0 / 0.3), 0 4px 12px oklch(0% 0 0 / 0.24);
+  --elevation-4: 0 6px 12px oklch(0% 0 0 / 0.35), 0 8px 24px oklch(0% 0 0 / 0.28);
+  --elevation-5: 0 8px 16px oklch(0% 0 0 / 0.4), 0 12px 32px oklch(0% 0 0 / 0.32);
+
+  --shadow-sm: var(--elevation-1);
+  --shadow-md: var(--elevation-2);
+  --shadow-lg: var(--elevation-3);
 }
 
 /* Tailwind v4 Theme */
 @theme inline {
+  /* Core Colors */
   --color-background: var(--background);
   --color-background-notebook: var(--background-notebook);
   --color-background-panel: var(--background-panel);
@@ -143,23 +225,67 @@
   --color-card-notebook: var(--card-notebook);
   --color-card-create: var(--card-create);
   --color-card-create-border: var(--card-create-border);
+
+  /* Material Design 3 Surface Colors */
+  --color-surface-dim: var(--surface-dim);
+  --color-surface-bright: var(--surface-bright);
+  --color-surface-container-lowest: var(--surface-container-lowest);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-container-highest: var(--surface-container-highest);
+
+  /* Primary Tonal Colors */
+  --color-primary-5: var(--primary-5);
+  --color-primary-10: var(--primary-10);
+  --color-primary-20: var(--primary-20);
+  --color-primary-30: var(--primary-30);
+  --color-primary-40: var(--primary-40);
+  --color-primary-50: var(--primary-50);
+  --color-primary-60: var(--primary-60);
+  --color-primary-70: var(--primary-70);
+  --color-primary-80: var(--primary-80);
+  --color-primary-90: var(--primary-90);
+
+  /* Secondary Tonal Colors */
+  --color-secondary-5: var(--secondary-5);
+  --color-secondary-10: var(--secondary-10);
+  --color-secondary-20: var(--secondary-20);
+  --color-secondary-container: var(--secondary-container);
+  --color-on-secondary-container: var(--on-secondary-container);
+
+  /* Layout */
   --h-button-lg: var(--h-button-lg);
   --spacing-panel-width-sources: var(--panel-width-sources);
   --spacing-panel-width-studio: var(--panel-width-studio);
   --spacing-panel-width-collapsed: var(--panel-width-collapsed);
   --spacing-panel-gap: var(--panel-gap);
+
+  /* Radii */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: var(--radius-card);
+  --radius-3xl: var(--radius-panel);
   --radius-pill: var(--radius-pill);
   --radius-pill-inner: var(--radius-pill-inner);
+
+  /* Shadows / Elevation */
   --shadow-sm: var(--shadow-sm);
   --shadow-md: var(--shadow-md);
   --shadow-lg: var(--shadow-lg);
+  --shadow-elevation-1: var(--elevation-1);
+  --shadow-elevation-2: var(--elevation-2);
+  --shadow-elevation-3: var(--elevation-3);
+  --shadow-elevation-4: var(--elevation-4);
+  --shadow-elevation-5: var(--elevation-5);
+
+  /* Typography */
   --font-sans: var(--font-inter);
   --font-mono: var(--font-mono);
+  --font-heading: var(--font-heading);
+  --font-reading: var(--font-reading);
 }
 
 * {
@@ -250,4 +376,119 @@ html {
 
 .animate-highlight-pulse {
   animation: highlight-pulse 2s ease-in-out 3;
+}
+
+/* Spring animation for panel transitions */
+@keyframes spring-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes spring-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  50% {
+    transform: translateY(-2px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Subtle pulse for loading states */
+@keyframes subtle-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Typing dots animation */
+@keyframes typing-dots {
+  0%,
+  20% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+  80%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+}
+
+/* Animation utility classes */
+.animate-spring-in {
+  animation: spring-in var(--transition-spring) forwards;
+}
+
+.animate-spring-in-up {
+  animation: spring-in-up var(--transition-spring) forwards;
+}
+
+.animate-subtle-pulse {
+  animation: subtle-pulse 1.5s ease-in-out infinite;
+}
+
+/* Stagger animation delays */
+.stagger-1 { animation-delay: 30ms; }
+.stagger-2 { animation-delay: 60ms; }
+.stagger-3 { animation-delay: 90ms; }
+.stagger-4 { animation-delay: 120ms; }
+.stagger-5 { animation-delay: 150ms; }
+.stagger-6 { animation-delay: 180ms; }
+.stagger-7 { animation-delay: 210ms; }
+.stagger-8 { animation-delay: 240ms; }
+
+/* Material transition utilities */
+.transition-spring {
+  transition: all var(--transition-spring);
+}
+
+.transition-material {
+  transition: all var(--transition-material);
+}
+
+/* Heading typography utility */
+.font-heading {
+  font-family: var(--font-heading);
+}
+
+/* Reading typography utility */
+.font-reading {
+  font-family: var(--font-reading);
+}
+
+/* Elevation hover transitions */
+.hover-elevation-2 {
+  transition: box-shadow var(--transition-material);
+}
+.hover-elevation-2:hover {
+  box-shadow: var(--elevation-2);
+}
+
+.hover-elevation-3 {
+  transition: box-shadow var(--transition-material);
+}
+.hover-elevation-3:hover {
+  box-shadow: var(--elevation-3);
 }

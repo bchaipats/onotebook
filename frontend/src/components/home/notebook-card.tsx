@@ -52,28 +52,29 @@ export function NotebookCard({ notebook, onSelect }: NotebookCardProps) {
   return (
     <>
       <div
-        className="group relative cursor-pointer rounded-xl border border-border bg-card-notebook p-8 shadow-sm transition-all duration-200 hover:shadow-md"
+        className="group relative cursor-pointer rounded-3xl bg-surface-container-lowest p-8 shadow-elevation-1 transition-all duration-200 hover:shadow-elevation-3 hover:scale-[1.02] active:scale-[0.99]"
         onClick={onSelect}
       >
-        <div className="absolute right-3 top-3 opacity-0 transition-opacity group-hover:opacity-100">
+        <div className="absolute right-4 top-4 opacity-0 transition-opacity group-hover:opacity-100">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground"
+                className="h-9 w-9 rounded-xl bg-surface-container/80 text-muted-foreground hover:bg-surface-container-high hover:text-foreground"
                 onClick={(e) => e.stopPropagation()}
               >
                 <MoreVertical className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="rounded-xl">
               <DropdownMenuItem
                 onClick={(e) => {
                   e.stopPropagation();
                   setEditName(notebook.name);
                   setEditDialogOpen(true);
                 }}
+                className="rounded-lg"
               >
                 <Pencil className="mr-2 h-4 w-4" />
                 Rename
@@ -83,7 +84,7 @@ export function NotebookCard({ notebook, onSelect }: NotebookCardProps) {
                   e.stopPropagation();
                   setDeleteDialogOpen(true);
                 }}
-                className="text-destructive focus:text-destructive"
+                className="rounded-lg text-destructive focus:text-destructive"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete
@@ -92,16 +93,20 @@ export function NotebookCard({ notebook, onSelect }: NotebookCardProps) {
           </DropdownMenu>
         </div>
 
-        <div className="mb-8">
+        <div className="mb-6">
           <NotebookIcon />
         </div>
 
-        <h3 className="mb-2 line-clamp-1 text-xl font-medium text-foreground">
+        <h3 className="mb-2 line-clamp-1 font-heading text-xl font-semibold text-foreground">
           {notebook.name}
         </h3>
-        <p className="text-sm text-muted-foreground">
-          {formatDate(notebook.updated_at)} · {notebook.document_count} sources
-        </p>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>{formatDate(notebook.updated_at)}</span>
+          <span className="h-1 w-1 rounded-full bg-muted-foreground/50" />
+          <span className="rounded-full bg-surface-container px-2 py-0.5 text-xs font-medium">
+            {notebook.document_count} sources
+          </span>
+        </div>
       </div>
 
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>

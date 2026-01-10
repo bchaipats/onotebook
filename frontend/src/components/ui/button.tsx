@@ -4,11 +4,11 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-foreground text-background shadow hover:bg-foreground/90",
+        default: "bg-foreground text-background shadow-sm hover:bg-foreground/90",
         destructive:
           "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
         outline:
@@ -17,13 +17,30 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        // Material Design 3 variants
+        filled:
+          "bg-primary text-primary-foreground shadow-elevation-1 hover:shadow-elevation-2 hover:bg-primary/90 active:shadow-elevation-1",
+        tonal:
+          "bg-secondary-container text-on-secondary-container hover:bg-primary-10 active:bg-primary-20",
+        elevated:
+          "bg-surface-container-low text-foreground shadow-elevation-1 hover:shadow-elevation-2 hover:bg-surface-container active:shadow-elevation-1",
+        fab:
+          "bg-primary-10 text-primary shadow-elevation-3 hover:shadow-elevation-4 hover:bg-primary-20 active:shadow-elevation-3",
+        "fab-secondary":
+          "bg-surface-container text-foreground shadow-elevation-3 hover:shadow-elevation-4 hover:bg-surface-container-high active:shadow-elevation-3",
       },
       size: {
         default: "h-9 px-4 py-2",
         sm: "h-8 rounded-md px-3 text-xs",
-        lg: "h-10 rounded-md px-8",
+        lg: "h-10 rounded-lg px-8",
+        xl: "h-12 rounded-xl px-8 text-base",
         pill: "h-[var(--h-button-lg)] rounded-[var(--radius-pill)] px-6",
-        icon: "h-9 w-9",
+        icon: "h-9 w-9 rounded-lg",
+        "icon-sm": "h-8 w-8 rounded-lg",
+        "icon-lg": "h-10 w-10 rounded-xl",
+        fab: "h-14 w-14 rounded-2xl",
+        "fab-sm": "h-10 w-10 rounded-xl",
+        "fab-extended": "h-14 rounded-2xl px-6",
       },
     },
     defaultVariants: {

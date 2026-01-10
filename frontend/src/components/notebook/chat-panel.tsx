@@ -505,7 +505,7 @@ function ChatContent({
                       <button
                         key={question}
                         onClick={() => handleSuggestedQuestion(question)}
-                        className="rounded-full border bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                        className="rounded-full bg-surface-container px-4 py-2.5 text-sm text-foreground shadow-sm transition-all duration-200 hover:bg-surface-container-high hover:shadow-elevation-1 active:scale-[0.98]"
                       >
                         {question}
                       </button>
@@ -554,12 +554,12 @@ function ChatContent({
               !stoppedContent &&
               suggestedQuestions.length > 0 &&
               allMessages.length > 0 && (
-                <div className="mt-4 flex flex-wrap justify-center gap-2">
+                <div className="mt-6 flex flex-wrap justify-center gap-2">
                   {suggestedQuestions.map((question) => (
                     <button
                       key={question}
                       onClick={() => handleSuggestedQuestion(question)}
-                      className="rounded-full border bg-background px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      className="rounded-full bg-surface-container px-4 py-2 text-sm text-foreground shadow-sm transition-all duration-200 hover:bg-surface-container-high hover:shadow-elevation-1 active:scale-[0.98]"
                     >
                       {question}
                     </button>
@@ -601,7 +601,7 @@ function ChatContent({
 
       <div className="border-t border-border/50 p-4">
         <div className="mx-auto max-w-3xl">
-          <div className="flex items-center gap-3 rounded-full border bg-background px-4 py-2 shadow-sm transition-shadow focus-within:shadow-md focus-within:ring-1 focus-within:ring-primary/20">
+          <div className="flex items-center gap-3 rounded-[28px] bg-surface-container px-5 py-3 shadow-elevation-1 transition-all duration-200 focus-within:shadow-elevation-2 focus-within:ring-2 focus-within:ring-primary/20">
             <textarea
               ref={textareaRef}
               value={inputValue}
@@ -616,14 +616,14 @@ function ChatContent({
               rows={1}
               disabled={isStreaming || selectedSources.size === 0}
             />
-            <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
+            <span className="shrink-0 whitespace-nowrap rounded-full bg-primary-10 px-2.5 py-1 text-xs font-medium text-primary">
               {selectedSources.size} sources
             </span>
             {isStreaming ? (
               <Button
                 size="icon"
                 variant="destructive"
-                className="h-8 w-8 shrink-0 rounded-full"
+                className="h-10 w-10 shrink-0 rounded-full shadow-elevation-1"
                 onClick={handleStop}
               >
                 <Square className="h-4 w-4" />
@@ -631,18 +631,19 @@ function ChatContent({
             ) : (
               <Button
                 size="icon"
-                className="h-8 w-8 shrink-0 rounded-full"
+                variant="filled"
+                className="h-10 w-10 shrink-0 rounded-full"
                 onClick={() => handleSend()}
                 disabled={!inputValue.trim() || selectedSources.size === 0}
               >
-                <ArrowUp className="h-4 w-4" />
+                <ArrowUp className="h-5 w-5" />
               </Button>
             )}
           </div>
         </div>
       </div>
-      <div className="border-t border-border/50 py-2 text-center">
-        <p className="text-xs text-muted-foreground">
+      <div className="py-3 text-center">
+        <p className="text-xs text-muted-foreground/70">
           ONotebook may make mistakes. Consider verifying important information.
         </p>
       </div>
@@ -828,8 +829,10 @@ function MessageBubble({
     <div className={cn("flex gap-4", isUser && "flex-row-reverse")}>
       <div
         className={cn(
-          "flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-medium",
-          isUser ? "bg-user-avatar text-white" : "bg-primary/10 text-primary",
+          "flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold shadow-elevation-1",
+          isUser
+            ? "bg-gradient-to-br from-user-avatar to-orange-500 text-white"
+            : "bg-gradient-to-br from-primary-20 to-primary-10 text-primary",
         )}
       >
         {isUser ? "U" : <Bot className="h-5 w-5" />}
@@ -843,7 +846,7 @@ function MessageBubble({
         <div
           className={cn(
             "group inline-block rounded-2xl px-4 py-3",
-            isUser ? "bg-muted text-foreground" : "bg-transparent",
+            isUser ? "bg-surface-container-high text-foreground shadow-elevation-1" : "bg-transparent",
           )}
         >
           <div className="prose prose-sm max-w-none dark:prose-invert">
@@ -985,7 +988,7 @@ function StreamingMessage({
 }: StreamingMessageProps) {
   return (
     <div className="flex gap-4">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary-20 to-primary-10 text-primary shadow-elevation-1">
         <Bot className="h-5 w-5" />
       </div>
       <div className="flex-1">
@@ -1047,12 +1050,16 @@ function StreamingMessage({
 function ThinkingIndicator() {
   return (
     <div className="flex gap-4">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary-20 to-primary-10 text-primary shadow-elevation-1">
         <Bot className="h-5 w-5" />
       </div>
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        Searching your sources...
+      <div className="flex items-center gap-3 rounded-2xl bg-surface-container px-4 py-3">
+        <div className="flex items-center gap-1">
+          <span className="h-2 w-2 animate-[typing-dots_1.4s_ease-in-out_infinite] rounded-full bg-primary" />
+          <span className="h-2 w-2 animate-[typing-dots_1.4s_ease-in-out_infinite_0.2s] rounded-full bg-primary" />
+          <span className="h-2 w-2 animate-[typing-dots_1.4s_ease-in-out_infinite_0.4s] rounded-full bg-primary" />
+        </div>
+        <span className="text-sm text-muted-foreground">Searching your sources...</span>
       </div>
     </div>
   );
@@ -1061,7 +1068,7 @@ function ThinkingIndicator() {
 function StoppedMessage({ content }: { content: string }) {
   return (
     <div className="flex gap-4">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary-20 to-primary-10 text-primary shadow-elevation-1">
         <Bot className="h-5 w-5" />
       </div>
       <div className="flex-1">
@@ -1125,7 +1132,7 @@ function CitationButton({ index, sourceName, onClick }: CitationButtonProps) {
   const button = (
     <button
       onClick={() => onClick(index)}
-      className="mx-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary/20 px-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/30"
+      className="mx-0.5 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary-10 px-2 text-xs font-semibold text-primary shadow-sm transition-all duration-150 hover:bg-primary-20 hover:shadow-elevation-1 active:scale-95"
     >
       {index}
     </button>
@@ -1135,8 +1142,9 @@ function CitationButton({ index, sourceName, onClick }: CitationButtonProps) {
     return (
       <Tooltip>
         <TooltipTrigger asChild>{button}</TooltipTrigger>
-        <TooltipContent side="top" className="max-w-xs">
-          <span className="font-medium">{index}:</span> {sourceName}
+        <TooltipContent side="top" className="max-w-xs rounded-xl px-3 py-2">
+          <span className="font-semibold text-primary">[{index}]</span>{" "}
+          <span className="text-muted-foreground">{sourceName}</span>
         </TooltipContent>
       </Tooltip>
     );

@@ -28,14 +28,14 @@ import {
 import { useMindMap, useGenerateMindMap } from "@/hooks/use-studio";
 
 const STUDIO_TOOLS = [
-  { icon: Mic, label: "Audio Overview" },
-  { icon: Video, label: "Video Overview" },
-  { icon: GitBranch, label: "Mind Map", enabled: true },
-  { icon: FileText, label: "Reports" },
-  { icon: CreditCard, label: "Flashcards" },
-  { icon: HelpCircle, label: "Quiz" },
-  { icon: BarChart3, label: "Infographic" },
-  { icon: Presentation, label: "Slide Deck" },
+  { icon: Mic, label: "Audio Overview", color: "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400" },
+  { icon: Video, label: "Video Overview", color: "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" },
+  { icon: GitBranch, label: "Mind Map", enabled: true, color: "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400" },
+  { icon: FileText, label: "Reports", color: "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400" },
+  { icon: CreditCard, label: "Flashcards", color: "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400" },
+  { icon: HelpCircle, label: "Quiz", color: "bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400" },
+  { icon: BarChart3, label: "Infographic", color: "bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400" },
+  { icon: Presentation, label: "Slide Deck", color: "bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400" },
 ];
 
 interface StudioPanelProps {
@@ -80,24 +80,24 @@ export function StudioPanel({
 
   if (collapsed) {
     return (
-      <div className="flex h-full flex-col items-center gap-1 py-3">
+      <div className="flex h-full flex-col items-center gap-2 py-4">
         <Button
           variant="ghost"
           size="icon"
           onClick={onToggleCollapse}
-          className="h-9 w-9"
+          className="h-10 w-10 rounded-xl text-muted-foreground hover:text-foreground"
           title="Expand studio"
         >
-          <PanelLeftOpen className="h-4 w-4" />
+          <PanelLeftOpen className="h-5 w-5" />
         </Button>
-        <div className="mt-2 flex flex-col items-center gap-1">
-          {STUDIO_TOOLS.map((tool) => (
+        <div className="mt-2 flex flex-col items-center gap-1.5">
+          {STUDIO_TOOLS.slice(0, 4).map((tool) => (
             <Button
               key={tool.label}
               variant="ghost"
-              size="icon"
+              size="icon-sm"
               disabled={!tool.enabled}
-              className="h-9 w-9"
+              className="rounded-lg"
               title={tool.label}
               onClick={tool.enabled ? handleMindMapClick : undefined}
             >
@@ -107,13 +107,12 @@ export function StudioPanel({
         </div>
         <div className="mt-auto">
           <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9"
+            variant="fab"
+            size="fab-sm"
             title="Add note"
             onClick={onToggleCollapse}
           >
-            <StickyNote className="h-4 w-4" />
+            <StickyNote className="h-5 w-5" />
           </Button>
         </div>
       </div>
@@ -137,9 +136,9 @@ export function StudioPanel({
         />
       )}
 
-      <div className="flex-1 overflow-y-auto p-3">
-        <div className="grid grid-cols-2 gap-2">
-          {STUDIO_TOOLS.map((tool) => {
+      <div className="flex-1 overflow-y-auto px-4 py-4">
+        <div className="grid grid-cols-2 gap-3">
+          {STUDIO_TOOLS.map((tool, index) => {
             const isMindMap = tool.label === "Mind Map";
             const isLoading = isMindMap && isGeneratingMindMap;
             return (
@@ -147,14 +146,16 @@ export function StudioPanel({
                 key={tool.label}
                 disabled={!tool.enabled || isLoading}
                 onClick={tool.enabled ? handleMindMapClick : undefined}
-                className="flex items-center gap-2.5 rounded-xl border bg-card p-3.5 text-left transition-all hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-70"
+                className={`animate-spring-in-up stagger-${Math.min(index + 1, 8)} flex flex-col items-start gap-3 rounded-2xl bg-surface-container p-4 text-left transition-all duration-200 hover:bg-surface-container-high hover:shadow-elevation-1 disabled:cursor-not-allowed disabled:opacity-60`}
               >
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted-foreground" />
-                ) : (
-                  <tool.icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                )}
-                <span className="truncate text-sm">
+                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${tool.color}`}>
+                  {isLoading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <tool.icon className="h-5 w-5" />
+                  )}
+                </div>
+                <span className="text-sm font-medium">
                   {isLoading ? "Generating..." : tool.label}
                 </span>
               </button>
@@ -175,7 +176,8 @@ export function StudioPanel({
         )}
 
         {notes.length > 0 && (
-          <div className="mt-4">
+          <div className="mt-6">
+            <h3 className="mb-3 font-heading text-sm font-semibold text-muted-foreground">Notes</h3>
             <NotesList
               notes={notes}
               onUpdate={(noteId, title, content) =>
@@ -187,24 +189,26 @@ export function StudioPanel({
         )}
 
         {notes.length === 0 && !showAddNote && (
-          <div className="mt-6 flex flex-col items-center p-4 text-center">
-            <Wand2 className="mb-3 h-8 w-8 text-muted-foreground/40" />
-            <p className="text-sm font-medium text-muted-foreground">
-              Studio output will be saved here.
+          <div className="mt-8 flex flex-col items-center rounded-2xl bg-surface-container p-6 text-center">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-10">
+              <Wand2 className="h-7 w-7 text-primary" />
+            </div>
+            <p className="font-heading text-sm font-semibold text-foreground">
+              Studio output will appear here
             </p>
-            <p className="mt-1 text-xs text-muted-foreground/70">
-              After adding sources, click to add Audio Overview, Study Guide,
-              Mind Map, and more!
+            <p className="mt-2 max-w-[200px] text-xs text-muted-foreground">
+              Generate Audio Overviews, Mind Maps, Study Guides, and more from your sources
             </p>
           </div>
         )}
       </div>
 
-      <div className="flex justify-end p-3">
+      <div className="flex justify-end p-4">
         <Button
           onClick={() => setShowAddNote(true)}
           disabled={showAddNote}
-          className="gap-2 rounded-full bg-foreground px-4 text-background hover:bg-foreground/90 disabled:opacity-50"
+          variant="tonal"
+          className="gap-2 rounded-full px-5"
         >
           <StickyNote className="h-4 w-4" />
           Add note

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono, Poppins, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 import { APP_NAME } from "@/lib/constants";
 import { Providers } from "@/components/providers";
@@ -12,6 +12,19 @@ const inter = Inter({
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const poppins = Poppins({
+  variable: "--font-poppins",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const sourceSerif = Source_Serif_4({
+  variable: "--font-reading",
   subsets: ["latin"],
   display: "swap",
 });
@@ -29,7 +42,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
+        className={`${inter.variable} ${jetbrainsMono.variable} ${poppins.variable} ${sourceSerif.variable} antialiased`}
       >
         <Providers>{children}</Providers>
       </body>
