@@ -33,22 +33,25 @@ bun run format       # Format code
 
 **Documentation:** Keep README.md up-to-date with quickstart instructions. Keep it minimal.
 
-## Code Principles
+## Code Rules
 
-**Write clean code:**
-- Clear names that describe intent; no abbreviations
-- Functions do one thing; split if it needs a comment to explain
-- Handle errors explicitly with meaningful messages
-- Delete unused code immediately; no TODOs or commented-out blocks
+When writing code, follow these rules:
 
-**Avoid over-engineering:**
-- No premature abstractions; write concrete code until duplication is obvious
-- No "just in case" flexibility; solve the current problem only
+**Clarity**
+- Name things clearly; no abbreviations
+- One function, one job
+- Use early returns to flatten nesting
+- Delete comments that restate code
+
+**Simplicity**
+- Inline abstractions used only once
 - No wrapper functions that just call another function
-- Three similar lines is better than a premature abstraction
+- No config objects; use constants
+- Three similar lines beats a premature abstraction
+- Delete unused code, variables, and imports immediately
 
-**Avoid under-engineering:**
-- Validate all user input at API boundaries
+**Safety**
+- Validate user input at API boundaries
 - Handle all error states in the UI
 - No `any` in TypeScript; type hints on all Python functions
 
@@ -70,7 +73,7 @@ src/backend/
 └── main.py
 ```
 
-### Guidelines
+### Rules
 
 - Never block async functions with synchronous I/O
 - Run sync SDK calls in threadpool; CPU-intensive tasks in worker processes
@@ -97,10 +100,10 @@ src/
 └── types/
 ```
 
-### Guidelines
+### Rules
 
-- Function declarations for components: `function Button() {}` not `const Button = () => {}`
+- Use function declarations: `function Button() {}` not `const Button = () => {}`
 - Use shadcn/ui as primitives; compose rather than modify
-- **Zustand** for client state, **TanStack Query** for server state, **useState** for local
+- Zustand for client state, TanStack Query for server state, useState for local
 - Tailwind only; use `cn()` for conditional classes
 - All API calls through TanStack Query hooks in `hooks/use-<resource>.ts`
