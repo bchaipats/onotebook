@@ -19,6 +19,7 @@ import { SourceItem } from "./source-item";
 import { AddSourcesDialog } from "./add-sources-dialog";
 import { SourceDetailView } from "./source-detail-view";
 import { SourceSearch } from "./source-search";
+import { PanelHeader } from "./panel-header";
 import { useDocuments } from "@/hooks/use-documents";
 import {
   useSourceCount,
@@ -152,39 +153,31 @@ export function SourcesPanel({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-2">
-          <h2 className="font-semibold">Sources</h2>
-          {sourceCount && (
-            <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-              {sourceCount.count}/{sourceCount.limit}
-            </span>
-          )}
-        </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onToggleCollapse}
-          className="h-8 w-8"
-          title="Collapse panel"
-        >
-          <PanelRightOpen className="h-4 w-4" />
-        </Button>
-      </div>
+      <PanelHeader
+        title="Sources"
+        collapseIcon={<PanelRightOpen />}
+        onToggleCollapse={onToggleCollapse}
+      >
+        {sourceCount && (
+          <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+            {sourceCount.count}/{sourceCount.limit}
+          </span>
+        )}
+      </PanelHeader>
 
-      <div className="px-3 pt-3">
+      <div className="px-3 pt-4">
         <Button
           variant="outline"
           onClick={() => setIsUploadOpen(true)}
           disabled={isAtLimit}
-          className="w-full justify-center gap-1.5 rounded-lg"
+          className="w-full justify-center gap-1.5 rounded-full"
         >
           <Plus className="h-4 w-4" />
           {isAtLimit ? "Source limit reached" : "Add sources"}
         </Button>
       </div>
 
-      <div className="mx-3 mt-3 rounded-lg bg-violet-50 p-3 dark:bg-violet-950/30">
+      <div className="mx-3 mt-4 rounded-lg bg-violet-50 p-3 dark:bg-violet-950/30">
         <div className="flex items-start gap-2">
           <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-violet-600" />
           <p className="text-xs text-violet-800 dark:text-violet-200">
@@ -196,12 +189,12 @@ export function SourcesPanel({
         </div>
       </div>
 
-      <div className="mx-3 mt-3">
+      <div className="mx-3 mt-4">
         <SourceSearch notebookId={notebookId} />
       </div>
 
       {documents && documents.length > 0 && (
-        <div className="flex items-center gap-3 border-b px-4 py-3">
+        <div className="mt-2 flex items-center gap-3 border-b px-4 py-3">
           <Checkbox
             checked={allSelected}
             onCheckedChange={(checked) =>

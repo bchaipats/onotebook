@@ -59,6 +59,7 @@ import type {
   NotebookSummary,
 } from "@/types/api";
 import { ChatConfigDialog } from "./chat-config-dialog";
+import { PanelHeader } from "./panel-header";
 
 export interface HighlightedCitation {
   documentId: string;
@@ -120,43 +121,45 @@ export function ChatPanel({
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex items-center justify-between px-4 py-3">
-        <h2 className="font-semibold">Chat</h2>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            title="Configure chat"
-            onClick={() => setConfigDialogOpen(true)}
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                title="Chat options"
-              >
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={handleDeleteChat}
-                disabled={!activeSessionId || deleteSession.isPending}
-                className="text-destructive focus:text-destructive"
-              >
-                {deleteSession.isPending
-                  ? "Deleting..."
-                  : "Delete chat history"}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
+      <PanelHeader
+        title="Chat"
+        actions={
+          <>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              title="Configure chat"
+              onClick={() => setConfigDialogOpen(true)}
+            >
+              <SlidersHorizontal className="h-[var(--panel-header-icon-size)] w-[var(--panel-header-icon-size)]" />
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  title="Chat options"
+                >
+                  <MoreVertical className="h-[var(--panel-header-icon-size)] w-[var(--panel-header-icon-size)]" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={handleDeleteChat}
+                  disabled={!activeSessionId || deleteSession.isPending}
+                  className="text-destructive focus:text-destructive"
+                >
+                  {deleteSession.isPending
+                    ? "Deleting..."
+                    : "Delete chat history"}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </>
+        }
+      />
 
       <ChatConfigDialog
         notebook={notebook}

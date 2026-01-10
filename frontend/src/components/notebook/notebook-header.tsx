@@ -82,7 +82,7 @@ export function NotebookHeader({
   }
 
   return (
-    <header className="flex h-14 items-center justify-between bg-background-notebook px-4">
+    <header className="flex items-center justify-between bg-background-notebook px-4 py-2">
       <div className="flex items-center gap-3">
         <button
           onClick={onBack}
@@ -97,34 +97,35 @@ export function NotebookHeader({
           onChange={(e) => setTitle(e.target.value)}
           onBlur={handleTitleBlur}
           onKeyDown={handleKeyDown}
-          className="w-64 bg-transparent px-1 py-1 text-lg font-medium outline-none focus:outline-none"
+          className="w-64 bg-transparent px-1 py-1 text-2xl font-medium outline-none focus:outline-none"
         />
       </div>
 
       <div className="flex items-center gap-2">
         <Button
-          className="gap-1.5 rounded-full"
-          size="sm"
+          className="h-[var(--header-button-height)] gap-2 rounded-full px-5"
           onClick={handleCreateNotebook}
           disabled={createNotebook.isPending}
         >
           <Plus className="h-4 w-4" />
           Create notebook
         </Button>
-        <Button variant="ghost" size="sm" className="gap-1.5 rounded-full">
+        <Button
+          variant="outline"
+          className="h-[var(--header-button-height)] gap-2 rounded-full border-border/50 px-5"
+        >
           <Share2 className="h-4 w-4" />
           Share
         </Button>
         <Button
-          variant="ghost"
-          size="sm"
+          variant="outline"
           onClick={onOpenSettings}
-          className="gap-1.5 rounded-full"
+          className="h-[var(--header-button-height)] gap-2 rounded-full border-border/50 px-5"
         >
           <Settings className="h-4 w-4" />
           Settings
         </Button>
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-user-avatar text-sm font-medium text-white">
+        <div className="flex h-[var(--header-button-height)] w-[var(--header-button-height)] items-center justify-center rounded-full bg-user-avatar text-sm font-medium text-white">
           U
         </div>
       </div>

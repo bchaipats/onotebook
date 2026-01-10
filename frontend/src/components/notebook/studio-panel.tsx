@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NotesList, AddNoteForm } from "./notes-list";
+import { PanelHeader } from "./panel-header";
 import { MindMapView } from "@/components/studio/mind-map";
 import {
   useNotes,
@@ -121,18 +122,11 @@ export function StudioPanel({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between px-4 py-3">
-        <h2 className="font-semibold">Studio</h2>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onToggleCollapse}
-          className="h-8 w-8"
-          title="Collapse panel"
-        >
-          <PanelLeftOpen className="h-4 w-4" />
-        </Button>
-      </div>
+      <PanelHeader
+        title="Studio"
+        collapseIcon={<PanelLeftOpen />}
+        onToggleCollapse={onToggleCollapse}
+      />
 
       {showMindMap && mindMapData && (
         <MindMapView

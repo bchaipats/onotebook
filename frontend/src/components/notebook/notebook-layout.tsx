@@ -71,12 +71,14 @@ export function NotebookLayout({
         onOpenSettings={onOpenSettings}
       />
 
-      <div className="flex flex-1 gap-4 overflow-hidden p-4">
+      <div className="flex flex-1 gap-[var(--panel-gap)] overflow-hidden px-4 pb-4 pt-1">
         {/* Left: Sources Panel */}
         <aside
           className={cn(
             "hidden shrink-0 rounded-2xl border border-border/50 bg-card shadow-sm transition-all duration-300 ease-out md:flex md:flex-col",
-            sourcesCollapsed ? "w-14" : "w-80",
+            sourcesCollapsed
+              ? "w-[var(--panel-width-collapsed)]"
+              : "w-[var(--panel-width-sources)]",
           )}
         >
           <SourcesPanel
@@ -105,7 +107,9 @@ export function NotebookLayout({
         <aside
           className={cn(
             "hidden shrink-0 rounded-2xl border border-border/50 bg-card shadow-sm transition-all duration-300 ease-out lg:flex lg:flex-col",
-            studioCollapsed ? "w-14" : "w-72",
+            studioCollapsed
+              ? "w-[var(--panel-width-collapsed)]"
+              : "w-[var(--panel-width-studio)]",
           )}
         >
           <StudioPanel

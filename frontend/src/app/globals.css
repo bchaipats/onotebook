@@ -4,7 +4,7 @@
 :root {
   /* NotebookLM Light Theme - Pure white background */
   --background: oklch(100% 0 0);
-  --background-notebook: oklch(96% 0 0);
+  --background-notebook: #EEEEF9;
   --background-panel: oklch(100% 0 0);
   --foreground: oklch(20% 0 0);
   --card: oklch(100% 0 0);
@@ -39,6 +39,15 @@
   --card-create-border: oklch(85% 0 0);
 
   /* Layout */
+  --panel-width-sources: 425px;
+  --panel-width-studio: 430px;
+  --panel-width-collapsed: 3.5rem;
+  --panel-gap: 0.75rem;
+  --panel-header-padding-y: 0.5rem;
+  --panel-header-padding-left: 1rem;
+  --panel-header-padding-right: 0.5rem;
+  --panel-header-icon-size: 1.5rem;
+  --header-button-height: 2rem;
   --h-button-lg: 2.5rem;
   --radius: 0.75rem;
   --radius-card: 1rem;
@@ -135,6 +144,10 @@
   --color-card-create: var(--card-create);
   --color-card-create-border: var(--card-create-border);
   --h-button-lg: var(--h-button-lg);
+  --spacing-panel-width-sources: var(--panel-width-sources);
+  --spacing-panel-width-studio: var(--panel-width-studio);
+  --spacing-panel-width-collapsed: var(--panel-width-collapsed);
+  --spacing-panel-gap: var(--panel-gap);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
