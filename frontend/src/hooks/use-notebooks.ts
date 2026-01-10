@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getNotebooks,
+  getNotebook,
   createNotebook,
   deleteNotebook,
   updateNotebook,
@@ -13,6 +14,13 @@ export function useNotebooks() {
   return useQuery({
     queryKey: ["notebooks"],
     queryFn: getNotebooks,
+  });
+}
+
+export function useNotebook(id: string) {
+  return useQuery({
+    queryKey: ["notebook", id],
+    queryFn: () => getNotebook(id),
   });
 }
 

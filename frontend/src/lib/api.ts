@@ -62,6 +62,10 @@ export async function getNotebooks(): Promise<Notebook[]> {
   return response.notebooks;
 }
 
+export async function getNotebook(id: string): Promise<Notebook> {
+  return request<Notebook>(`/api/notebooks/${id}`);
+}
+
 export async function createNotebook(data: {
   name: string;
   color?: string;

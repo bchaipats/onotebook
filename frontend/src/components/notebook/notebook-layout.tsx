@@ -96,7 +96,7 @@ export function NotebookLayout({
             notebookId={notebook.id}
             notebook={notebook}
             selectedSources={selectedSources}
-            hasDocuments={documents && documents.length > 0}
+            hasDocuments={!!documents && documents.length > 0}
             onCitationHighlight={handleCitationHighlight}
           />
         </main>

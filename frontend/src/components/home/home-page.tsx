@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { HomeHeader } from "./home-header";
 import { NotebookGrid } from "./notebook-grid";
 import { EmptyState } from "./empty-state";
@@ -17,11 +18,11 @@ import { Plus, LayoutGrid, List, ChevronDown, Check } from "lucide-react";
 import type { Notebook } from "@/types/api";
 
 interface HomePageProps {
-  onSelectNotebook: (notebook: Notebook, isNewlyCreated?: boolean) => void;
   onOpenSettings: () => void;
 }
 
-export function HomePage({ onSelectNotebook, onOpenSettings }: HomePageProps) {
+export function HomePage({ onOpenSettings }: HomePageProps) {
+  const router = useRouter();
   const { data: notebooks, isLoading } = useNotebooks();
   const createNotebook = useCreateNotebook();
 
@@ -46,10 +47,14 @@ export function HomePage({ onSelectNotebook, onOpenSettings }: HomePageProps) {
       { name: "Untitled notebook" },
       {
         onSuccess: (notebook) => {
-          onSelectNotebook(notebook, true);
+          router.push(`/notebook/${notebook.id}?new=true`);
         },
       },
     );
+  }
+
+  function handleSelectNotebook(notebook: Notebook) {
+    router.push(`/notebook/${notebook.id}`);
   }
 
   return (
@@ -135,7 +140,7 @@ export function HomePage({ onSelectNotebook, onOpenSettings }: HomePageProps) {
           <NotebookGrid
             notebooks={sortedNotebooks}
             viewMode={viewMode}
-            onSelectNotebook={onSelectNotebook}
+            onSelectNotebook={handleSelectNotebook}
             onCreateNotebook={handleCreateNotebook}
           />
         ) : (

@@ -344,31 +344,33 @@ function HighlightedContent({
     );
   }
 
+  const searchText = highlightText;
+
   // Find highlight using exact match, then normalized match, then prefix match
   function findMatch(): { index: number; length: number } | null {
     // Exact match
-    const exactIndex = content.indexOf(highlightText);
+    const exactIndex = content.indexOf(searchText);
     if (exactIndex !== -1) {
-      return { index: exactIndex, length: highlightText.length };
+      return { index: exactIndex, length: searchText.length };
     }
 
     // Normalized whitespace match
     const normalize = (t: string) => t.replace(/\s+/g, " ").trim();
     const normalizedContent = normalize(content);
-    const normalizedSearch = normalize(highlightText);
+    const normalizedSearch = normalize(searchText);
     const normalizedIndex = normalizedContent.indexOf(normalizedSearch);
     if (normalizedIndex !== -1) {
-      return { index: normalizedIndex, length: highlightText.length };
+      return { index: normalizedIndex, length: searchText.length };
     }
 
     // Prefix match (first 100 chars)
-    const prefix = normalize(highlightText.slice(0, 100));
+    const prefix = normalize(searchText.slice(0, 100));
     if (prefix.length >= 20) {
       const prefixIndex = normalizedContent.indexOf(prefix);
       if (prefixIndex !== -1) {
         return {
           index: prefixIndex,
-          length: Math.min(highlightText.length, 500),
+          length: Math.min(searchText.length, 500),
         };
       }
     }

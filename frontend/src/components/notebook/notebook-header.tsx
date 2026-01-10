@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Plus, Share2, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useUpdateNotebook } from "@/hooks/use-notebooks";
+import { useUpdateNotebook, useCreateNotebook } from "@/hooks/use-notebooks";
 import type { Notebook } from "@/types/api";
 
 function ONotebookLogo() {
@@ -45,8 +46,21 @@ export function NotebookHeader({
   onBack,
   onOpenSettings,
 }: NotebookHeaderProps) {
+  const router = useRouter();
   const updateNotebook = useUpdateNotebook();
+  const createNotebook = useCreateNotebook();
   const [title, setTitle] = useState(notebook.name);
+
+  function handleCreateNotebook() {
+    createNotebook.mutate(
+      { name: "Untitled notebook" },
+      {
+        onSuccess: (newNotebook) => {
+          router.push(`/notebook/${newNotebook.id}?new=true`);
+        },
+      },
+    );
+  }
 
   function handleTitleBlur() {
     if (!title.trim() || title === notebook.name) {
@@ -88,7 +102,12 @@ export function NotebookHeader({
       </div>
 
       <div className="flex items-center gap-2">
-        <Button className="gap-1.5 rounded-full" size="sm">
+        <Button
+          className="gap-1.5 rounded-full"
+          size="sm"
+          onClick={handleCreateNotebook}
+          disabled={createNotebook.isPending}
+        >
           <Plus className="h-4 w-4" />
           Create notebook
         </Button>
