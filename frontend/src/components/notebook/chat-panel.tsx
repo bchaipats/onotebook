@@ -360,25 +360,61 @@ function ChatContent({
     );
   }
 
+  const suggestedQuestions = [
+    "What are the main topics covered in my sources?",
+    "Summarize the key points",
+    "What questions can you answer based on my sources?",
+  ];
+
+  function handleSuggestedQuestion(question: string) {
+    handleSend(question);
+  }
+
   return (
     <>
       <div className="flex-1 overflow-y-auto">
         {allMessages.length === 0 && !isStreaming && !stoppedContent ? (
-          <div className="flex h-full flex-col items-center justify-center p-8 text-center">
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/30">
-              <Upload className="h-7 w-7 text-primary/70" />
+          selectedSources.size === 0 ? (
+            <div className="flex h-full flex-col items-center justify-center p-8 text-center">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/30">
+                <Upload className="h-7 w-7 text-primary/70" />
+              </div>
+              <h2 className="mb-3 text-lg font-medium">
+                Add a source to get started
+              </h2>
+              <Button
+                variant="outline"
+                className="rounded-full"
+                onClick={() => {}}
+              >
+                Upload a source
+              </Button>
             </div>
-            <h2 className="mb-3 text-lg font-medium">
-              Add a source to get started
-            </h2>
-            <Button
-              variant="outline"
-              className="rounded-full"
-              onClick={() => {}}
-            >
-              Upload a source
-            </Button>
-          </div>
+          ) : (
+            <div className="flex h-full flex-col items-center justify-center p-8 text-center">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                <Bot className="h-8 w-8 text-primary" />
+              </div>
+              <h2 className="mb-2 text-lg font-medium">
+                Ask about your sources
+              </h2>
+              <p className="mb-6 text-sm text-muted-foreground">
+                I can help you understand and analyze your {selectedSources.size}{" "}
+                selected source{selectedSources.size !== 1 ? "s" : ""}.
+              </p>
+              <div className="flex flex-col gap-2">
+                {suggestedQuestions.map((question) => (
+                  <button
+                    key={question}
+                    onClick={() => handleSuggestedQuestion(question)}
+                    className="rounded-full border bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  >
+                    {question}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )
         ) : (
           <div className="mx-auto max-w-3xl space-y-6 p-6">
             {allMessages.map((message) => (
