@@ -11,23 +11,24 @@ function ONotebookLogo() {
     <svg
       width="32"
       height="32"
-      viewBox="0 0 48 48"
+      viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className="shrink-0"
     >
       <path
-        d="M8 12C8 9.79086 9.79086 8 12 8H36C38.2091 8 40 9.79086 40 12V40C40 42.2091 38.2091 44 36 44H12C9.79086 44 8 42.2091 8 40V12Z"
-        fill="#D4A853"
+        d="M4 19.5C4 18.837 4.26339 18.2011 4.73223 17.7322C5.20107 17.2634 5.83696 17 6.5 17H20"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
       <path
-        d="M8 10C8 7.79086 9.79086 6 12 6H32L40 14V38C40 40.2091 38.2091 42 36 42H12C9.79086 42 8 40.2091 8 38V10Z"
-        fill="#F5C869"
-      />
-      <path d="M32 6V14H40L32 6Z" fill="#D4A853" />
-      <path
-        d="M8 10C8 7.79086 9.79086 6 12 6H14V42H12C9.79086 42 8 40.2091 8 38V10Z"
-        fill="#E8B84A"
+        d="M6.5 2H20V22H6.5C5.83696 22 5.20107 21.7366 4.73223 21.2678C4.26339 20.7989 4 20.163 4 19.5V4.5C4 3.83696 4.26339 3.20107 4.73223 2.73223C5.20107 2.26339 5.83696 2 6.5 2Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );
@@ -67,7 +68,7 @@ export function NotebookHeader({
   }
 
   return (
-    <header className="flex h-14 items-center justify-between border-b bg-card px-4 shadow-sm">
+    <header className="flex h-14 items-center justify-between bg-background-notebook px-4">
       <div className="flex items-center gap-3">
         <button
           onClick={onBack}
@@ -82,7 +83,7 @@ export function NotebookHeader({
           onChange={(e) => setTitle(e.target.value)}
           onBlur={handleTitleBlur}
           onKeyDown={handleKeyDown}
-          className="w-64 rounded-md border border-transparent bg-transparent px-2 py-1 text-lg font-medium transition-colors hover:border-border focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
+          className="w-64 bg-transparent px-1 py-1 text-lg font-medium outline-none focus:outline-none"
         />
       </div>
 

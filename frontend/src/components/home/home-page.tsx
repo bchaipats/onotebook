@@ -57,7 +57,11 @@ export function HomePage({ onSelectNotebook, onOpenSettings }: HomePageProps) {
       <HomeHeader onOpenSettings={onOpenSettings} />
 
       <main className="mx-auto max-w-5xl px-6 py-6 md:px-8 md:py-8">
-        <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="mb-8 text-4xl font-normal tracking-tight text-foreground md:text-5xl">
+          Welcome to ONotebook
+        </h1>
+
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <ToggleGroup
             type="single"
             variant="pill"

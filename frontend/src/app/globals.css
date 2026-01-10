@@ -2,9 +2,9 @@
 @plugin "@tailwindcss/typography";
 
 :root {
-  /* NotebookLM Light Theme */
-  /* Page: #EDEFFA, Panels: #FFFFFF, Cards: #F9F9F9 */
-  --background: oklch(95% 0.02 270);
+  /* NotebookLM Light Theme - Pure white background */
+  --background: oklch(100% 0 0);
+  --background-notebook: oklch(96% 0 0);
   --background-panel: oklch(100% 0 0);
   --foreground: oklch(20% 0 0);
   --card: oklch(100% 0 0);
@@ -15,9 +15,9 @@
   --primary-foreground: oklch(100% 0 0);
   --secondary: oklch(100% 0 0);
   --secondary-foreground: oklch(45% 0.005 250);
-  --muted: oklch(98% 0 0);
+  --muted: oklch(96% 0 0);
   --muted-foreground: oklch(52% 0 0);
-  --accent: oklch(96% 0.015 250);
+  --accent: oklch(96% 0 0);
   --accent-foreground: oklch(20% 0 0);
   --destructive: oklch(45% 0.18 25);
   --destructive-foreground: oklch(100% 0 0);
@@ -27,16 +27,16 @@
   --warning-foreground: oklch(20% 0 0);
   --info: oklch(48% 0.15 255);
   --info-foreground: oklch(100% 0 0);
-  --border: oklch(90% 0.015 260);
-  --border-muted: oklch(85% 0.01 260);
+  --border: oklch(92% 0 0);
+  --border-muted: oklch(88% 0 0);
   --input: var(--border);
   --ring: var(--primary);
   --link: var(--primary);
   --user-avatar: oklch(78% 0.18 75);
   --tab-active: var(--background-panel);
-  --card-notebook: oklch(98% 0 0);
-  --card-create: oklch(97% 0.02 270);
-  --card-create-border: oklch(78% 0.08 270);
+  --card-notebook: oklch(100% 0 0);
+  --card-create: oklch(100% 0 0);
+  --card-create-border: oklch(85% 0 0);
 
   /* Layout */
   --h-button-lg: 2.5rem;
@@ -58,6 +58,7 @@
   /* NotebookLM Dark Theme */
   /* Page: #37383B, Panels/Cards: #22262B */
   --background: oklch(29% 0.005 250);
+  --background-notebook: oklch(25% 0.005 250);
   --background-panel: oklch(21% 0.01 240);
   --foreground: oklch(82% 0 0);
   --card: oklch(21% 0.01 240);
@@ -100,6 +101,7 @@
 /* Tailwind v4 Theme */
 @theme inline {
   --color-background: var(--background);
+  --color-background-notebook: var(--background-notebook);
   --color-background-panel: var(--background-panel);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

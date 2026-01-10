@@ -52,7 +52,7 @@ export function NotebookCard({ notebook, onSelect }: NotebookCardProps) {
   return (
     <>
       <div
-        className="group relative cursor-pointer rounded-xl bg-card-notebook p-8 shadow-md transition-all duration-200 hover:shadow-lg"
+        className="group relative cursor-pointer rounded-xl border border-border bg-card-notebook p-8 shadow-sm transition-all duration-200 hover:shadow-md"
         onClick={onSelect}
       >
         <div className="absolute right-3 top-3 opacity-0 transition-opacity group-hover:opacity-100">

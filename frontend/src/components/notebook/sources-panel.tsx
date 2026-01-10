@@ -184,11 +184,11 @@ export function SourcesPanel({
         </Button>
       </div>
 
-      <div className="mx-3 mt-3 rounded-lg bg-amber-50 p-3 dark:bg-amber-950/30">
+      <div className="mx-3 mt-3 rounded-lg bg-violet-50 p-3 dark:bg-violet-950/30">
         <div className="flex items-start gap-2">
-          <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-          <p className="text-xs text-amber-800 dark:text-amber-200">
-            <span className="font-medium text-amber-600">
+          <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-violet-600" />
+          <p className="text-xs text-violet-800 dark:text-violet-200">
+            <span className="font-medium text-violet-600">
               Try Deep Research
             </span>{" "}
             for an in-depth report and new sources!
