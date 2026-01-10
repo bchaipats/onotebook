@@ -48,6 +48,7 @@ export function useDeleteDocument(notebookId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["documents", notebookId] });
       queryClient.invalidateQueries({ queryKey: ["notebooks"] });
+      queryClient.invalidateQueries({ queryKey: ["source-count", notebookId] });
     },
   });
 }
@@ -69,5 +70,6 @@ export function useInvalidateDocuments(notebookId: string) {
   return () => {
     queryClient.invalidateQueries({ queryKey: ["documents", notebookId] });
     queryClient.invalidateQueries({ queryKey: ["notebooks"] });
+    queryClient.invalidateQueries({ queryKey: ["source-count", notebookId] });
   };
 }

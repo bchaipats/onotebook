@@ -48,6 +48,14 @@ class Document(SQLModel, table=True):
     processing_error: str | None = None
     created_at: datetime = Field(default_factory=utc_now)
 
+    # Source type classification: file, url, youtube, paste
+    source_type: str = Field(default="file", index=True)
+    # Original URL for url/youtube sources
+    source_url: str | None = None
+    # AI-generated source guide summary
+    summary: str | None = None
+    summary_generated_at: datetime | None = None
+
     notebook: Notebook | None = Relationship(back_populates="documents")
     chunks: list["Chunk"] = Relationship(
         back_populates="document",

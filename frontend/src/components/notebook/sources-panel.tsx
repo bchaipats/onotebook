@@ -1,21 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Plus,
-  FileText,
-  PanelRightOpen,
-  Search,
-  ChevronDown,
-  ArrowRight,
-  Sparkles,
-  Globe,
-} from "lucide-react";
+import { Plus, FileText, PanelRightOpen, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SourceItem } from "./source-item";
 import { AddSourcesDialog } from "./add-sources-dialog";
+import { SourceDetailView } from "./source-detail-view";
+import { SourceSearch } from "./source-search";
 import { useDocuments } from "@/hooks/use-documents";
+import { useSourceCount } from "@/hooks/use-sources";
+import type { Document } from "@/types/api";
 
 interface SourcesPanelProps {
   notebookId: string;
@@ -35,7 +30,11 @@ export function SourcesPanel({
   onToggleCollapse,
 }: SourcesPanelProps) {
   const { data: documents, isLoading } = useDocuments(notebookId);
+  const { data: sourceCount } = useSourceCount(notebookId);
   const [isUploadOpen, setIsUploadOpen] = useState(autoOpenAddSources);
+  const [previewDocument, setPreviewDocument] = useState<Document | null>(null);
+
+  const isAtLimit = sourceCount ? sourceCount.remaining <= 0 : false;
 
   const readyDocuments = documents?.filter(
     (d) => d.processing_status === "ready",
@@ -83,7 +82,14 @@ export function SourcesPanel({
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between px-4 py-3">
-        <h2 className="font-semibold">Sources</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="font-semibold">Sources</h2>
+          {sourceCount && (
+            <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+              {sourceCount.count}/{sourceCount.limit}
+            </span>
+          )}
+        </div>
         <Button
           variant="ghost"
           size="icon"
@@ -99,10 +105,11 @@ export function SourcesPanel({
         <Button
           variant="outline"
           onClick={() => setIsUploadOpen(true)}
+          disabled={isAtLimit}
           className="w-full justify-center gap-1.5 rounded-lg"
         >
           <Plus className="h-4 w-4" />
-          Add sources
+          {isAtLimit ? "Source limit reached" : "Add sources"}
         </Button>
       </div>
 
@@ -118,39 +125,8 @@ export function SourcesPanel({
         </div>
       </div>
 
-      <div className="mx-3 mt-3 rounded-xl border bg-muted/30 p-3">
-        <div className="flex items-center gap-2 rounded-lg border bg-background px-3 py-2">
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search the web for new sources"
-            className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-            disabled
-          />
-        </div>
-        <div className="mt-2 flex items-center justify-between">
-          <div className="flex gap-2">
-            <button
-              disabled
-              className="flex items-center gap-1 rounded-full border bg-background px-3 py-1 text-xs"
-            >
-              <Globe className="h-3 w-3" />
-              Web
-              <ChevronDown className="h-3 w-3" />
-            </button>
-            <button
-              disabled
-              className="flex items-center gap-1 rounded-full border bg-background px-3 py-1 text-xs"
-            >
-              <Sparkles className="h-3 w-3" />
-              Fast Research
-              <ChevronDown className="h-3 w-3" />
-            </button>
-          </div>
-          <Button size="icon" disabled className="h-7 w-7 rounded-full">
-            <ArrowRight className="h-3 w-3" />
-          </Button>
-        </div>
+      <div className="mx-3 mt-3">
+        <SourceSearch notebookId={notebookId} />
       </div>
 
       {documents && documents.length > 0 && (
@@ -187,6 +163,7 @@ export function SourcesPanel({
               document={doc}
               isSelected={selectedSources.has(doc.id)}
               onToggle={() => toggleSource(doc.id)}
+              onPreview={() => setPreviewDocument(doc)}
               style={{ animationDelay: `${index * 50}ms` }}
             />
           ))
@@ -208,6 +185,12 @@ export function SourcesPanel({
         open={isUploadOpen}
         onOpenChange={setIsUploadOpen}
         notebookId={notebookId}
+      />
+
+      <SourceDetailView
+        document={previewDocument}
+        open={!!previewDocument}
+        onOpenChange={(open) => !open && setPreviewDocument(null)}
       />
     </div>
   );

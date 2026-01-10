@@ -10,6 +10,9 @@ import {
   Eye,
   ChevronDown,
   ChevronRight,
+  Globe,
+  Youtube,
+  StickyNote,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -65,7 +68,10 @@ export function SourceItem({
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <FileIcon type={document.file_type} />
+            <SourceIcon
+              sourceType={document.source_type}
+              fileType={document.file_type}
+            />
             <span className="truncate text-sm font-medium">
               {document.filename}
             </span>
@@ -141,10 +147,29 @@ export function SourceItem({
   );
 }
 
-function FileIcon({ type }: { type: string }) {
-  const iconClass = "h-4 w-4 shrink-0 text-muted-foreground";
+function SourceIcon({
+  sourceType,
+  fileType,
+}: {
+  sourceType: string;
+  fileType: string;
+}) {
+  const baseClass = "h-4 w-4 shrink-0";
 
-  switch (type) {
+  // Handle source type first (URL, YouTube, paste)
+  switch (sourceType) {
+    case "url":
+      return <Globe className={cn(baseClass, "text-blue-500")} />;
+    case "youtube":
+      return <Youtube className={cn(baseClass, "text-red-500")} />;
+    case "paste":
+      return <StickyNote className={cn(baseClass, "text-purple-500")} />;
+  }
+
+  // Fall back to file type icons
+  const iconClass = cn(baseClass, "text-muted-foreground");
+
+  switch (fileType) {
     case "pdf":
       return <FileText className={iconClass} />;
     case "docx":

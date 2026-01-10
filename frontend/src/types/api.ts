@@ -18,6 +18,8 @@ export interface NotebooksResponse {
   notebooks: Notebook[];
 }
 
+export type SourceType = "file" | "url" | "youtube" | "paste";
+
 export interface Document {
   id: string;
   notebook_id: string;
@@ -30,7 +32,63 @@ export interface Document {
   processing_progress: number;
   processing_error: string | null;
   created_at: string;
+  source_type: SourceType;
+  source_url: string | null;
+  summary: string | null;
 }
+
+export interface SourceGuide {
+  document_id: string;
+  summary: string | null;
+  generated_at: string | null;
+}
+
+export interface SourceContent {
+  document_id: string;
+  content: string;
+  chunk_count: number;
+}
+
+export interface SearchResultItem {
+  id: string;
+  title: string;
+  url: string;
+  snippet: string;
+  favicon_url: string | null;
+}
+
+export interface WebSearchResponse {
+  results: SearchResultItem[];
+  query: string;
+  mode: string;
+}
+
+export interface SourceCountResponse {
+  count: number;
+  limit: number;
+  remaining: number;
+}
+
+export interface CreateUrlSourceRequest {
+  source_type: "url";
+  url: string;
+}
+
+export interface CreateYouTubeSourceRequest {
+  source_type: "youtube";
+  url: string;
+}
+
+export interface CreatePasteSourceRequest {
+  source_type: "paste";
+  title: string;
+  content: string;
+}
+
+export type CreateSourceRequest =
+  | CreateUrlSourceRequest
+  | CreateYouTubeSourceRequest
+  | CreatePasteSourceRequest;
 
 export interface Chunk {
   id: string;

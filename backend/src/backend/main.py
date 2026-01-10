@@ -13,6 +13,7 @@ from src.backend.health import router as health_router
 from src.backend.notebooks import router as notebooks_router
 from src.backend.ollama import router as ollama_router
 from src.backend.settings import router as settings_router
+from src.backend.sources import router as sources_router
 
 
 @asynccontextmanager
@@ -51,6 +52,7 @@ app.add_middleware(
 app.include_router(health_router)
 app.include_router(notebooks_router)
 app.include_router(documents_router)
+app.include_router(sources_router)
 app.include_router(ollama_router)
 app.include_router(chat_router)
 app.include_router(settings_router)

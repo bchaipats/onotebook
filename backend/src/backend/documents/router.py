@@ -37,6 +37,9 @@ def document_to_response(doc: service.Document) -> DocumentResponse:
         processing_progress=doc.processing_progress,
         processing_error=doc.processing_error,
         created_at=doc.created_at,
+        source_type=doc.source_type,
+        source_url=doc.source_url,
+        summary=doc.summary,
     )
 
 

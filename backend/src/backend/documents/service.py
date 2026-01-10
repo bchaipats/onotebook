@@ -95,10 +95,11 @@ async def upload_document(session: AsyncSession, notebook_id: str, file: UploadF
 
 async def delete_document(session: AsyncSession, document: Document) -> None:
     """Delete a document and its file."""
-    # Delete file if it exists
-    file_path = Path(document.file_path)
-    if file_path.exists():
-        file_path.unlink()
+    # Delete file if it exists (only for file-based sources)
+    if document.file_path:
+        file_path = Path(document.file_path)
+        if file_path.exists() and file_path.is_file():
+            file_path.unlink()
 
     # Delete document record (cascades to chunks)
     await session.delete(document)

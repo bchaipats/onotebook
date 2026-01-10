@@ -15,6 +15,9 @@ class DocumentResponse(BaseModel):
     processing_progress: int
     processing_error: str | None
     created_at: datetime
+    source_type: str
+    source_url: str | None
+    summary: str | None
 
     model_config = {"from_attributes": True}
 

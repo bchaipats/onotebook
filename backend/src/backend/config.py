@@ -12,6 +12,7 @@ class Settings(BaseSettings):
 
     # Ollama
     ollama_base_url: str = "http://localhost:11434"
+    ollama_timeout: int = 300
     default_llm_model: str = "llama3.2"
 
     # Storage
@@ -27,6 +28,18 @@ class Settings(BaseSettings):
 
     # Limits
     max_upload_size_mb: int = 50
+    max_sources_per_notebook: int = 50
+
+    # Source extraction
+    url_extraction_timeout: int = 30
+    max_url_content_size_mb: int = 10
+
+    # Web search - Tavily (optional)
+    tavily_api_key: str | None = None
+    search_results_per_query: int = 10
+
+    # Source guide
+    source_guide_max_chunks: int = 10
 
     # App
     app_version: str = "0.1.0"

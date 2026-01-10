@@ -9,9 +9,9 @@ import {
   Check,
   X,
   Loader2,
-  Link2,
-  FileType,
+  Globe,
   Cloud,
+  Youtube,
 } from "lucide-react";
 import {
   Dialog,
@@ -21,7 +21,10 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { uploadDocument } from "@/lib/api";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { uploadDocument, createSource } from "@/lib/api";
 import { useInvalidateDocuments } from "@/hooks/use-documents";
 import { cn } from "@/lib/utils";
 
@@ -35,7 +38,7 @@ const ACCEPTED_TYPES = {
   "text/html": [".html"],
 };
 
-type SourceType = "upload" | "drive" | "link" | "paste";
+type SourceType = "upload" | "link" | "youtube" | "paste" | "drive";
 
 interface SourceOption {
   id: SourceType;
@@ -47,24 +50,13 @@ interface SourceOption {
 
 const SOURCE_OPTIONS: SourceOption[] = [
   { id: "upload", label: "Upload", icon: Upload, supported: true },
+  { id: "link", label: "Website", icon: Globe, supported: true },
+  { id: "youtube", label: "YouTube", icon: Youtube, supported: true },
+  { id: "paste", label: "Paste text", icon: FileText, supported: true },
   {
     id: "drive",
     label: "Google Drive",
     icon: Cloud,
-    supported: false,
-    description: "Coming soon",
-  },
-  {
-    id: "link",
-    label: "Link",
-    icon: Link2,
-    supported: false,
-    description: "Coming soon",
-  },
-  {
-    id: "paste",
-    label: "Paste text",
-    icon: FileType,
     supported: false,
     description: "Coming soon",
   },
@@ -92,6 +84,22 @@ export function AddSourcesDialog({
     useState<SourceType>("upload");
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const invalidateDocuments = useInvalidateDocuments(notebookId);
+
+  // URL source state
+  const [urlInput, setUrlInput] = useState("");
+  const [urlLoading, setUrlLoading] = useState(false);
+  const [urlError, setUrlError] = useState<string | null>(null);
+
+  // YouTube source state
+  const [youtubeInput, setYoutubeInput] = useState("");
+  const [youtubeLoading, setYoutubeLoading] = useState(false);
+  const [youtubeError, setYoutubeError] = useState<string | null>(null);
+
+  // Paste source state
+  const [pasteTitle, setPasteTitle] = useState("");
+  const [pasteContent, setPasteContent] = useState("");
+  const [pasteLoading, setPasteLoading] = useState(false);
+  const [pasteError, setPasteError] = useState<string | null>(null);
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
@@ -156,9 +164,91 @@ export function AddSourcesDialog({
     const hasActiveUploads = uploadingFiles.some(
       (f) => f.status === "uploading",
     );
-    if (!hasActiveUploads) {
+    const isLoading = urlLoading || youtubeLoading || pasteLoading;
+    if (!hasActiveUploads && !isLoading) {
       setUploadingFiles([]);
+      setUrlInput("");
+      setUrlError(null);
+      setYoutubeInput("");
+      setYoutubeError(null);
+      setPasteTitle("");
+      setPasteContent("");
+      setPasteError(null);
       onOpenChange(false);
+    }
+  }
+
+  async function handleUrlSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!urlInput.trim()) return;
+
+    setUrlLoading(true);
+    setUrlError(null);
+
+    try {
+      await createSource(notebookId, {
+        source_type: "url",
+        url: urlInput.trim(),
+      });
+      invalidateDocuments();
+      setUrlInput("");
+      onOpenChange(false);
+    } catch (error) {
+      setUrlError(
+        error instanceof Error ? error.message : "Failed to add website",
+      );
+    } finally {
+      setUrlLoading(false);
+    }
+  }
+
+  async function handleYoutubeSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!youtubeInput.trim()) return;
+
+    setYoutubeLoading(true);
+    setYoutubeError(null);
+
+    try {
+      await createSource(notebookId, {
+        source_type: "youtube",
+        url: youtubeInput.trim(),
+      });
+      invalidateDocuments();
+      setYoutubeInput("");
+      onOpenChange(false);
+    } catch (error) {
+      setYoutubeError(
+        error instanceof Error ? error.message : "Failed to add YouTube video",
+      );
+    } finally {
+      setYoutubeLoading(false);
+    }
+  }
+
+  async function handlePasteSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!pasteContent.trim()) return;
+
+    setPasteLoading(true);
+    setPasteError(null);
+
+    try {
+      await createSource(notebookId, {
+        source_type: "paste",
+        title: pasteTitle.trim() || "Pasted Text",
+        content: pasteContent,
+      });
+      invalidateDocuments();
+      setPasteTitle("");
+      setPasteContent("");
+      onOpenChange(false);
+    } catch (error) {
+      setPasteError(
+        error instanceof Error ? error.message : "Failed to add pasted text",
+      );
+    } finally {
+      setPasteLoading(false);
     }
   }
 
@@ -288,13 +378,133 @@ export function AddSourcesDialog({
           </>
         )}
 
-        {activeSourceType !== "upload" && (
+        {activeSourceType === "link" && (
+          <form onSubmit={handleUrlSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="url-input">Website URL</Label>
+              <Input
+                id="url-input"
+                type="url"
+                placeholder="https://example.com/article"
+                value={urlInput}
+                onChange={(e) => setUrlInput(e.target.value)}
+                disabled={urlLoading}
+              />
+              <p className="text-xs text-muted-foreground">
+                Only visible text will be imported. Paywalled articles are not
+                supported.
+              </p>
+            </div>
+            {urlError && <p className="text-sm text-destructive">{urlError}</p>}
+            <Button
+              type="submit"
+              disabled={!urlInput.trim() || urlLoading}
+              className="w-full"
+            >
+              {urlLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Adding website...
+                </>
+              ) : (
+                "Add Website"
+              )}
+            </Button>
+          </form>
+        )}
+
+        {activeSourceType === "youtube" && (
+          <form onSubmit={handleYoutubeSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="youtube-input">YouTube URL</Label>
+              <Input
+                id="youtube-input"
+                type="url"
+                placeholder="https://youtube.com/watch?v=..."
+                value={youtubeInput}
+                onChange={(e) => setYoutubeInput(e.target.value)}
+                disabled={youtubeLoading}
+              />
+              <p className="text-xs text-muted-foreground">
+                Only the transcript will be imported. Public videos with
+                captions only.
+              </p>
+            </div>
+            {youtubeError && (
+              <p className="text-sm text-destructive">{youtubeError}</p>
+            )}
+            <Button
+              type="submit"
+              disabled={!youtubeInput.trim() || youtubeLoading}
+              className="w-full"
+            >
+              {youtubeLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Adding video...
+                </>
+              ) : (
+                "Add YouTube Video"
+              )}
+            </Button>
+          </form>
+        )}
+
+        {activeSourceType === "paste" && (
+          <form onSubmit={handlePasteSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="paste-title">Title (optional)</Label>
+              <Input
+                id="paste-title"
+                type="text"
+                placeholder="My Notes"
+                value={pasteTitle}
+                onChange={(e) => setPasteTitle(e.target.value)}
+                disabled={pasteLoading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="paste-content">Content</Label>
+              <Textarea
+                id="paste-content"
+                placeholder="Paste your text here..."
+                value={pasteContent}
+                onChange={(e) => setPasteContent(e.target.value)}
+                disabled={pasteLoading}
+                rows={8}
+                className="resize-none"
+              />
+              <p className="text-xs text-muted-foreground">
+                Maximum 500KB of text content.
+              </p>
+            </div>
+            {pasteError && (
+              <p className="text-sm text-destructive">{pasteError}</p>
+            )}
+            <Button
+              type="submit"
+              disabled={!pasteContent.trim() || pasteLoading}
+              className="w-full"
+            >
+              {pasteLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Adding text...
+                </>
+              ) : (
+                "Add Text"
+              )}
+            </Button>
+          </form>
+        )}
+
+        {activeSourceType === "drive" && (
           <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-12 text-center">
             <p className="text-lg font-medium text-muted-foreground">
               Coming soon
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
-              This source type is not yet supported.
+              Google Drive integration is not yet supported.
             </p>
           </div>
         )}

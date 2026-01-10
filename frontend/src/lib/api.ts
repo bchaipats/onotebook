@@ -85,7 +85,15 @@ export async function deleteNotebook(id: string): Promise<void> {
 
 // Document API
 
-import type { Document, Chunk } from "@/types/api";
+import type {
+  Document,
+  Chunk,
+  CreateSourceRequest,
+  SourceGuide,
+  SourceContent,
+  WebSearchResponse,
+  SourceCountResponse,
+} from "@/types/api";
 
 interface DocumentsResponse {
   documents: Document[];
@@ -157,6 +165,71 @@ export async function getDocumentContent(documentId: string): Promise<string> {
     throw new ApiError(response.status, response.statusText);
   }
   return response.text();
+}
+
+// Sources API
+
+export async function createSource(
+  notebookId: string,
+  data: CreateSourceRequest,
+): Promise<Document> {
+  return request<Document>(`/api/notebooks/${notebookId}/sources`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function searchSources(
+  notebookId: string,
+  query: string,
+  mode: "fast" | "deep" = "fast",
+): Promise<WebSearchResponse> {
+  return request<WebSearchResponse>(
+    `/api/notebooks/${notebookId}/sources/search`,
+    {
+      method: "POST",
+      body: JSON.stringify({ query, mode }),
+    },
+  );
+}
+
+export async function addSourcesFromSearch(
+  notebookId: string,
+  urls: string[],
+): Promise<Document[]> {
+  return request<Document[]>(
+    `/api/notebooks/${notebookId}/sources/from-search`,
+    {
+      method: "POST",
+      body: JSON.stringify({ urls }),
+    },
+  );
+}
+
+export async function getSourceGuide(documentId: string): Promise<SourceGuide> {
+  return request<SourceGuide>(`/api/documents/${documentId}/guide`);
+}
+
+export async function generateSourceGuide(
+  documentId: string,
+): Promise<SourceGuide> {
+  return request<SourceGuide>(`/api/documents/${documentId}/guide/generate`, {
+    method: "POST",
+  });
+}
+
+export async function getSourceContent(
+  documentId: string,
+): Promise<SourceContent> {
+  return request<SourceContent>(`/api/documents/${documentId}/content`);
+}
+
+export async function getSourceCount(
+  notebookId: string,
+): Promise<SourceCountResponse> {
+  return request<SourceCountResponse>(
+    `/api/notebooks/${notebookId}/sources/count`,
+  );
 }
 
 // Ollama/Models API
