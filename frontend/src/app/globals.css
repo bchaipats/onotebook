@@ -3,39 +3,40 @@
 
 :root {
   /* NotebookLM Light Theme */
-  --background: oklch(98.8% 0.008 240);
-  --background-panel: oklch(94.5% 0.025 280);
-  --foreground: oklch(32% 0 0);
+  /* Page: #EDEFFA, Panels: #FFFFFF, Cards: #F9F9F9 */
+  --background: oklch(95% 0.02 270);
+  --background-panel: oklch(100% 0 0);
+  --foreground: oklch(20% 0 0);
   --card: oklch(100% 0 0);
-  --card-foreground: oklch(24% 0 0);
+  --card-foreground: oklch(20% 0 0);
   --popover: var(--card);
   --popover-foreground: var(--card-foreground);
-  --primary: oklch(53% 0.25 270);
+  --primary: oklch(48% 0.28 265);
   --primary-foreground: oklch(100% 0 0);
-  --secondary: var(--background-panel);
-  --secondary-foreground: var(--card-foreground);
-  --muted: oklch(97.8% 0 0);
-  --muted-foreground: oklch(49% 0.01 250);
-  --accent: var(--background-panel);
-  --accent-foreground: var(--card-foreground);
-  --destructive: oklch(40% 0.15 330);
+  --secondary: oklch(100% 0 0);
+  --secondary-foreground: oklch(45% 0.005 250);
+  --muted: oklch(98% 0 0);
+  --muted-foreground: oklch(52% 0 0);
+  --accent: oklch(96% 0.015 250);
+  --accent-foreground: oklch(20% 0 0);
+  --destructive: oklch(45% 0.18 25);
   --destructive-foreground: oklch(100% 0 0);
-  --success: oklch(36% 0.1 150);
+  --success: oklch(45% 0.15 145);
   --success-foreground: oklch(100% 0 0);
-  --warning: oklch(50% 0.09 85);
-  --warning-foreground: oklch(100% 0 0);
-  --info: oklch(40% 0.12 255);
+  --warning: oklch(55% 0.12 85);
+  --warning-foreground: oklch(20% 0 0);
+  --info: oklch(48% 0.15 255);
   --info-foreground: oklch(100% 0 0);
   --border: oklch(90% 0.015 260);
-  --border-muted: oklch(81% 0.008 140);
+  --border-muted: oklch(85% 0.01 260);
   --input: var(--border);
   --ring: var(--primary);
-  --link: oklch(50% 0.18 255);
+  --link: var(--primary);
   --user-avatar: oklch(78% 0.18 75);
   --tab-active: var(--background-panel);
-  --card-notebook: var(--card);
-  --card-create: oklch(97% 0.025 280);
-  --card-create-border: oklch(78% 0.08 280);
+  --card-notebook: oklch(98% 0 0);
+  --card-create: oklch(97% 0.02 270);
+  --card-create-border: oklch(78% 0.08 270);
 
   /* Layout */
   --h-button-lg: 2.5rem;
@@ -55,39 +56,40 @@
 
 .dark {
   /* NotebookLM Dark Theme */
-  --background: oklch(24% 0 0);
-  --background-panel: oklch(27% 0.015 250);
+  /* Page: #37383B, Panels/Cards: #22262B */
+  --background: oklch(29% 0.005 250);
+  --background-panel: oklch(21% 0.01 240);
   --foreground: oklch(82% 0 0);
-  --card: oklch(22% 0.015 255);
-  --card-foreground: oklch(96% 0 0);
+  --card: oklch(21% 0.01 240);
+  --card-foreground: oklch(93% 0.005 250);
   --popover: var(--card);
   --popover-foreground: var(--card-foreground);
-  --primary: oklch(53% 0.25 270);
+  --primary: oklch(48% 0.28 265);
   --primary-foreground: oklch(100% 0 0);
-  --secondary: oklch(35% 0.008 260);
-  --secondary-foreground: oklch(93% 0.008 260);
-  --muted: var(--secondary);
-  --muted-foreground: oklch(69% 0.015 250);
-  --accent: var(--secondary);
-  --accent-foreground: var(--secondary-foreground);
-  --destructive: oklch(55% 0.15 330);
+  --secondary: oklch(21% 0.01 240);
+  --secondary-foreground: oklch(93% 0.005 250);
+  --muted: oklch(26% 0.01 245);
+  --muted-foreground: oklch(62% 0.005 250);
+  --accent: oklch(26% 0.01 245);
+  --accent-foreground: oklch(93% 0.005 250);
+  --destructive: oklch(55% 0.18 25);
   --destructive-foreground: oklch(100% 0 0);
-  --success: oklch(55% 0.12 150);
+  --success: oklch(55% 0.15 145);
   --success-foreground: oklch(100% 0 0);
-  --warning: oklch(65% 0.1 85);
-  --warning-foreground: oklch(24% 0 0);
-  --info: oklch(55% 0.12 255);
+  --warning: oklch(65% 0.12 85);
+  --warning-foreground: oklch(20% 0 0);
+  --info: oklch(55% 0.15 255);
   --info-foreground: oklch(100% 0 0);
-  --border: oklch(48% 0.008 265);
-  --border-muted: var(--secondary);
+  --border: oklch(29% 0.005 250);
+  --border-muted: oklch(26% 0.01 245);
   --input: var(--border);
   --ring: var(--primary);
   --link: var(--primary);
   --user-avatar: oklch(87% 0.15 85);
   --tab-active: var(--background-panel);
   --card-notebook: var(--background-panel);
-  --card-create: oklch(20% 0.03 280);
-  --card-create-border: oklch(40% 0.08 280);
+  --card-create: oklch(21% 0.02 265);
+  --card-create-border: oklch(40% 0.08 265);
   --shadow-sm: 0 1px 2px 0 oklch(0% 0 0 / 0.2);
   --shadow-md:
     0 4px 6px -1px oklch(0% 0 0 / 0.3), 0 2px 4px -2px oklch(0% 0 0 / 0.2);

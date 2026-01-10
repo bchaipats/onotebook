@@ -418,14 +418,14 @@ function StatusBadge({
   switch (status) {
     case "pending":
       return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800">
+        <span className="inline-flex items-center gap-1 rounded-full bg-warning/15 px-2 py-0.5 text-xs font-medium text-warning">
           <Clock className="h-3 w-3" />
           Pending
         </span>
       );
     case "processing":
       return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
+        <span className="inline-flex items-center gap-1 rounded-full bg-info/15 px-2 py-0.5 text-xs font-medium text-info">
           <Loader2 className="h-3 w-3 animate-spin" />
           {progress < 33
             ? "Extracting"
@@ -436,14 +436,14 @@ function StatusBadge({
       );
     case "ready":
       return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+        <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-xs font-medium text-success">
           <CheckCircle className="h-3 w-3" />
           Ready
         </span>
       );
     case "failed":
       return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800">
+        <span className="inline-flex items-center gap-1 rounded-full bg-destructive/15 px-2 py-0.5 text-xs font-medium text-destructive">
           <AlertCircle className="h-3 w-3" />
           Failed
         </span>

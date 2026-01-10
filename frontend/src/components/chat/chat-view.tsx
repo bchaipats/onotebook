@@ -422,7 +422,7 @@ function CodeBlock({ language, children }: CodeBlockProps) {
     <div className="group/code relative">
       <button
         onClick={handleCopy}
-        className="absolute right-2 top-2 rounded bg-gray-700 p-1.5 text-gray-300 opacity-0 transition-opacity hover:bg-gray-600 hover:text-white group-hover/code:opacity-100"
+        className="absolute right-2 top-2 rounded bg-muted p-1.5 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover/code:opacity-100"
         title="Copy code"
       >
         {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}

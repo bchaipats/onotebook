@@ -43,8 +43,8 @@ export function OllamaStatus({
         className={cn(
           "h-3 w-3",
           isConnected
-            ? "fill-green-500 text-green-500"
-            : "fill-red-500 text-red-500",
+            ? "fill-success text-success"
+            : "fill-destructive text-destructive",
         )}
       />
       {showLabel && (
