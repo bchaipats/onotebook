@@ -614,188 +614,196 @@ function ChatContent({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div
-        ref={scrollContainerRef}
-        className="chat-scroll-container relative min-h-0 flex-1 overflow-y-auto"
-      >
-        {allMessages.length === 0 && !isStreaming && !stoppedContent ? (
-          selectedSources.size === 0 ? (
-            <div className="flex h-full flex-col items-center justify-center p-8 text-center">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-surface-variant">
-                <Upload className="h-7 w-7 text-on-surface-muted" />
+      <div className="relative min-h-0 flex-1">
+        <div
+          ref={scrollContainerRef}
+          className="chat-scroll-container absolute inset-0 overflow-y-auto"
+        >
+          {allMessages.length === 0 && !isStreaming && !stoppedContent ? (
+            selectedSources.size === 0 ? (
+              <div className="flex h-full flex-col items-center justify-center p-8 text-center">
+                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-surface-variant">
+                  <Upload className="h-7 w-7 text-on-surface-muted" />
+                </div>
+                <h2 className="mb-3 text-lg font-medium text-on-surface">
+                  Add a source to get started
+                </h2>
+                <Button
+                  variant="outline"
+                  className="rounded-full"
+                  onClick={() => {}}
+                >
+                  Upload a source
+                </Button>
               </div>
-              <h2 className="mb-3 text-lg font-medium text-on-surface">
-                Add a source to get started
-              </h2>
-              <Button
-                variant="outline"
-                className="rounded-full"
-                onClick={() => {}}
-              >
-                Upload a source
-              </Button>
-            </div>
-          ) : (
-            <div className="flex h-full flex-col overflow-y-auto p-8">
-              {/* Notebook Summary Card */}
-              {notebookSummary?.summary ? (
-                <NotebookSummaryCard
-                  summary={notebookSummary}
-                  onRegenerate={() => generateSummary.mutate()}
-                  isRegenerating={generateSummary.isPending}
-                />
-              ) : (
-                <div className="mb-8 flex flex-col items-center text-center">
-                  <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-muted">
-                    <Bot className="h-8 w-8 text-on-primary-muted" />
+            ) : (
+              <div className="flex h-full flex-col overflow-y-auto p-8">
+                {/* Notebook Summary Card */}
+                {notebookSummary?.summary ? (
+                  <NotebookSummaryCard
+                    summary={notebookSummary}
+                    onRegenerate={() => generateSummary.mutate()}
+                    isRegenerating={generateSummary.isPending}
+                  />
+                ) : (
+                  <div className="mb-8 flex flex-col items-center text-center">
+                    <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-muted">
+                      <Bot className="h-8 w-8 text-on-primary-muted" />
+                    </div>
+                    <h2 className="mb-2 text-lg font-medium text-on-surface">
+                      Ask about your sources
+                    </h2>
+                    <p className="mb-4 text-sm text-on-surface-muted">
+                      I can help you understand and analyze your{" "}
+                      {selectedSources.size} selected source
+                      {selectedSources.size !== 1 ? "s" : ""}.
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full"
+                      onClick={() => generateSummary.mutate()}
+                      disabled={generateSummary.isPending}
+                    >
+                      {generateSummary.isPending ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin text-on-primary" />
+                          Generating summary...
+                        </>
+                      ) : (
+                        "Generate notebook summary"
+                      )}
+                    </Button>
                   </div>
-                  <h2 className="mb-2 text-lg font-medium text-on-surface">
-                    Ask about your sources
-                  </h2>
+                )}
+
+                {/* Suggested Questions */}
+                <div className="mt-auto flex flex-col items-center">
                   <p className="mb-4 text-sm text-on-surface-muted">
-                    I can help you understand and analyze your{" "}
-                    {selectedSources.size} selected source
-                    {selectedSources.size !== 1 ? "s" : ""}.
+                    Try asking:
                   </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="rounded-full"
-                    onClick={() => generateSummary.mutate()}
-                    disabled={generateSummary.isPending}
-                  >
-                    {generateSummary.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin text-on-primary" />
-                        Generating summary...
-                      </>
-                    ) : (
-                      "Generate notebook summary"
-                    )}
-                  </Button>
+                  {isLoadingSuggestions ? (
+                    <div className="flex items-center gap-2 text-sm text-on-surface-muted">
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                      Loading suggestions...
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {displayedQuestions.map((question) => (
+                        <button
+                          key={question}
+                          onClick={() => handleSuggestedQuestion(question)}
+                          className="rounded-full bg-surface-variant px-4 py-2.5 text-sm text-on-surface shadow-sm transition-all duration-200 hover:bg-hover hover:shadow-elevation-1 active:scale-[0.98]"
+                        >
+                          {question}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          ) : (
+            <div className="mx-auto max-w-3xl space-y-6 px-6 pb-16 pt-6">
+              {allMessages.map((message) => (
+                <MessageBubble
+                  key={message.id}
+                  message={message}
+                  sessionId={sessionId}
+                  notebookId={notebookId}
+                  sources={
+                    message.id === lastAssistantMessage?.id
+                      ? currentSources
+                      : undefined
+                  }
+                  onRegenerate={
+                    message.role === "assistant" &&
+                    message.id === lastAssistantMessage?.id &&
+                    !isStreaming
+                      ? (instruction?: string) =>
+                          handleRegenerate(message.id, instruction)
+                      : undefined
+                  }
+                  showModificationButtons={
+                    message.role === "assistant" &&
+                    message.id === lastAssistantMessage?.id &&
+                    !isStreaming
+                  }
+                  onCitationClick={handleCitationClick}
+                  onEdit={
+                    message.role === "user" ? handleEditMessage : undefined
+                  }
+                  isStreaming={isStreaming}
+                />
+              ))}
+              {pendingUserMessage && (
+                <div className="flex flex-row-reverse gap-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-on-primary shadow-elevation-1">
+                    U
+                  </div>
+                  <div className="max-w-[85%] rounded-3xl rounded-br-lg bg-primary px-5 py-3 text-on-primary shadow-elevation-1">
+                    <p className="whitespace-pre-wrap text-sm">
+                      {pendingUserMessage}
+                    </p>
+                  </div>
                 </div>
               )}
-
-              {/* Suggested Questions */}
-              <div className="mt-auto flex flex-col items-center">
-                <p className="mb-4 text-sm text-on-surface-muted">
-                  Try asking:
-                </p>
-                {isLoadingSuggestions ? (
-                  <div className="flex items-center gap-2 text-sm text-on-surface-muted">
-                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                    Loading suggestions...
-                  </div>
-                ) : (
-                  <div className="flex flex-wrap justify-center gap-2">
-                    {displayedQuestions.map((question) => (
+              {streamingContent && (
+                <StreamingMessage
+                  content={streamingContent}
+                  sources={currentSources}
+                  groundingMetadata={groundingMetadata}
+                  onCitationClick={handleCitationClick}
+                />
+              )}
+              {isStreaming && !streamingContent && <ThinkingIndicator />}
+              {!isStreaming && stoppedContent && (
+                <StoppedMessage content={stoppedContent} />
+              )}
+              {/* Follow-up questions after response */}
+              {!isStreaming &&
+                !stoppedContent &&
+                suggestedQuestions.length > 0 &&
+                allMessages.length > 0 && (
+                  <div className="mt-6 flex flex-wrap justify-center gap-2">
+                    {suggestedQuestions.map((question) => (
                       <button
                         key={question}
                         onClick={() => handleSuggestedQuestion(question)}
-                        className="rounded-full bg-surface-variant px-4 py-2.5 text-sm text-on-surface shadow-sm transition-all duration-200 hover:bg-hover hover:shadow-elevation-1 active:scale-[0.98]"
+                        className="rounded-full bg-surface-variant px-4 py-2 text-sm text-on-surface shadow-sm transition-all duration-200 hover:bg-hover hover:shadow-elevation-1 active:scale-[0.98]"
                       >
                         {question}
                       </button>
                     ))}
                   </div>
                 )}
-              </div>
+              <div
+                ref={sentinelRef}
+                className="scroll-sentinel"
+                aria-hidden="true"
+              />
             </div>
-          )
-        ) : (
-          <div className="mx-auto max-w-3xl space-y-6 p-6">
-            {allMessages.map((message) => (
-              <MessageBubble
-                key={message.id}
-                message={message}
-                sessionId={sessionId}
-                notebookId={notebookId}
-                sources={
-                  message.id === lastAssistantMessage?.id
-                    ? currentSources
-                    : undefined
-                }
-                onRegenerate={
-                  message.role === "assistant" &&
-                  message.id === lastAssistantMessage?.id &&
-                  !isStreaming
-                    ? (instruction?: string) =>
-                        handleRegenerate(message.id, instruction)
-                    : undefined
-                }
-                showModificationButtons={
-                  message.role === "assistant" &&
-                  message.id === lastAssistantMessage?.id &&
-                  !isStreaming
-                }
-                onCitationClick={handleCitationClick}
-                onEdit={message.role === "user" ? handleEditMessage : undefined}
-                isStreaming={isStreaming}
-              />
-            ))}
-            {pendingUserMessage && (
-              <div className="flex flex-row-reverse gap-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-on-primary shadow-elevation-1">
-                  U
-                </div>
-                <div className="max-w-[85%] rounded-3xl rounded-br-lg bg-primary px-5 py-3 text-on-primary shadow-elevation-1">
-                  <p className="whitespace-pre-wrap text-sm">
-                    {pendingUserMessage}
-                  </p>
-                </div>
-              </div>
-            )}
-            {streamingContent && (
-              <StreamingMessage
-                content={streamingContent}
-                sources={currentSources}
-                groundingMetadata={groundingMetadata}
-                onCitationClick={handleCitationClick}
-              />
-            )}
-            {isStreaming && !streamingContent && <ThinkingIndicator />}
-            {!isStreaming && stoppedContent && (
-              <StoppedMessage content={stoppedContent} />
-            )}
-            {/* Follow-up questions after response */}
-            {!isStreaming &&
-              !stoppedContent &&
-              suggestedQuestions.length > 0 &&
-              allMessages.length > 0 && (
-                <div className="mt-6 flex flex-wrap justify-center gap-2">
-                  {suggestedQuestions.map((question) => (
-                    <button
-                      key={question}
-                      onClick={() => handleSuggestedQuestion(question)}
-                      className="rounded-full bg-surface-variant px-4 py-2 text-sm text-on-surface shadow-sm transition-all duration-200 hover:bg-hover hover:shadow-elevation-1 active:scale-[0.98]"
-                    >
-                      {question}
-                    </button>
-                  ))}
-                </div>
-              )}
-            <div
-              ref={sentinelRef}
-              className="scroll-sentinel"
-              aria-hidden="true"
-            />
-          </div>
-        )}
+          )}
 
-        {/* Jump to bottom FAB - shows when user scrolls up */}
-        {!isAtBottom && (
-          <div className="sticky bottom-4 flex justify-center">
-            <Button
-              variant="elevated"
-              size="sm"
-              className="rounded-full shadow-elevation-2"
-              onClick={scrollToBottom}
-            >
-              <ArrowDown className="mr-1.5 h-4 w-4" />
-              Jump to bottom
-            </Button>
-          </div>
-        )}
+          {/* Jump to bottom FAB - shows when user scrolls up */}
+          {!isAtBottom && (
+            <div className="sticky bottom-4 flex justify-center">
+              <Button
+                variant="elevated"
+                size="sm"
+                className="rounded-full shadow-elevation-2"
+                onClick={scrollToBottom}
+              >
+                <ArrowDown className="mr-1.5 h-4 w-4" />
+                Jump to bottom
+              </Button>
+            </div>
+          )}
+        </div>
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-surface/90 to-transparent"
+          aria-hidden="true"
+        />
       </div>
 
       {error && (
@@ -826,7 +834,7 @@ function ChatContent({
         </div>
       )}
 
-      <div className="shrink-0 border-t border-divider bg-surface px-4 pb-2 pt-3">
+      <div className="shrink-0 bg-surface/80 px-4 pb-2 pt-3 backdrop-blur-xl">
         <div className="mx-auto max-w-3xl">
           <div className="flex items-center gap-3 rounded-[28px] border border-border bg-surface-variant px-5 py-3 shadow-elevation-1 transition-all duration-200 focus-within:border-primary focus-within:shadow-elevation-2">
             <textarea
