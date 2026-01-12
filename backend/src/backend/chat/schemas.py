@@ -53,6 +53,14 @@ class SourceInfo(BaseModel):
     citation_index: int
 
 
+class GroundingMetadata(BaseModel):
+    confidence_score: float  # 0.0-1.0 overall grounding confidence
+    has_relevant_sources: bool  # Whether any sources met the relevance threshold
+    avg_relevance: float  # Average relevance of sources used
+    sources_used: int  # Number of sources included in context
+    sources_filtered: int  # Number of sources excluded due to low relevance
+
+
 class MessageFeedbackRequest(BaseModel):
     feedback: Literal["up", "down"] | None
 

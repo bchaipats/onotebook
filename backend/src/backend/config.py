@@ -49,6 +49,11 @@ class Settings(BaseSettings):
     # Source guide
     source_guide_max_chunks: int = 10
 
+    # RAG Quality
+    rag_min_relevance_score: float = 0.35  # Minimum score to include a chunk
+    rag_high_relevance_threshold: float = 0.6  # Score indicating strong relevance
+    rag_max_context_chunks: int = 5  # Maximum chunks to include in context
+
     # App
     app_version: str = "0.1.0"
 

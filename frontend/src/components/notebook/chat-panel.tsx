@@ -15,6 +15,8 @@ import {
   ThumbsUp,
   ThumbsDown,
   StickyNote,
+  AlertCircle,
+  FileText,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -32,6 +34,11 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import {
   useChatSessions,
   useCreateChatSession,
@@ -57,6 +64,7 @@ import type {
   StreamEvent,
   Notebook,
   NotebookSummary,
+  GroundingMetadata,
 } from "@/types/api";
 import { ChatConfigDialog } from "./chat-config-dialog";
 import { PanelHeader } from "./panel-header";
@@ -212,6 +220,8 @@ function ChatContent({
   const [streamingContent, setStreamingContent] = useState("");
   const [stoppedContent, setStoppedContent] = useState("");
   const [currentSources, setCurrentSources] = useState<SourceInfo[]>([]);
+  const [groundingMetadata, setGroundingMetadata] =
+    useState<GroundingMetadata | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(
     null,
@@ -289,6 +299,9 @@ function ChatContent({
         case "sources":
           setCurrentSources(event.sources || []);
           break;
+        case "grounding":
+          setGroundingMetadata(event.metadata || null);
+          break;
         case "token":
           setStreamingContent((prev) => prev + (event.content || ""));
           break;
@@ -324,6 +337,7 @@ function ChatContent({
     setStreamingContent("");
     setStoppedContent("");
     setCurrentSources([]);
+    setGroundingMetadata(null);
     setSuggestedQuestions([]);
     stoppedByUserRef.current = false;
 
@@ -370,6 +384,7 @@ function ChatContent({
     setStreamingContent("");
     setStoppedContent("");
     setCurrentSources([]);
+    setGroundingMetadata(null);
     stoppedByUserRef.current = false;
 
     abortControllerRef.current = new AbortController();
@@ -542,6 +557,7 @@ function ChatContent({
               <StreamingMessage
                 content={streamingContent}
                 sources={currentSources}
+                groundingMetadata={groundingMetadata}
                 onCitationClick={handleCitationClick}
               />
             )}
@@ -972,14 +988,25 @@ function MessageBubble({
 interface StreamingMessageProps {
   content: string;
   sources?: SourceInfo[];
+  groundingMetadata?: GroundingMetadata | null;
   onCitationClick?: (index: number) => void;
 }
 
 function StreamingMessage({
   content,
   sources,
+  groundingMetadata,
   onCitationClick,
 }: StreamingMessageProps) {
+  // Check if this is a refusal response based on grounding metadata or content
+  const isRefusal =
+    (groundingMetadata && !groundingMetadata.has_relevant_sources) ||
+    isRefusalResponse(content);
+
+  if (isRefusal && content.length > 50) {
+    return <RefusalMessage content={content} />;
+  }
+
   return (
     <div className="flex gap-4">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-variant text-on-surface shadow-elevation-1">
@@ -1036,6 +1063,11 @@ function StreamingMessage({
             {content}
           </ReactMarkdown>
         </div>
+        {groundingMetadata && groundingMetadata.has_relevant_sources && (
+          <div className="mt-2">
+            <ConfidenceBadge metadata={groundingMetadata} />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1120,11 +1152,11 @@ function CodeBlock({
 
 interface CitationButtonProps {
   index: number;
-  sourceName?: string;
+  source?: SourceInfo;
   onClick: (index: number) => void;
 }
 
-function CitationButton({ index, sourceName, onClick }: CitationButtonProps) {
+function CitationButton({ index, source, onClick }: CitationButtonProps) {
   const button = (
     <button
       onClick={() => onClick(index)}
@@ -1134,15 +1166,37 @@ function CitationButton({ index, sourceName, onClick }: CitationButtonProps) {
     </button>
   );
 
-  if (sourceName) {
+  if (source) {
     return (
-      <Tooltip>
-        <TooltipTrigger asChild>{button}</TooltipTrigger>
-        <TooltipContent side="top" className="max-w-xs rounded-xl px-3 py-2">
-          <span className="font-semibold">[{index}]</span>{" "}
-          <span>{sourceName}</span>
-        </TooltipContent>
-      </Tooltip>
+      <HoverCard openDelay={200} closeDelay={100}>
+        <HoverCardTrigger asChild>{button}</HoverCardTrigger>
+        <HoverCardContent
+          side="top"
+          className="w-80 rounded-xl border border-outline-variant bg-surface p-0 shadow-elevation-2"
+        >
+          <div className="border-b border-outline-variant px-3 py-2">
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4 shrink-0 text-on-surface-muted" />
+              <span className="truncate text-sm font-medium text-on-surface">
+                {source.document_name}
+              </span>
+            </div>
+          </div>
+          <div className="px-3 py-2">
+            <p className="line-clamp-4 text-xs leading-relaxed text-on-surface-muted">
+              {source.content}
+            </p>
+          </div>
+          <div className="flex items-center justify-between border-t border-outline-variant px-3 py-2">
+            <span className="text-xs text-on-surface-subtle">
+              Relevance: {Math.round(source.relevance_score * 100)}%
+            </span>
+            <span className="text-xs text-primary">
+              Click to view in source
+            </span>
+          </div>
+        </HoverCardContent>
+      </HoverCard>
     );
   }
 
@@ -1163,6 +1217,99 @@ function ShowMoreCitationsButton({
     >
       +{count} more
     </button>
+  );
+}
+
+function ConfidenceBadge({ metadata }: { metadata: GroundingMetadata }) {
+  const level =
+    metadata.confidence_score >= 0.6
+      ? "high"
+      : metadata.confidence_score >= 0.35
+        ? "medium"
+        : "low";
+
+  const config = {
+    high: {
+      bg: "bg-success/10",
+      text: "text-success",
+      label: "Well grounded",
+    },
+    medium: {
+      bg: "bg-warning/10",
+      text: "text-warning",
+      label: "Partially grounded",
+    },
+    low: {
+      bg: "bg-destructive/10",
+      text: "text-destructive",
+      label: "Limited sources",
+    },
+  };
+
+  const { bg, text, label } = config[level];
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span
+          className={cn(
+            "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
+            bg,
+            text,
+          )}
+        >
+          {label}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="text-xs">
+        <p>
+          Based on {metadata.sources_used} source
+          {metadata.sources_used !== 1 ? "s" : ""}
+        </p>
+        <p>Average relevance: {Math.round(metadata.avg_relevance * 100)}%</p>
+        {metadata.sources_filtered > 0 && (
+          <p className="text-on-surface-subtle">
+            {metadata.sources_filtered} low-relevance source
+            {metadata.sources_filtered !== 1 ? "s" : ""} filtered
+          </p>
+        )}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+function RefusalMessage({ content }: { content: string }) {
+  return (
+    <div className="flex gap-4">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-warning/10 text-warning shadow-elevation-1">
+        <AlertCircle className="h-5 w-5" />
+      </div>
+      <div className="flex-1">
+        <div className="rounded-2xl border-2 border-warning/20 bg-warning/5 px-4 py-3">
+          <div className="mb-2 flex items-center gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wide text-warning">
+              Cannot Answer From Sources
+            </span>
+          </div>
+          <div className="prose prose-sm max-w-none dark:prose-invert">
+            <ReactMarkdown>{content}</ReactMarkdown>
+          </div>
+        </div>
+        <p className="mt-2 text-xs text-on-surface-muted">
+          Try rephrasing your question or adding more relevant sources.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function isRefusalResponse(content: string): boolean {
+  const text = content.slice(0, 300).toLowerCase();
+  return (
+    text.includes("cannot answer this question based on") ||
+    text.includes("don't contain information") ||
+    text.includes("documents don't contain") ||
+    text.includes("no relevant information")
   );
 }
 
@@ -1222,7 +1369,7 @@ function processTextWithCitations({
         <CitationButton
           key={`citation-${match.index}`}
           index={citationIndex}
-          sourceName={source?.document_name}
+          source={source}
           onClick={onCitationClick}
         />,
       );

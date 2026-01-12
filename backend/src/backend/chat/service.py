@@ -2,13 +2,19 @@
 
 import json
 import re
+from collections.abc import AsyncGenerator
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.backend.chat.schemas import GroundingMetadata
+from src.backend.config import settings
+from src.backend.database import async_session
+from src.backend.embedding.service import embed_query
+from src.backend.embedding.vectorstore import search_collection
 from src.backend.llm import get_provider
 from src.backend.llm.base import ChatMessage as LLMChatMessage
-from src.backend.models import ChatSession, Message, MessageSource, utc_now
+from src.backend.models import ChatSession, Message, MessageSource, Notebook, utc_now
 
 
 async def list_sessions(session: AsyncSession, notebook_id: str) -> list[ChatSession]:
@@ -145,7 +151,6 @@ async def delete_last_assistant_message(
 
 def generate_title_from_message(content: str) -> str:
     """Generate a session title from the first message."""
-    # Take first 50 chars or first sentence
     title = content.strip()
     if "\n" in title:
         title = title.split("\n")[0]
@@ -161,18 +166,7 @@ async def generate_suggested_questions(
     model: str = "llama3.2",
     count: int = 3,
 ) -> list[str]:
-    """Generate suggested questions based on sources or previous response.
-
-    Args:
-        source_summaries: List of source content snippets to base questions on
-        previous_response: Previous assistant response for follow-up questions
-        provider_name: LLM provider to use
-        model: Model name to use
-        count: Number of questions to generate
-
-    Returns:
-        List of suggested questions
-    """
+    """Generate suggested questions based on sources or previous response."""
     if not source_summaries and not previous_response:
         return []
 
@@ -217,3 +211,221 @@ Only return the JSON array, nothing else. Example format: ["Question 1?", "Quest
         return []
     except Exception:
         return []
+
+
+def filter_and_score_sources(
+    raw_sources: list[dict],
+) -> tuple[list[dict], GroundingMetadata]:
+    """Filter sources by relevance threshold and compute grounding confidence."""
+    min_score = settings.rag_min_relevance_score
+    high_threshold = settings.rag_high_relevance_threshold
+
+    filtered_sources = [s for s in raw_sources if s["relevance_score"] >= min_score]
+    filtered_count = len(raw_sources) - len(filtered_sources)
+
+    for i, source in enumerate(filtered_sources):
+        source["citation_index"] = i + 1
+
+    if filtered_sources:
+        scores = [s["relevance_score"] for s in filtered_sources]
+        avg_relevance = sum(scores) / len(scores)
+        high_count = sum(1 for s in scores if s >= high_threshold)
+        confidence = min(1.0, avg_relevance * (0.7 + 0.3 * high_count / len(scores)))
+    else:
+        avg_relevance = 0.0
+        confidence = 0.0
+
+    metadata = GroundingMetadata(
+        confidence_score=round(confidence, 4),
+        has_relevant_sources=len(filtered_sources) > 0,
+        avg_relevance=round(avg_relevance, 4),
+        sources_used=len(filtered_sources),
+        sources_filtered=filtered_count,
+    )
+
+    return filtered_sources, metadata
+
+
+def build_rag_prompt(
+    question: str,
+    sources: list[dict],
+    chat_style: str = "default",
+    response_length: str = "default",
+    custom_instructions: str | None = None,
+    has_relevant_sources: bool = True,
+) -> str:
+    """Build the RAG prompt with sources and style configuration."""
+    source_text = ""
+    for source in sources:
+        idx = source["citation_index"]
+        source_text += f'\n[{idx}] From "{source["document_name"]}":\n{source["content"]}\n'
+
+    if chat_style == "learning_guide":
+        style_instruction = """You are a knowledgeable tutor helping someone learn from these materials.
+Break down complex concepts into clear explanations. Use analogies and examples when helpful.
+Ask follow-up questions to check understanding when appropriate."""
+    elif chat_style == "custom" and custom_instructions:
+        style_instruction = custom_instructions
+    else:
+        style_instruction = "You are a research assistant answering questions based strictly on the provided documents."
+
+    if response_length == "shorter":
+        length_instruction = (
+            "Keep your response concise and to the point. Aim for 2-3 sentences when possible."
+        )
+    elif response_length == "longer":
+        length_instruction = (
+            "Provide detailed, comprehensive responses. Include relevant context and examples."
+        )
+    else:
+        length_instruction = (
+            "Provide appropriately detailed responses based on the complexity of the question."
+        )
+
+    formatting_instruction = """Format your response for readability:
+- Use **bold** for key terms and important concepts
+- Use bullet points or numbered lists when listing multiple items
+- Keep paragraphs concise (2-4 sentences each)
+- Use ### headings to organize distinct topics or sections when the answer covers multiple aspects"""
+
+    grounding_rules = """CRITICAL GROUNDING RULES:
+1. ONLY use information from the provided source documents. Do NOT use prior knowledge or training data.
+2. Every factual claim MUST include a citation [1], [2], etc. referencing the source.
+3. If the sources do not contain information to answer the question, you MUST respond:
+   "I cannot answer this question based on your sources. The documents don't contain information about [topic]."
+4. Do NOT speculate, infer, or extrapolate beyond what is explicitly stated in the sources.
+5. If you are uncertain whether the sources support an answer, err on the side of saying you cannot answer."""
+
+    if not has_relevant_sources:
+        return f"""{style_instruction}
+
+The user asked: "{question}"
+
+You have searched the user's documents but found no relevant information to answer this question.
+
+Respond with a helpful message explaining that you cannot answer based on their sources. Be specific about what topic they asked about and suggest they might add more relevant sources or rephrase their question.
+
+Do NOT attempt to answer using your general knowledge."""
+
+    return f"""{style_instruction}
+
+{length_instruction}
+
+{formatting_instruction}
+
+{grounding_rules}
+
+Use the following source documents to answer the user's question.
+
+Sources:
+{source_text}
+
+Question: {question}"""
+
+
+def retrieve_sources(
+    query: str,
+    notebook_id: str,
+    document_ids: list[str] | None = None,
+) -> list[dict]:
+    """Retrieve and format sources from vector store."""
+    query_embedding = embed_query(query)
+    search_results = search_collection(
+        notebook_id=notebook_id,
+        query_embedding=query_embedding,
+        n_results=settings.rag_max_context_chunks,
+        document_ids=document_ids,
+    )
+
+    sources = []
+    if search_results and search_results.get("ids") and search_results["ids"][0]:
+        ids = search_results["ids"][0]
+        documents = search_results.get("documents", [[]])[0]
+        metadatas = search_results.get("metadatas", [[]])[0]
+        distances = search_results.get("distances", [[]])[0]
+
+        for i, chunk_id in enumerate(ids):
+            metadata = metadatas[i] if i < len(metadatas) else {}
+            content = documents[i] if i < len(documents) else ""
+            distance = distances[i] if i < len(distances) else 1.0
+            sources.append(
+                {
+                    "chunk_id": chunk_id,
+                    "document_id": metadata.get("document_id", ""),
+                    "document_name": metadata.get("document_name", ""),
+                    "content": content,
+                    "relevance_score": round(1.0 - distance, 4),
+                    "citation_index": i + 1,
+                }
+            )
+
+    return sources
+
+
+async def stream_rag_response(
+    query: str,
+    notebook: Notebook,
+    session_id: str,
+    model: str,
+    document_ids: list[str] | None = None,
+    conversation_history: list[Message] | None = None,
+) -> AsyncGenerator[str]:
+    """Stream a RAG response with sources, grounding, and follow-up questions."""
+    try:
+        raw_sources = retrieve_sources(query, notebook.id, document_ids)
+        sources, grounding_metadata = filter_and_score_sources(raw_sources)
+
+        yield f"data: {json.dumps({'type': 'sources', 'sources': sources})}\n\n"
+        yield f"data: {json.dumps({'type': 'grounding', 'metadata': grounding_metadata.model_dump()})}\n\n"
+
+        prompt = build_rag_prompt(
+            query,
+            sources,
+            chat_style=notebook.chat_style,
+            response_length=notebook.response_length,
+            custom_instructions=notebook.custom_instructions,
+            has_relevant_sources=grounding_metadata.has_relevant_sources,
+        )
+
+        llm_messages = [
+            LLMChatMessage(role=msg.role, content=msg.content)
+            for msg in (conversation_history or [])
+        ]
+        llm_messages.append(LLMChatMessage(role="user", content=prompt))
+
+        provider = get_provider(notebook.llm_provider)
+        full_response = ""
+        async for chunk in provider.chat_stream(llm_messages, model):
+            if chunk:
+                full_response += chunk
+                yield f"data: {json.dumps({'type': 'token', 'content': chunk})}\n\n"
+
+        async with async_session() as save_session:
+            assistant_message = await create_message(
+                save_session, session_id, "assistant", full_response, model
+            )
+            for source in sources:
+                await add_message_source(
+                    save_session,
+                    assistant_message.id,
+                    source["chunk_id"],
+                    source["relevance_score"],
+                    source["citation_index"],
+                )
+
+        yield f"data: {json.dumps({'type': 'done', 'message_id': assistant_message.id})}\n\n"
+
+        try:
+            questions = await generate_suggested_questions(
+                source_summaries=[],
+                previous_response=full_response,
+                provider_name=notebook.llm_provider,
+                model=model,
+            )
+            if questions:
+                yield f"data: {json.dumps({'type': 'suggestions', 'questions': questions})}\n\n"
+        except Exception:
+            pass
+
+    except Exception as e:
+        yield f"data: {json.dumps({'type': 'error', 'error': str(e)})}\n\n"

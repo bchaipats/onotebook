@@ -158,13 +158,22 @@ export interface SourceInfo {
   citation_index: number;
 }
 
+export interface GroundingMetadata {
+  confidence_score: number;
+  has_relevant_sources: boolean;
+  avg_relevance: number;
+  sources_used: number;
+  sources_filtered: number;
+}
+
 export interface StreamEvent {
-  type: "sources" | "token" | "done" | "error" | "suggestions";
+  type: "sources" | "token" | "done" | "error" | "suggestions" | "grounding";
   sources?: SourceInfo[];
   content?: string;
   message_id?: string;
   error?: string;
   questions?: string[];
+  metadata?: GroundingMetadata;
 }
 
 export interface SuggestedQuestionsResponse {
