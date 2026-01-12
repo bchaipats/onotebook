@@ -944,7 +944,7 @@ function NotebookSummaryCard({
           )}
         </Button>
       </div>
-      <div className="prose prose-sm max-w-none dark:prose-invert">
+      <div className="prose prose-sm max-w-none ">
         <p>
           {highlightKeyTerms(summary.summary || "", summary.key_terms || [])}
         </p>
@@ -1166,7 +1166,7 @@ function MessageBubble({
                 : "text-on-surface",
             )}
           >
-            <div className="prose prose-sm max-w-none dark:prose-invert">
+            <div className="prose prose-sm max-w-none ">
               <ReactMarkdown
                 components={{
                   code({ className, children, ...props }) {
@@ -1389,7 +1389,7 @@ function StreamingMessage({
         className="streaming-bubble-active flex-1"
         style={{ minHeight: lockedMinHeight ?? undefined }}
       >
-        <div className="prose prose-sm max-w-none dark:prose-invert">
+        <div className="prose prose-sm max-w-none ">
           <MemoizedMarkdown
             content={content}
             onCitationClick={onCitationClick}
@@ -1433,7 +1433,7 @@ function StoppedMessage({ content }: { content: string }) {
         <Bot className="h-5 w-5" />
       </div>
       <div className="flex-1">
-        <div className="prose prose-sm max-w-none dark:prose-invert">
+        <div className="prose prose-sm max-w-none ">
           <ReactMarkdown>{content}</ReactMarkdown>
         </div>
         <div className="mt-2 text-xs italic text-on-surface-muted">
@@ -1554,56 +1554,42 @@ function ShowMoreCitationsButton({
 }
 
 function ConfidenceBadge({ metadata }: { metadata: GroundingMetadata }) {
-  const level =
-    metadata.confidence_score >= 0.6
-      ? "high"
-      : metadata.confidence_score >= 0.35
-        ? "medium"
-        : "low";
+  const { confidence_score, sources_used, avg_relevance, sources_filtered } =
+    metadata;
 
-  const config = {
-    high: {
-      bg: "bg-success/10",
-      text: "text-success",
-      label: "Well grounded",
-    },
-    medium: {
-      bg: "bg-warning/10",
-      text: "text-warning",
-      label: "Partially grounded",
-    },
-    low: {
-      bg: "bg-destructive/10",
-      text: "text-destructive",
-      label: "Limited sources",
-    },
-  };
+  const isHigh = confidence_score >= 0.6;
+  const isMedium = confidence_score >= 0.35;
 
-  const { bg, text, label } = config[level];
+  const badgeClass = isHigh
+    ? "bg-success-muted text-on-success-muted"
+    : isMedium
+      ? "bg-warning-muted text-on-warning-muted"
+      : "bg-destructive-muted text-on-destructive-muted";
+
+  const label = isHigh
+    ? "Well grounded"
+    : isMedium
+      ? "Partially grounded"
+      : "Limited sources";
 
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <span
-          className={cn(
-            "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
-            bg,
-            text,
-          )}
+          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${badgeClass}`}
         >
           {label}
         </span>
       </TooltipTrigger>
       <TooltipContent side="top" className="text-xs">
         <p>
-          Based on {metadata.sources_used} source
-          {metadata.sources_used !== 1 ? "s" : ""}
+          Based on {sources_used} source{sources_used !== 1 ? "s" : ""}
         </p>
-        <p>Average relevance: {Math.round(metadata.avg_relevance * 100)}%</p>
-        {metadata.sources_filtered > 0 && (
+        <p>Average relevance: {Math.round(avg_relevance * 100)}%</p>
+        {sources_filtered > 0 && (
           <p className="text-on-surface-subtle">
-            {metadata.sources_filtered} low-relevance source
-            {metadata.sources_filtered !== 1 ? "s" : ""} filtered
+            {sources_filtered} low-relevance source
+            {sources_filtered !== 1 ? "s" : ""} filtered
           </p>
         )}
       </TooltipContent>
@@ -1614,17 +1600,17 @@ function ConfidenceBadge({ metadata }: { metadata: GroundingMetadata }) {
 function RefusalMessage({ content }: { content: string }) {
   return (
     <div className="flex gap-4">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-warning/10 text-warning shadow-elevation-1">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-warning-muted text-on-warning-muted shadow-elevation-1">
         <AlertCircle className="h-5 w-5" />
       </div>
       <div className="flex-1">
-        <div className="rounded-2xl border-2 border-warning/20 bg-warning/5 px-4 py-3">
+        <div className="rounded-2xl border border-warning bg-warning-muted px-4 py-3">
           <div className="mb-2 flex items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wide text-warning">
+            <span className="text-xs font-semibold uppercase tracking-wide text-on-warning-muted">
               Cannot Answer From Sources
             </span>
           </div>
-          <div className="prose prose-sm max-w-none dark:prose-invert">
+          <div className="prose prose-sm max-w-none text-on-warning-muted">
             <ReactMarkdown>{content}</ReactMarkdown>
           </div>
         </div>

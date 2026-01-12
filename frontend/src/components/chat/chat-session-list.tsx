@@ -66,7 +66,10 @@ export function ChatSessionList({
     return (
       <div className="space-y-2 p-2">
         {[1, 2].map((i) => (
-          <div key={i} className="h-10 animate-pulse rounded-md" />
+          <div
+            key={i}
+            className="h-10 animate-pulse rounded-md bg-surface-variant"
+          />
         ))}
       </div>
     );
@@ -98,8 +101,8 @@ export function ChatSessionList({
                 )}
                 onClick={() => onSelectSession(session)}
               >
-                <MessageSquare className="h-4 w-4 shrink-0" />
-                <span className="flex-1 truncate text-sm">
+                <MessageSquare className="h-4 w-4 shrink-0 text-on-surface-muted" />
+                <span className="flex-1 truncate text-sm text-on-surface">
                   {session.title || "New Chat"}
                 </span>
                 <DropdownMenu>
