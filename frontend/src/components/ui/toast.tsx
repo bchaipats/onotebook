@@ -60,9 +60,9 @@ export function Toaster() {
             toast.type === "error" &&
               "bg-destructive-muted text-on-destructive-muted border border-destructive/20",
             toast.type === "success" &&
-              "bg-success-muted text-on-surface border border-success/20",
+              "bg-success-muted text-on-success-muted border border-success/20",
             toast.type === "info" &&
-              "bg-info-muted text-on-surface border border-info/20",
+              "bg-info-muted text-on-info-muted border border-info/20",
           )}
         >
           {toast.type === "error" && (

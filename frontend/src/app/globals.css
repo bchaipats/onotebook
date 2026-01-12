@@ -92,6 +92,12 @@
   --color-border-muted: oklch(93% 0.003 280);
   --color-border-focus: oklch(55% 0.2 250);
   --color-divider: oklch(92% 0.003 280);
+  --color-outline-variant: oklch(85% 0.005 280);
+
+  /* On-muted semantic text colors */
+  --color-on-success-muted: oklch(35% 0.12 145);
+  --color-on-warning-muted: oklch(30% 0.1 75);
+  --color-on-info-muted: oklch(35% 0.1 250);
 
   /* Overlay */
   --color-overlay: oklch(0% 0 0 / 50%);
@@ -175,6 +181,12 @@
   --color-border-muted: oklch(26% 0.008 280);
   --color-border-focus: oklch(70% 0.18 250);
   --color-divider: oklch(28% 0.008 280);
+  --color-outline-variant: oklch(35% 0.008 280);
+
+  /* On-muted semantic text colors */
+  --color-on-success-muted: oklch(75% 0.12 145);
+  --color-on-warning-muted: oklch(85% 0.12 75);
+  --color-on-info-muted: oklch(75% 0.1 250);
 
   /* Overlay */
   --color-overlay: oklch(0% 0 0 / 70%);
@@ -259,6 +271,12 @@
     --color-border-muted: oklch(26% 0.008 280);
     --color-border-focus: oklch(70% 0.18 250);
     --color-divider: oklch(28% 0.008 280);
+    --color-outline-variant: oklch(35% 0.008 280);
+
+    /* On-muted semantic text colors */
+    --color-on-success-muted: oklch(75% 0.12 145);
+    --color-on-warning-muted: oklch(85% 0.12 75);
+    --color-on-info-muted: oklch(75% 0.1 250);
 
     /* Overlay */
     --color-overlay: oklch(0% 0 0 / 70%);
@@ -367,6 +385,12 @@
   --color-border-muted: var(--color-border-muted);
   --color-border-focus: var(--color-border-focus);
   --color-divider: var(--color-divider);
+  --color-outline-variant: var(--color-outline-variant);
+
+  /* On-muted semantic text colors */
+  --color-on-success-muted: var(--color-on-success-muted);
+  --color-on-warning-muted: var(--color-on-warning-muted);
+  --color-on-info-muted: var(--color-on-info-muted);
 
   /* Overlay */
   --color-overlay: var(--color-overlay);
