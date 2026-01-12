@@ -31,11 +31,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import {
-  APP_NAME,
-  NOTEBOOK_ACCENT_COLORS,
-  PRESET_COLORS,
-} from "@/lib/constants";
+import { APP_NAME } from "@/lib/constants";
 import {
   useNotebooks,
   useCreateNotebook,
@@ -44,46 +40,6 @@ import {
 } from "@/hooks/use-notebooks";
 import { OllamaStatus } from "@/components/ollama/ollama-status";
 import type { Notebook } from "@/types/api";
-
-interface ColorPaletteProps {
-  selectedColor: string;
-  onSelectColor: (color: string) => void;
-}
-
-function ColorPalette({ selectedColor, onSelectColor }: ColorPaletteProps) {
-  return (
-    <div className="grid grid-cols-4 gap-2">
-      {NOTEBOOK_ACCENT_COLORS.map((accent, index) => {
-        const previewColor = PRESET_COLORS[index];
-        const isSelected = selectedColor === previewColor;
-        return (
-          <button
-            key={accent.name}
-            type="button"
-            className={cn(
-              "group flex flex-col items-center gap-1.5 rounded-xl p-2 transition-all",
-              isSelected
-                ? "bg-primary-10 ring-2 ring-primary ring-offset-2 ring-offset-background"
-                : "hover:bg-surface-container-high",
-            )}
-            onClick={() => onSelectColor(previewColor)}
-          >
-            <div
-              className={cn(
-                "h-8 w-8 rounded-full transition-transform group-hover:scale-110",
-                isSelected && "ring-2 ring-white/50",
-              )}
-              style={{ backgroundColor: previewColor }}
-            />
-            <span className="text-[10px] font-medium text-muted-foreground">
-              {accent.name}
-            </span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
 
 interface SidebarProps {
   className?: string;
@@ -105,14 +61,12 @@ export function Sidebar({
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [newNotebookName, setNewNotebookName] = useState("");
-  const [newNotebookColor, setNewNotebookColor] = useState(PRESET_COLORS[0]);
 
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [renamingNotebook, setRenamingNotebook] = useState<Notebook | null>(
     null,
   );
   const [renameValue, setRenameValue] = useState("");
-  const [renameColor, setRenameColor] = useState(PRESET_COLORS[0]);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingNotebook, setDeletingNotebook] = useState<Notebook | null>(
@@ -137,11 +91,10 @@ export function Sidebar({
   function handleCreateNotebook() {
     if (!newNotebookName.trim()) return;
     createNotebook.mutate(
-      { name: newNotebookName.trim(), color: newNotebookColor },
+      { name: newNotebookName.trim() },
       {
         onSuccess: (notebook) => {
           setNewNotebookName("");
-          setNewNotebookColor(PRESET_COLORS[0]);
           setCreateDialogOpen(false);
           // Auto-select the newly created notebook
           onSelectNotebook?.(notebook);
@@ -155,13 +108,12 @@ export function Sidebar({
     updateNotebook.mutate(
       {
         id: renamingNotebook.id,
-        data: { name: renameValue.trim(), color: renameColor },
+        data: { name: renameValue.trim() },
       },
       {
         onSuccess: () => {
           setRenamingNotebook(null);
           setRenameValue("");
-          setRenameColor(PRESET_COLORS[0]);
           setRenameDialogOpen(false);
         },
       },
@@ -181,7 +133,6 @@ export function Sidebar({
   function openRenameDialog(notebook: Notebook) {
     setRenamingNotebook(notebook);
     setRenameValue(notebook.name);
-    setRenameColor(notebook.color || PRESET_COLORS[0]);
     setRenameDialogOpen(true);
   }
 
@@ -206,14 +157,16 @@ export function Sidebar({
   return (
     <aside
       className={cn(
-        "flex h-full w-64 flex-col border-r border-border bg-card",
+        "flex h-full w-64 flex-col border-r border-border bg-surface",
         className,
       )}
     >
       {/* Logo */}
       <div className="flex h-14 items-center gap-2 border-b border-border px-4">
         <BookOpen className="h-6 w-6 text-primary" />
-        <span className="text-lg font-semibold">{APP_NAME}</span>
+        <span className="text-lg font-semibold text-on-surface">
+          {APP_NAME}
+        </span>
       </div>
 
       {/* Create Notebook Button */}
@@ -235,9 +188,7 @@ export function Sidebar({
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
-                <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                  Name
-                </label>
+                <label className="text-sm font-medium mb-2 block">Name</label>
                 <Input
                   placeholder="Notebook name"
                   value={newNotebookName}
@@ -246,15 +197,6 @@ export function Sidebar({
                     if (e.key === "Enter") handleCreateNotebook();
                   }}
                   autoFocus
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                  Color
-                </label>
-                <ColorPalette
-                  selectedColor={newNotebookColor}
-                  onSelectColor={setNewNotebookColor}
                 />
               </div>
             </div>
@@ -281,7 +223,7 @@ export function Sidebar({
         {/* Sort dropdown */}
         {!isLoading && sortedNotebooks.length > 0 && (
           <div className="flex items-center justify-between px-3 py-2 border-b border-border">
-            <span className="text-xs text-muted-foreground font-medium">
+            <span className="text-xs font-medium text-on-surface-muted">
               {sortedNotebooks.length} notebook
               {sortedNotebooks.length !== 1 ? "s" : ""}
             </span>
@@ -297,17 +239,11 @@ export function Sidebar({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() => setSortBy("date")}
-                  className={sortBy === "date" ? "bg-accent" : ""}
-                >
+                <DropdownMenuItem onClick={() => setSortBy("date")}>
                   <Calendar className="mr-2 h-4 w-4" />
                   Date Modified
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setSortBy("name")}
-                  className={sortBy === "name" ? "bg-accent" : ""}
-                >
+                <DropdownMenuItem onClick={() => setSortBy("name")}>
                   <SortAsc className="mr-2 h-4 w-4" />
                   Name
                 </DropdownMenuItem>
@@ -322,7 +258,7 @@ export function Sidebar({
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="h-16 animate-pulse rounded-md bg-muted"
+                  className="h-16 animate-pulse rounded-md bg-surface-variant"
                 />
               ))}
             </div>
@@ -341,7 +277,7 @@ export function Sidebar({
               ))}
             </div>
           ) : (
-            <p className="px-2 text-sm text-muted-foreground">
+            <p className="px-2 text-sm text-on-surface-muted">
               Create your first notebook to get started
             </p>
           )}
@@ -367,12 +303,12 @@ export function Sidebar({
           <DialogHeader>
             <DialogTitle>Edit Notebook</DialogTitle>
             <DialogDescription>
-              Update the name and color for this notebook.
+              Update the name for this notebook.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <label className="text-sm font-medium text-muted-foreground mb-2 block">
+              <label className="text-sm font-medium mb-2 block text-on-surface">
                 Name
               </label>
               <Input
@@ -383,15 +319,6 @@ export function Sidebar({
                   if (e.key === "Enter") handleRenameNotebook();
                 }}
                 autoFocus
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                Color
-              </label>
-              <ColorPalette
-                selectedColor={renameColor}
-                onSelectColor={setRenameColor}
               />
             </div>
           </div>
@@ -464,18 +391,17 @@ function NotebookItem({
   return (
     <div
       className={cn(
-        "group flex cursor-pointer items-start gap-2 rounded-md p-2 hover:bg-accent",
-        isSelected && "bg-accent",
+        "group flex cursor-pointer items-start gap-2 rounded-md p-2 hover:bg-hover",
+        isSelected && "bg-selected font-semibold",
       )}
       onClick={onSelect}
     >
-      <div
-        className="mt-0.5 h-4 w-4 shrink-0 rounded"
-        style={{ backgroundColor: notebook.color || "#6366f1" }}
-      />
+      <div className="mt-0.5 h-4 w-4 shrink-0 rounded bg-primary" />
       <div className="min-w-0 flex-1">
-        <div className="truncate font-medium text-sm">{notebook.name}</div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="truncate font-medium text-sm text-on-surface">
+          {notebook.name}
+        </div>
+        <div className="flex items-center gap-2 text-xs text-on-surface-muted">
           <span className="flex items-center gap-1">
             <FileText className="h-3 w-3" />
             {notebook.document_count}
@@ -509,7 +435,6 @@ function NotebookItem({
               e.stopPropagation();
               onDelete();
             }}
-            className="text-destructive focus:text-destructive"
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Delete

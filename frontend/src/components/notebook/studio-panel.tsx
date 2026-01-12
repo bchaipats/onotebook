@@ -31,47 +31,43 @@ const STUDIO_TOOLS = [
   {
     icon: Mic,
     label: "Audio Overview",
-    color: "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400",
+    color: "",
   },
   {
     icon: Video,
     label: "Video Overview",
-    color: "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
+    color: "",
   },
   {
     icon: GitBranch,
     label: "Mind Map",
     enabled: true,
-    color:
-      "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400",
+    color: "",
   },
   {
     icon: FileText,
     label: "Reports",
-    color:
-      "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400",
+    color: "",
   },
   {
     icon: CreditCard,
     label: "Flashcards",
-    color:
-      "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400",
+    color: "",
   },
   {
     icon: HelpCircle,
     label: "Quiz",
-    color: "bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400",
+    color: "",
   },
   {
     icon: BarChart3,
     label: "Infographic",
-    color: "bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400",
+    color: "",
   },
   {
     icon: Presentation,
     label: "Slide Deck",
-    color:
-      "bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400",
+    color: "",
   },
 ];
 
@@ -122,7 +118,7 @@ export function StudioPanel({
           variant="ghost"
           size="icon"
           onClick={onToggleCollapse}
-          className="h-10 w-10 rounded-xl text-muted-foreground hover:text-foreground"
+          className="h-10 w-10 rounded-xl"
           title="Expand studio"
         >
           <PanelLeftOpen className="h-5 w-5" />
@@ -183,18 +179,18 @@ export function StudioPanel({
                 key={tool.label}
                 disabled={!tool.enabled || isLoading}
                 onClick={tool.enabled ? handleMindMapClick : undefined}
-                className={`animate-spring-in-up stagger-${Math.min(index + 1, 8)} flex flex-col items-start gap-3 rounded-2xl bg-surface-container p-4 text-left transition-all duration-200 hover:bg-surface-container-high hover:shadow-elevation-1 disabled:cursor-not-allowed disabled:opacity-60`}
+                className={`animate-spring-in-up stagger-${Math.min(index + 1, 8)} flex flex-col items-start gap-3 rounded-2xl bg-surface-variant p-4 text-left transition-all duration-200 hover:bg-hover hover:shadow-elevation-1 disabled:cursor-not-allowed disabled:opacity-60`}
               >
                 <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-xl ${tool.color}`}
+                  className={`flex h-10 w-10 items-center justify-center rounded-xl bg-primary-muted text-on-primary-muted ${tool.color}`}
                 >
                   {isLoading ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <Loader2 className="h-5 w-5 animate-spin text-on-primary-muted" />
                   ) : (
                     <tool.icon className="h-5 w-5" />
                   )}
                 </div>
-                <span className="text-sm font-medium">
+                <span className="text-sm font-medium text-on-surface">
                   {isLoading ? "Generating..." : tool.label}
                 </span>
               </button>
@@ -216,7 +212,7 @@ export function StudioPanel({
 
         {notes.length > 0 && (
           <div className="mt-6">
-            <h3 className="mb-3 font-heading text-sm font-semibold text-muted-foreground">
+            <h3 className="mb-3 font-heading text-sm font-semibold text-on-surface">
               Notes
             </h3>
             <NotesList
@@ -230,14 +226,14 @@ export function StudioPanel({
         )}
 
         {notes.length === 0 && !showAddNote && (
-          <div className="mt-8 flex flex-col items-center rounded-2xl bg-surface-container p-6 text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-10">
-              <Wand2 className="h-7 w-7 text-primary" />
+          <div className="mt-8 flex flex-col items-center rounded-2xl bg-surface-variant p-6 text-center">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-muted">
+              <Wand2 className="h-7 w-7 text-on-primary-muted" />
             </div>
-            <p className="font-heading text-sm font-semibold text-foreground">
+            <p className="font-heading text-sm font-semibold text-on-surface">
               Studio output will appear here
             </p>
-            <p className="mt-2 max-w-[200px] text-xs text-muted-foreground">
+            <p className="mt-2 max-w-[200px] text-xs text-on-surface-muted">
               Generate Audio Overviews, Mind Maps, Study Guides, and more from
               your sources
             </p>

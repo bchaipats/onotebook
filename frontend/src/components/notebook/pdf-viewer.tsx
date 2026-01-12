@@ -34,7 +34,7 @@ export default function PDFViewer({ url }: PDFViewerProps) {
   return (
     <div className="flex flex-col h-full">
       {/* PDF Page Navigation */}
-      <div className="flex items-center justify-center gap-4 p-3 border-b border-border bg-muted/50">
+      <div className="flex items-center justify-center gap-4 p-3">
         <Button
           variant="outline"
           size="sm"
@@ -63,13 +63,13 @@ export default function PDFViewer({ url }: PDFViewerProps) {
           onLoadSuccess={onDocumentLoadSuccess}
           loading={
             <div className="flex items-center justify-center p-8">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
             </div>
           }
           error={
-            <div className="flex flex-col items-center justify-center p-8 text-center text-destructive">
-              <FileText className="mb-2 h-8 w-8" />
-              <p>Failed to load PDF</p>
+            <div className="flex flex-col items-center justify-center p-8 text-center">
+              <FileText className="mb-2 h-8 w-8 text-destructive" />
+              <p className="text-on-surface-muted">Failed to load PDF</p>
             </div>
           }
         >

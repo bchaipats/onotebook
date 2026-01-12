@@ -53,8 +53,8 @@ export function SourceItem({
       className={cn(
         "group rounded-2xl p-3 transition-all duration-200",
         isSelected && isReady
-          ? "bg-primary-10 shadow-elevation-1"
-          : "bg-surface-container hover:bg-surface-container-high hover:shadow-elevation-1",
+          ? "bg-selected shadow-elevation-1"
+          : "hover:bg-hover",
         className,
       )}
     >
@@ -63,7 +63,7 @@ export function SourceItem({
           checked={isSelected && isReady}
           onCheckedChange={onToggle}
           disabled={!isReady}
-          className="mt-1 rounded-md border-2 data-[state=checked]:border-primary data-[state=checked]:bg-primary"
+          className="mt-1 rounded-md"
         />
 
         <div className="min-w-0 flex-1">
@@ -72,7 +72,7 @@ export function SourceItem({
               sourceType={document.source_type}
               fileType={document.file_type}
             />
-            <span className="truncate text-sm font-medium">
+            <span className="truncate text-sm font-medium text-on-surface">
               {document.filename}
             </span>
           </div>
@@ -81,7 +81,7 @@ export function SourceItem({
           <div className="mt-2 flex items-center gap-2">
             <StatusPill status={document.processing_status} />
             {isReady && (
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-on-surface-muted">
                 {document.chunk_count} chunks
               </span>
             )}
@@ -94,14 +94,14 @@ export function SourceItem({
                 value={document.processing_progress}
                 className="h-1.5 rounded-full"
               />
-              <span className="mt-1 block text-xs text-muted-foreground">
+              <span className="mt-1 block text-xs text-on-surface-muted">
                 Processing... {document.processing_progress}%
               </span>
             </div>
           )}
 
           {isFailed && (
-            <p className="mt-2 rounded-lg bg-destructive/10 px-2 py-1 text-xs text-destructive">
+            <p className="mt-2 rounded-lg bg-destructive-muted px-2 py-1 text-xs text-on-destructive-muted">
               {document.processing_error || "Processing failed"}
             </p>
           )}
@@ -122,23 +122,23 @@ export function SourceItem({
           )}
 
           {isExpanded && isReady && (
-            <div className="mt-2 space-y-1.5 rounded-xl bg-surface-container-high p-3 text-xs text-muted-foreground animate-spring-in">
-              <p className="flex justify-between">
+            <div className="mt-2 space-y-1.5 rounded-xl bg-surface-variant p-3 text-xs animate-spring-in">
+              <p className="flex justify-between text-on-surface-muted">
                 <span>Size</span>
-                <span className="font-medium text-foreground">
+                <span className="font-medium text-on-surface">
                   {formatFileSize(document.file_size)}
                 </span>
               </p>
-              <p className="flex justify-between">
+              <p className="flex justify-between text-on-surface-muted">
                 <span>Chunks</span>
-                <span className="font-medium text-foreground">
+                <span className="font-medium text-on-surface">
                   {document.chunk_count}
                 </span>
               </p>
               {document.page_count && (
-                <p className="flex justify-between">
+                <p className="flex justify-between text-on-surface-muted">
                   <span>Pages</span>
-                  <span className="font-medium text-foreground">
+                  <span className="font-medium text-on-surface">
                     {document.page_count}
                   </span>
                 </p>
@@ -165,7 +165,7 @@ export function SourceItem({
           <Button
             variant="ghost"
             size="icon-sm"
-            className="rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive"
+            className="rounded-xl"
             onClick={handleDelete}
             disabled={deleteDocument.isPending}
           >
@@ -179,9 +179,9 @@ export function SourceItem({
 
 function StatusPill({ status }: { status: string }) {
   const styles = {
-    ready: "bg-success/15 text-success",
-    processing: "bg-warning/15 text-warning animate-subtle-pulse",
-    failed: "bg-destructive/15 text-destructive",
+    ready: "bg-success-muted text-success",
+    processing: "bg-info-muted text-info animate-subtle-pulse",
+    failed: "bg-destructive-muted text-destructive",
   };
 
   const labels = {
@@ -211,50 +211,26 @@ function SourceIcon({
 }) {
   const iconClass = "h-4 w-4";
   const wrapperClass =
-    "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl";
+    "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary-muted text-on-primary-muted";
 
   // Handle source type first (URL, YouTube, paste)
   switch (sourceType) {
     case "url":
       return (
-        <div
-          className={cn(wrapperClass)}
-          style={{
-            backgroundColor: "oklch(from var(--ref-source-url) 92% 0.04 h)",
-          }}
-        >
-          <Globe
-            className={iconClass}
-            style={{ color: "var(--ref-source-url)" }}
-          />
+        <div className={cn(wrapperClass)}>
+          <Globe className={iconClass} />
         </div>
       );
     case "youtube":
       return (
-        <div
-          className={cn(wrapperClass)}
-          style={{
-            backgroundColor: "oklch(from var(--ref-source-youtube) 92% 0.04 h)",
-          }}
-        >
-          <Youtube
-            className={iconClass}
-            style={{ color: "var(--ref-source-youtube)" }}
-          />
+        <div className={cn(wrapperClass)}>
+          <Youtube className={iconClass} />
         </div>
       );
     case "paste":
       return (
-        <div
-          className={cn(wrapperClass)}
-          style={{
-            backgroundColor: "oklch(from var(--ref-source-paste) 92% 0.04 h)",
-          }}
-        >
-          <StickyNote
-            className={iconClass}
-            style={{ color: "var(--ref-source-paste)" }}
-          />
+        <div className={cn(wrapperClass)}>
+          <StickyNote className={iconClass} />
         </div>
       );
   }
@@ -263,66 +239,34 @@ function SourceIcon({
   switch (fileType) {
     case "pdf":
       return (
-        <div
-          className={cn(wrapperClass)}
-          style={{
-            backgroundColor: "oklch(from var(--ref-source-pdf) 92% 0.04 h)",
-          }}
-        >
-          <FileText
-            className={iconClass}
-            style={{ color: "var(--ref-source-pdf)" }}
-          />
+        <div className={cn(wrapperClass)}>
+          <FileText className={iconClass} />
         </div>
       );
     case "docx":
     case "doc":
       return (
-        <div
-          className={cn(wrapperClass)}
-          style={{
-            backgroundColor: "oklch(from var(--ref-source-doc) 92% 0.04 h)",
-          }}
-        >
-          <FileType
-            className={iconClass}
-            style={{ color: "var(--ref-source-doc)" }}
-          />
+        <div className={cn(wrapperClass)}>
+          <FileType className={iconClass} />
         </div>
       );
     case "md":
     case "txt":
       return (
-        <div
-          className={cn(wrapperClass)}
-          style={{
-            backgroundColor: "oklch(from var(--ref-source-text) 92% 0.02 h)",
-          }}
-        >
-          <FileCode
-            className={iconClass}
-            style={{ color: "var(--ref-source-text)" }}
-          />
+        <div className={cn(wrapperClass)}>
+          <FileCode className={iconClass} />
         </div>
       );
     case "html":
       return (
-        <div
-          className={cn(wrapperClass)}
-          style={{
-            backgroundColor: "oklch(from var(--ref-source-html) 92% 0.04 h)",
-          }}
-        >
-          <FileCode
-            className={iconClass}
-            style={{ color: "var(--ref-source-html)" }}
-          />
+        <div className={cn(wrapperClass)}>
+          <FileCode className={iconClass} />
         </div>
       );
     default:
       return (
-        <div className={cn(wrapperClass, "bg-surface-container-high")}>
-          <File className={cn(iconClass, "text-muted-foreground")} />
+        <div className={cn(wrapperClass)}>
+          <File className={cn(iconClass)} />
         </div>
       );
   }

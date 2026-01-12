@@ -68,7 +68,7 @@ export function SourceDetailView({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="flex w-full flex-col sm:max-w-lg">
-        <SheetHeader className="shrink-0 border-b pb-4">
+        <SheetHeader className="shrink-0 pb-4">
           <div className="flex items-center gap-3">
             <SourceTypeIcon sourceType={document.source_type} />
             <div className="min-w-0 flex-1">
@@ -80,7 +80,7 @@ export function SourceDetailView({
                   href={document.source_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground hover:text-primary hover:underline"
+                  className="mt-0.5 flex items-center gap-1 text-xs hover:underline"
                 >
                   <ExternalLink className="h-3 w-3" />
                   <span className="truncate">{document.source_url}</span>
@@ -113,7 +113,7 @@ export function SourceDetailView({
           <TabsContent value="guide" className="mt-4 flex-1 overflow-y-auto">
             {guideLoading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
               </div>
             ) : guide?.summary ? (
               <div className="prose prose-sm dark:prose-invert">
@@ -121,11 +121,9 @@ export function SourceDetailView({
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <Sparkles className="mb-3 h-10 w-10 text-muted-foreground/40" />
-                <p className="font-medium text-muted-foreground">
-                  No source guide yet
-                </p>
-                <p className="mt-1 text-sm text-muted-foreground/70">
+                <Sparkles className="mb-3 h-10 w-10" />
+                <p className="font-medium">No source guide yet</p>
+                <p className="mt-1 text-sm">
                   Generate an AI summary of this source to help you understand
                   its key concepts.
                 </p>
@@ -136,7 +134,7 @@ export function SourceDetailView({
                 >
                   {generateGuide.isPending ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin text-on-primary" />
                       Generating...
                     </>
                   ) : (
@@ -153,7 +151,7 @@ export function SourceDetailView({
           <TabsContent value="content" className="mt-4 flex-1 overflow-y-auto">
             {contentLoading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
               </div>
             ) : content?.content ? (
               <HighlightedContent
@@ -163,10 +161,8 @@ export function SourceDetailView({
               />
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <FileText className="mb-3 h-10 w-10 text-muted-foreground/40" />
-                <p className="font-medium text-muted-foreground">
-                  No content available
-                </p>
+                <FileText className="mb-3 h-10 w-10" />
+                <p className="font-medium">No content available</p>
               </div>
             )}
           </TabsContent>
@@ -198,7 +194,7 @@ export function SourceDetailView({
                     href={document.source_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-sm text-primary hover:underline"
+                    className="flex items-center gap-1 text-sm hover:underline"
                   >
                     {document.source_url}
                     <ExternalLink className="h-3 w-3" />
@@ -223,40 +219,25 @@ function SourceTypeIcon({ sourceType }: { sourceType: string }) {
   switch (sourceType) {
     case "url":
       return (
-        <div
-          className={cn(
-            baseClass,
-            "bg-blue-100 text-blue-600 dark:bg-blue-950 dark:text-blue-400",
-          )}
-        >
+        <div className={cn(baseClass)}>
           <Globe className="h-full w-full" />
         </div>
       );
     case "youtube":
       return (
-        <div
-          className={cn(
-            baseClass,
-            "bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-400",
-          )}
-        >
+        <div className={cn(baseClass)}>
           <Youtube className="h-full w-full" />
         </div>
       );
     case "paste":
       return (
-        <div
-          className={cn(
-            baseClass,
-            "bg-purple-100 text-purple-600 dark:bg-purple-950 dark:text-purple-400",
-          )}
-        >
+        <div className={cn(baseClass)}>
           <StickyNote className="h-full w-full" />
         </div>
       );
     default:
       return (
-        <div className={cn(baseClass, "bg-muted text-muted-foreground")}>
+        <div className={cn(baseClass)}>
           <File className="h-full w-full" />
         </div>
       );
@@ -270,9 +251,7 @@ function GuideContent({ content }: { content: string }) {
     <p>
       {parts.map((part, i) =>
         part.startsWith("**") && part.endsWith("**") ? (
-          <strong key={i} className="text-primary">
-            {part.slice(2, -2)}
-          </strong>
+          <strong key={i}>{part.slice(2, -2)}</strong>
         ) : (
           <span key={i}>{part}</span>
         ),
@@ -291,8 +270,8 @@ function InfoRow({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b pb-3">
-      <span className="text-sm text-muted-foreground">{label}</span>
+    <div className="flex items-start justify-between gap-4 pb-3">
+      <span className="text-sm">{label}</span>
       {children || <span className="text-sm font-medium">{value}</span>}
     </div>
   );
@@ -338,7 +317,7 @@ function HighlightedContent({
 
   if (!highlightText) {
     return (
-      <div className="whitespace-pre-wrap rounded-lg bg-muted/50 p-4 font-mono text-sm">
+      <div className="whitespace-pre-wrap rounded-lg p-4 font-mono text-sm">
         {content}
       </div>
     );
@@ -382,7 +361,7 @@ function HighlightedContent({
 
   if (!match) {
     return (
-      <div className="whitespace-pre-wrap rounded-lg bg-muted/50 p-4 font-mono text-sm">
+      <div className="whitespace-pre-wrap rounded-lg p-4 font-mono text-sm">
         {content}
       </div>
     );
@@ -393,17 +372,17 @@ function HighlightedContent({
   const after = content.slice(match.index + match.length);
 
   return (
-    <div className="relative whitespace-pre-wrap rounded-lg bg-muted/50 p-4 font-mono text-sm">
+    <div className="relative whitespace-pre-wrap rounded-lg p-4 font-mono text-sm">
       {before}
       <span className="relative inline">
         {citationIndex && (
-          <span className="absolute -left-1 -top-5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold text-primary-foreground">
+          <span className="absolute -left-1 -top-5 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-bold">
             {citationIndex}
           </span>
         )}
         <span
           ref={highlightRef}
-          className="animate-highlight-pulse rounded bg-violet-200 px-0.5 ring-2 ring-violet-400 dark:bg-violet-900/70 dark:ring-violet-500"
+          className="animate-highlight-pulse rounded px-0.5"
         >
           {highlighted}
         </span>

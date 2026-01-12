@@ -66,7 +66,7 @@ export function ChatSessionList({
     return (
       <div className="space-y-2 p-2">
         {[1, 2].map((i) => (
-          <div key={i} className="h-10 animate-pulse rounded-md bg-muted" />
+          <div key={i} className="h-10 animate-pulse rounded-md" />
         ))}
       </div>
     );
@@ -93,12 +93,12 @@ export function ChatSessionList({
               <div
                 key={session.id}
                 className={cn(
-                  "group flex cursor-pointer items-center gap-2 rounded-md p-2 hover:bg-accent",
-                  selectedSessionId === session.id && "bg-accent",
+                  "group flex cursor-pointer items-center gap-2 rounded-md p-2 hover:bg-hover",
+                  selectedSessionId === session.id && "bg-selected",
                 )}
                 onClick={() => onSelectSession(session)}
               >
-                <MessageSquare className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <MessageSquare className="h-4 w-4 shrink-0" />
                 <span className="flex-1 truncate text-sm">
                   {session.title || "New Chat"}
                 </span>
@@ -119,7 +119,7 @@ export function ChatSessionList({
                         e.stopPropagation();
                         handleDeleteClick(session);
                       }}
-                      className="text-destructive focus:text-destructive"
+                      className=""
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
                       Delete
@@ -130,7 +130,7 @@ export function ChatSessionList({
             ))}
           </div>
         ) : (
-          <p className="px-2 text-sm text-muted-foreground">
+          <p className="px-2 text-sm text-on-surface-muted">
             No chat sessions yet
           </p>
         )}

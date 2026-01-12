@@ -82,11 +82,11 @@ export function NotebookHeader({
   }
 
   return (
-    <header className="flex items-center justify-between bg-background-notebook px-4 py-2">
+    <header className="flex items-center justify-between px-4 py-2">
       <div className="flex items-center gap-3">
         <button
           onClick={onBack}
-          className="rounded-lg p-1 transition-colors hover:bg-muted"
+          className="rounded-lg p-1 transition-colors"
           title="ONotebook Homepage"
         >
           <ONotebookLogo />
@@ -97,7 +97,7 @@ export function NotebookHeader({
           onChange={(e) => setTitle(e.target.value)}
           onBlur={handleTitleBlur}
           onKeyDown={handleKeyDown}
-          className="w-64 bg-transparent px-1 py-1 text-2xl font-medium outline-none focus:outline-none"
+          className="w-64 px-1 py-1 text-2xl font-medium outline-none focus:outline-none"
         />
       </div>
 
@@ -112,7 +112,7 @@ export function NotebookHeader({
         </Button>
         <Button
           variant="outline"
-          className="h-[var(--header-button-height)] gap-2 rounded-full border-border/50 px-5"
+          className="h-[var(--header-button-height)] gap-2 rounded-full px-5"
         >
           <Share2 className="h-4 w-4" />
           Share
@@ -120,12 +120,12 @@ export function NotebookHeader({
         <Button
           variant="outline"
           onClick={onOpenSettings}
-          className="h-[var(--header-button-height)] gap-2 rounded-full border-border/50 px-5"
+          className="h-[var(--header-button-height)] gap-2 rounded-full px-5"
         >
           <Settings className="h-4 w-4" />
           Settings
         </Button>
-        <div className="flex h-[var(--header-button-height)] w-[var(--header-button-height)] items-center justify-center rounded-full bg-user-avatar text-sm font-medium text-white">
+        <div className="flex h-[var(--header-button-height)] w-[var(--header-button-height)] items-center justify-center rounded-full text-sm font-medium">
           U
         </div>
       </div>

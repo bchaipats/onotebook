@@ -132,7 +132,7 @@ export function ChatConfigDialog({
               </StyleButton>
             </div>
             {chatStyle === "learning_guide" && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-on-surface-muted">
                 AI will act as a tutor, breaking down concepts and asking
                 follow-up questions.
               </p>
@@ -151,7 +151,7 @@ export function ChatConfigDialog({
                 className="min-h-24 resize-none"
                 maxLength={2000}
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-on-surface-muted">
                 {customInstructions.length}/2000 characters
               </p>
             </div>
@@ -186,7 +186,7 @@ export function ChatConfigDialog({
           <div className="space-y-3">
             <Label>AI Provider</Label>
             {providersLoading ? (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 text-sm text-on-surface-muted">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Loading providers...
               </div>
@@ -222,7 +222,7 @@ export function ChatConfigDialog({
                 <select
                   value={llmModel}
                   onChange={(e) => setLLMModel(e.target.value)}
-                  className="w-full appearance-none rounded-lg border bg-background px-3 py-2 pr-8 text-sm"
+                  className="w-full appearance-none rounded-lg border border-border bg-surface px-3 py-2 pr-8 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-border-focus"
                 >
                   {availableModels.map((model) => (
                     <option key={model} value={model}>
@@ -230,7 +230,7 @@ export function ChatConfigDialog({
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-on-surface-muted" />
               </div>
             </div>
           )}
@@ -273,12 +273,11 @@ function StyleButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
-        disabled && "cursor-not-allowed opacity-50",
+        "flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
         active
-          ? "border-primary bg-primary/10 text-primary"
-          : "border-border bg-background text-muted-foreground hover:bg-muted",
-        disabled && "hover:bg-background",
+          ? "bg-primary text-on-primary shadow-elevation-1"
+          : "bg-surface-variant text-on-surface hover:bg-hover",
+        disabled && "cursor-not-allowed opacity-50",
       )}
     >
       {children}

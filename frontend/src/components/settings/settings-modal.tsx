@@ -74,17 +74,24 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
   }, [settings]);
 
   useEffect(() => {
+    const root = document.documentElement;
     if (theme === "system") {
       const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      document.documentElement.classList.toggle("dark", isDark);
+      root.classList.toggle("dark", isDark);
+      root.classList.remove("light");
+    } else if (theme === "light") {
+      root.classList.remove("dark");
+      root.classList.add("light");
     } else {
-      document.documentElement.classList.toggle("dark", theme === "dark");
+      root.classList.add("dark");
+      root.classList.remove("light");
     }
   }, [theme]);
 
   function handleThemeChange(value: ThemeSetting) {
     setTheme(value);
     updateSettings.mutate({ theme: value });
+    localStorage.setItem("onotebook-theme", value);
   }
 
   function handleModelChange(value: string) {
@@ -216,7 +223,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                   Save
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-on-surface-muted">
                 The URL of your Ollama server for running local LLMs.
               </p>
             </div>
@@ -244,7 +251,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                   )}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-on-surface-muted">
                 The default LLM model for new chat sessions.
               </p>
             </div>
@@ -253,7 +260,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label>Top-K Results</Label>
-                <span className="text-sm text-muted-foreground">{topK}</span>
+                <span className="text-sm text-on-surface-muted">{topK}</span>
               </div>
               <Slider
                 value={[topK]}
@@ -263,7 +270,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                 onValueChange={handleTopKChange}
                 onValueCommit={handleTopKCommit}
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-on-surface-muted">
                 Number of document chunks to retrieve for context (1-20).
               </p>
             </div>
@@ -272,7 +279,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label>Temperature</Label>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-on-surface-muted">
                   {temperature.toFixed(1)}
                 </span>
               </div>
@@ -284,14 +291,14 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                 onValueChange={handleTemperatureChange}
                 onValueCommit={handleTemperatureCommit}
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-on-surface-muted">
                 Higher values make responses more creative, lower values more
                 focused (0-2).
               </p>
             </div>
 
             {/* Pull New Model */}
-            <div className="space-y-3 border-t pt-4">
+            <div className="space-y-3 pt-4">
               <Label>Pull New Model</Label>
               <div className="flex gap-2">
                 <Input
@@ -307,7 +314,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                   className="gap-2"
                 >
                   {pullModel.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin text-on-surface-muted" />
                   ) : (
                     <Download className="h-4 w-4" />
                   )}
@@ -318,7 +325,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
               {/* Progress Bar */}
               {pullModel.isPending && pullProgress && (
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <div className="flex items-center justify-between text-xs">
                     <span>{pullProgress.status}</span>
                     <span>{calculatePullPercent()}%</span>
                   </div>
@@ -328,7 +335,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
 
               {/* Success Message */}
               {pullComplete && !pullError && (
-                <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                <div className="flex items-center gap-2 text-sm text-success">
                   <CheckCircle2 className="h-4 w-4" />
                   Model pulled successfully
                 </div>
@@ -342,13 +349,13 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                 </div>
               )}
 
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-on-surface-muted">
                 Download a new model from Ollama. Visit{" "}
                 <a
                   href="https://ollama.ai/library"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-primary underline"
+                  className="text-primary underline hover:text-primary-hover"
                 >
                   ollama.ai/library
                 </a>{" "}
@@ -359,28 +366,28 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
 
           <TabsContent value="about" className="space-y-4 pt-4">
             <div className="space-y-4">
-              <div className="flex items-center justify-between py-2 border-b">
-                <span className="text-sm font-medium">Version</span>
-                <span className="text-sm text-muted-foreground">
+              <div className="flex items-center justify-between border-b border-divider py-2">
+                <span className="text-sm font-medium text-on-surface">
+                  Version
+                </span>
+                <span className="text-sm text-on-surface-muted">
                   {health?.version || "0.1.0"}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between py-2 border-b">
-                <span className="text-sm font-medium">Ollama Status</span>
+              <div className="flex items-center justify-between border-b border-divider py-2">
+                <span className="text-sm font-medium text-on-surface">
+                  Ollama Status
+                </span>
                 <span
-                  className={`text-sm ${
-                    health?.ollama_connected
-                      ? "text-green-600 dark:text-green-400"
-                      : "text-red-600 dark:text-red-400"
-                  }`}
+                  className={`text-sm ${health?.ollama_connected ? "text-success" : "text-destructive"}`}
                 >
                   {health?.ollama_connected ? "Connected" : "Disconnected"}
                 </span>
               </div>
 
               <div className="py-2">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-on-surface-muted">
                   onotebook is an open-source RAG knowledge assistant that helps
                   you chat with your documents using local LLMs.
                 </p>

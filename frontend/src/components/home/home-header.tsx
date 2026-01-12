@@ -15,7 +15,9 @@ export function HomeHeader({ onOpenSettings }: HomeHeaderProps) {
       <div className="mx-auto flex h-20 max-w-5xl items-center justify-between px-6 md:px-8">
         <div className="flex items-center gap-3">
           <BookOpen className="h-7 w-7 text-primary" />
-          <span className="text-xl font-semibold">{APP_NAME}</span>
+          <span className="text-xl font-semibold text-on-background">
+            {APP_NAME}
+          </span>
         </div>
 
         <div className="flex items-center gap-3">
@@ -29,7 +31,7 @@ export function HomeHeader({ onOpenSettings }: HomeHeaderProps) {
             <Settings className="h-4 w-4" />
             Settings
           </Button>
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-user-avatar text-sm font-medium text-white">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-medium text-on-primary">
             U
           </div>
         </div>

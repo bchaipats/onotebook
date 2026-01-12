@@ -64,7 +64,7 @@ export function NotebookLayout({
   }, [highlightedCitation]);
 
   return (
-    <div className="flex h-screen flex-col bg-background-notebook">
+    <div className="flex h-screen flex-col bg-background text-on-background">
       <NotebookHeader
         notebook={notebook}
         onBack={onBack}
@@ -75,7 +75,7 @@ export function NotebookLayout({
         {/* Left: Sources Panel */}
         <aside
           className={cn(
-            "hidden shrink-0 rounded-3xl bg-surface-container-lowest shadow-elevation-1 transition-spring md:flex md:flex-col",
+            "hidden shrink-0 rounded-3xl bg-surface shadow-elevation-1 transition-spring md:flex md:flex-col",
             sourcesCollapsed
               ? "w-[var(--panel-width-collapsed)]"
               : "w-[var(--panel-width-sources)]",
@@ -93,7 +93,7 @@ export function NotebookLayout({
         </aside>
 
         {/* Center: Chat Panel */}
-        <main className="flex flex-1 flex-col overflow-hidden rounded-3xl bg-surface-container-lowest shadow-elevation-1">
+        <main className="flex flex-1 flex-col overflow-hidden rounded-3xl bg-surface shadow-elevation-1">
           <ChatPanel
             notebookId={notebook.id}
             notebook={notebook}
@@ -106,7 +106,7 @@ export function NotebookLayout({
         {/* Right: Studio Panel */}
         <aside
           className={cn(
-            "hidden shrink-0 rounded-3xl bg-surface-container-lowest shadow-elevation-1 transition-spring lg:flex lg:flex-col",
+            "hidden shrink-0 rounded-3xl bg-surface shadow-elevation-1 transition-spring lg:flex lg:flex-col",
             studioCollapsed
               ? "w-[var(--panel-width-collapsed)]"
               : "w-[var(--panel-width-studio)]",

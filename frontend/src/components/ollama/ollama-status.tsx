@@ -18,9 +18,9 @@ export function OllamaStatus({
   if (isLoading) {
     return (
       <div className={cn("flex items-center gap-2 text-sm", className)}>
-        <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+        <Loader2 className="h-3 w-3 animate-spin text-on-surface-muted" />
         {showLabel && (
-          <span className="text-muted-foreground">Checking...</span>
+          <span className="text-on-surface-muted">Checking...</span>
         )}
       </div>
     );
@@ -39,18 +39,9 @@ export function OllamaStatus({
 
   return (
     <div className={cn("flex items-center gap-2 text-sm", className)}>
-      <Circle
-        className={cn(
-          "h-3 w-3",
-          isConnected
-            ? "fill-success text-success"
-            : "fill-destructive text-destructive",
-        )}
-      />
+      <Circle className={cn("h-3 w-3")} />
       {showLabel && (
-        <span
-          className={isConnected ? "text-muted-foreground" : "text-destructive"}
-        >
+        <span className="">
           Ollama {isConnected ? "Connected" : "Disconnected"}
         </span>
       )}

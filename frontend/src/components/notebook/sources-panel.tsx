@@ -115,7 +115,7 @@ export function SourcesPanel({
           variant="ghost"
           size="icon"
           onClick={onToggleCollapse}
-          className="h-10 w-10 rounded-xl text-muted-foreground hover:text-foreground"
+          className="h-10 w-10 rounded-xl"
           title="Expand sources"
         >
           <PanelRightOpen className="h-5 w-5" />
@@ -158,7 +158,7 @@ export function SourcesPanel({
         onToggleCollapse={onToggleCollapse}
       >
         {sourceCount && (
-          <span className="rounded-full bg-primary-10 px-2.5 py-1 text-xs font-medium text-primary">
+          <span className="rounded-full bg-surface-variant px-2.5 py-1 text-xs font-medium text-on-surface-muted">
             {sourceCount.count}/{sourceCount.limit}
           </span>
         )}
@@ -176,14 +176,16 @@ export function SourcesPanel({
         </Button>
       </div>
 
-      <div className="mx-4 mt-4 overflow-hidden rounded-2xl bg-gradient-to-r from-primary-5 to-primary-10 p-4">
+      <div className="mx-4 mt-4 overflow-hidden rounded-2xl bg-surface-variant p-4">
         <div className="flex items-start gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary-20">
-            <Sparkles className="h-4 w-4 text-primary" />
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary-muted">
+            <Sparkles className="h-4 w-4 text-on-primary-muted" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-primary">Deep Research</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">
+            <p className="text-sm font-semibold text-on-surface">
+              Deep Research
+            </p>
+            <p className="mt-0.5 text-xs text-on-surface-muted">
               Get an in-depth report and discover new sources
             </p>
           </div>
@@ -195,7 +197,7 @@ export function SourcesPanel({
       </div>
 
       {documents && documents.length > 0 && (
-        <div className="mt-3 flex items-center gap-3 border-b border-border/50 px-4 pb-3">
+        <div className="mt-3 flex items-center gap-3 px-4 pb-3">
           <Checkbox
             checked={allSelected}
             onCheckedChange={(checked) =>
@@ -203,11 +205,11 @@ export function SourcesPanel({
                 ? onSelectionChange(new Set(readyDocuments?.map((d) => d.id)))
                 : onSelectionChange(new Set())
             }
-            className="rounded-md border-2 data-[state=checked]:border-primary data-[state=checked]:bg-primary"
+            className="rounded-md"
           />
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-on-surface">
             Select all sources
-            <span className="ml-2 rounded-full bg-surface-container px-2 py-0.5 text-xs font-medium">
+            <span className="ml-2 rounded-full bg-surface-variant px-2 py-0.5 text-xs font-medium text-on-surface-muted">
               {selectedSources.size}/{readyDocuments?.length || 0}
             </span>
           </span>
@@ -220,7 +222,7 @@ export function SourcesPanel({
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="h-20 animate-pulse rounded-2xl bg-surface-container"
+                className="h-20 animate-pulse rounded-2xl bg-surface-variant"
               />
             ))}
           </div>
@@ -239,13 +241,13 @@ export function SourcesPanel({
           </div>
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-container">
-              <FileText className="h-8 w-8 text-muted-foreground/50" />
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-variant">
+              <FileText className="h-8 w-8 text-on-surface-muted" />
             </div>
-            <p className="font-heading text-base font-semibold text-foreground">
+            <p className="font-heading text-base font-semibold text-on-surface">
               No sources yet
             </p>
-            <p className="mt-2 max-w-[200px] text-sm text-muted-foreground">
+            <p className="mt-2 max-w-[200px] text-sm text-on-surface-muted">
               Add PDFs, websites, text, videos, or audio files to get started
             </p>
           </div>
@@ -291,7 +293,7 @@ function InlineSourceDetail({
 
   return (
     <>
-      <div className="flex items-center gap-2 border-b px-4 py-3">
+      <div className="flex items-center gap-2 px-4 py-3">
         <Button
           variant="ghost"
           size="icon"
@@ -301,13 +303,15 @@ function InlineSourceDetail({
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <div className="min-w-0 flex-1">
-          <h2 className="truncate font-semibold">{document.filename}</h2>
+          <h2 className="truncate font-semibold text-on-surface">
+            {document.filename}
+          </h2>
           {document.source_url && (
             <a
               href={document.source_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
+              className="flex items-center gap-1 text-xs text-primary hover:underline"
             >
               <ExternalLink className="h-3 w-3" />
               <span className="truncate">{document.source_url}</span>
@@ -316,7 +320,7 @@ function InlineSourceDetail({
         </div>
       </div>
 
-      <div className="border-b px-4 py-2">
+      <div className="px-4 py-2">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="guide" className="gap-1 text-xs">
@@ -340,7 +344,7 @@ function InlineSourceDetail({
           <>
             {guideLoading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
               </div>
             ) : guide?.summary ? (
               <div className="prose prose-sm dark:prose-invert">
@@ -348,8 +352,8 @@ function InlineSourceDetail({
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <Sparkles className="mb-3 h-10 w-10 text-muted-foreground/40" />
-                <p className="font-medium text-muted-foreground">
+                <Sparkles className="mb-3 h-10 w-10 text-on-surface-muted" />
+                <p className="font-medium text-on-surface">
                   No source guide yet
                 </p>
                 <Button
@@ -359,7 +363,7 @@ function InlineSourceDetail({
                 >
                   {generateGuide.isPending ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin text-on-primary" />
                       Generating...
                     </>
                   ) : (
@@ -378,7 +382,7 @@ function InlineSourceDetail({
           <>
             {contentLoading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
               </div>
             ) : content?.content ? (
               <HighlightedContent
@@ -388,8 +392,8 @@ function InlineSourceDetail({
               />
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <FileText className="mb-3 h-10 w-10 text-muted-foreground/40" />
-                <p className="font-medium text-muted-foreground">
+                <FileText className="mb-3 h-10 w-10 text-on-surface-muted" />
+                <p className="font-medium text-on-surface">
                   No content available
                 </p>
               </div>
@@ -422,9 +426,9 @@ function InlineSourceDetail({
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between border-b pb-2 text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="font-medium">{value}</span>
+    <div className="flex items-center justify-between border-b border-divider pb-2 text-sm">
+      <span className="text-on-surface-muted">{label}</span>
+      <span className="font-medium text-on-surface">{value}</span>
     </div>
   );
 }
@@ -454,7 +458,7 @@ function HighlightedContent({
 
   if (!highlightText) {
     return (
-      <div className="whitespace-pre-wrap rounded-lg bg-muted/50 p-4 font-mono text-sm">
+      <div className="whitespace-pre-wrap rounded-lg bg-surface-variant p-4 font-mono text-sm text-on-surface">
         {content}
       </div>
     );
@@ -495,7 +499,7 @@ function HighlightedContent({
 
   if (!match) {
     return (
-      <div className="whitespace-pre-wrap rounded-lg bg-muted/50 p-4 font-mono text-sm">
+      <div className="whitespace-pre-wrap rounded-lg bg-surface-variant p-4 font-mono text-sm text-on-surface">
         {content}
       </div>
     );
@@ -506,17 +510,17 @@ function HighlightedContent({
   const after = content.slice(match.index + match.length);
 
   return (
-    <div className="relative whitespace-pre-wrap rounded-lg bg-muted/50 p-4 font-mono text-sm">
+    <div className="relative whitespace-pre-wrap rounded-lg bg-surface-variant p-4 font-mono text-sm text-on-surface">
       {before}
       <span className="relative inline">
         {citationIndex && (
-          <span className="absolute -left-1 -top-5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold text-primary-foreground">
+          <span className="absolute -left-1 -top-5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold text-on-primary">
             {citationIndex}
           </span>
         )}
         <span
           ref={highlightRef}
-          className="animate-highlight-pulse rounded bg-violet-200 px-0.5 ring-2 ring-violet-400 dark:bg-violet-900/70 dark:ring-violet-500"
+          className="animate-highlight-pulse rounded bg-warning-muted px-0.5"
         >
           {highlighted}
         </span>

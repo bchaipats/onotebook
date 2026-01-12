@@ -56,24 +56,28 @@ export function Toaster() {
         <div
           key={toast.id}
           className={cn(
-            "flex items-center gap-2 rounded-lg px-4 py-3 shadow-lg animate-in slide-in-from-right-full",
+            "flex items-center gap-2 rounded-lg px-4 py-3 shadow-elevation-3 animate-in slide-in-from-right-full",
             toast.type === "error" &&
-              "bg-destructive text-destructive-foreground",
-            toast.type === "success" && "bg-success text-success-foreground",
-            toast.type === "info" && "bg-primary text-primary-foreground",
+              "bg-destructive-muted text-on-destructive-muted border border-destructive/20",
+            toast.type === "success" &&
+              "bg-success-muted text-on-surface border border-success/20",
+            toast.type === "info" &&
+              "bg-info-muted text-on-surface border border-info/20",
           )}
         >
           {toast.type === "error" && (
-            <AlertCircle className="h-4 w-4 shrink-0" />
+            <AlertCircle className="h-4 w-4 shrink-0 text-destructive" />
           )}
           {toast.type === "success" && (
-            <CheckCircle className="h-4 w-4 shrink-0" />
+            <CheckCircle className="h-4 w-4 shrink-0 text-success" />
           )}
-          {toast.type === "info" && <Info className="h-4 w-4 shrink-0" />}
+          {toast.type === "info" && (
+            <Info className="h-4 w-4 shrink-0 text-info" />
+          )}
           <span className="text-sm font-medium">{toast.message}</span>
           <button
             onClick={() => dismissToast(toast.id)}
-            className="ml-2 rounded p-0.5 hover:bg-white/20"
+            className="ml-2 rounded p-0.5 hover:bg-hover"
           >
             <X className="h-4 w-4" />
           </button>

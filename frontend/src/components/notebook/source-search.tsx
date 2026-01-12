@@ -89,20 +89,20 @@ export function SourceSearch({ notebookId }: SourceSearchProps) {
   const isAdding = addSources.isPending;
 
   return (
-    <div className="rounded-xl border bg-muted/30 p-3">
-      <div className="flex items-center gap-2 rounded-lg border bg-background px-3 py-2">
-        <Search className="h-4 w-4 text-muted-foreground" />
+    <div className="rounded-xl p-3">
+      <div className="flex items-center gap-2 rounded-lg px-3 py-2">
+        <Search className="h-4 w-4" />
         <input
           type="text"
           placeholder="Search the web for new sources"
-          className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+          className="flex-1 text-sm outline-none"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           disabled={isSearching || isAdding}
         />
         {isSearching && (
-          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          <Loader2 className="h-4 w-4 animate-spin text-on-surface-muted" />
         )}
       </div>
 
@@ -112,10 +112,8 @@ export function SourceSearch({ notebookId }: SourceSearchProps) {
             <DropdownMenuTrigger asChild>
               <button
                 className={cn(
-                  "flex items-center gap-1 rounded-full border px-3 py-1 text-xs transition-colors",
-                  mode === "deep"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "bg-background",
+                  "flex items-center gap-1 rounded-full px-3 py-1 text-xs transition-colors",
+                  mode === "deep" ? "" : "",
                 )}
               >
                 <Sparkles className="h-3 w-3" />
@@ -127,15 +125,13 @@ export function SourceSearch({ notebookId }: SourceSearchProps) {
               <DropdownMenuItem onClick={() => setMode("fast")}>
                 <div className="flex flex-col gap-0.5">
                   <span className="font-medium">Fast Research</span>
-                  <span className="text-xs text-muted-foreground">
-                    Quick search, 10 results
-                  </span>
+                  <span className="text-xs">Quick search, 10 results</span>
                 </div>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setMode("deep")}>
                 <div className="flex flex-col gap-0.5">
                   <span className="font-medium">Deep Research</span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs">
                     Comprehensive search, 30 results
                   </span>
                 </div>
@@ -155,7 +151,7 @@ export function SourceSearch({ notebookId }: SourceSearchProps) {
       </div>
 
       {search.error && (
-        <p className="mt-2 text-xs text-destructive">
+        <p className="mt-2 text-xs">
           {search.error instanceof Error
             ? search.error.message
             : "Search failed. Make sure BRAVE_SEARCH_API_KEY is configured."}
@@ -165,13 +161,8 @@ export function SourceSearch({ notebookId }: SourceSearchProps) {
       {results.length > 0 && (
         <div className="mt-3 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">
-              {results.length} results found
-            </span>
-            <button
-              onClick={handleClearResults}
-              className="text-xs text-muted-foreground hover:text-foreground"
-            >
+            <span className="text-xs">{results.length} results found</span>
+            <button onClick={handleClearResults} className="text-xs">
               <X className="h-3 w-3" />
             </button>
           </div>
@@ -195,7 +186,7 @@ export function SourceSearch({ notebookId }: SourceSearchProps) {
             >
               {isAdding ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin text-on-primary" />
                   Adding sources...
                 </>
               ) : (
@@ -225,10 +216,8 @@ function SearchResultRow({
   return (
     <div
       className={cn(
-        "flex items-start gap-2 rounded-lg border p-2 transition-colors",
-        isSelected
-          ? "border-primary/30 bg-primary/5"
-          : "border-border hover:border-muted-foreground/30",
+        "flex items-start gap-2 rounded-lg p-2 transition-colors",
+        isSelected ? "" : "",
       )}
     >
       <Checkbox
@@ -250,14 +239,12 @@ function SearchResultRow({
           )}
           <span className="truncate text-sm font-medium">{result.title}</span>
         </div>
-        <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
-          {result.snippet}
-        </p>
+        <p className="mt-0.5 line-clamp-2 text-xs">{result.snippet}</p>
         <a
           href={result.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-1 flex items-center gap-1 text-xs text-primary hover:underline"
+          className="mt-1 flex items-center gap-1 text-xs hover:underline"
           onClick={(e) => e.stopPropagation()}
         >
           <ExternalLink className="h-3 w-3" />

@@ -37,8 +37,6 @@ function buildNodesAndEdges(data: MindMapData): {
     position: { x: 0, y: 0 },
     data: { label: data.central_topic },
     style: {
-      background: "hsl(var(--primary))",
-      color: "hsl(var(--primary-foreground))",
       border: "none",
       borderRadius: "12px",
       padding: "12px 20px",
@@ -61,9 +59,6 @@ function buildNodesAndEdges(data: MindMapData): {
       position: { x: mainX, y: mainY },
       data: { label: node.label },
       style: {
-        background: "hsl(var(--muted))",
-        color: "hsl(var(--foreground))",
-        border: "1px solid hsl(var(--border))",
         borderRadius: "8px",
         padding: "8px 16px",
         fontWeight: 500,
@@ -78,7 +73,7 @@ function buildNodesAndEdges(data: MindMapData): {
       id: `central-${node.id}`,
       source: "central",
       target: node.id,
-      style: { stroke: "hsl(var(--border))", strokeWidth: 2 },
+      style: { strokeWidth: 2 },
       type: "smoothstep",
     });
 
@@ -94,9 +89,6 @@ function buildNodesAndEdges(data: MindMapData): {
           position: { x: childX, y: childY },
           data: { label: child.label },
           style: {
-            background: "hsl(var(--background))",
-            color: "hsl(var(--foreground))",
-            border: "1px solid hsl(var(--border))",
             borderRadius: "6px",
             padding: "6px 12px",
             fontSize: "12px",
@@ -110,7 +102,7 @@ function buildNodesAndEdges(data: MindMapData): {
           id: `${node.id}-${child.id}`,
           source: node.id,
           target: child.id,
-          style: { stroke: "hsl(var(--border))", strokeWidth: 1.5 },
+          style: { strokeWidth: 1.5 },
           type: "smoothstep",
         });
 
@@ -123,9 +115,6 @@ function buildNodesAndEdges(data: MindMapData): {
               position: { x: childX + 160, y: gcStartY + gcIndex * 42 },
               data: { label: gc.label },
               style: {
-                background: "hsl(var(--background))",
-                color: "hsl(var(--muted-foreground))",
-                border: "1px dashed hsl(var(--border))",
                 borderRadius: "4px",
                 padding: "4px 10px",
                 fontSize: "11px",
@@ -139,7 +128,6 @@ function buildNodesAndEdges(data: MindMapData): {
               source: child.id,
               target: gc.id,
               style: {
-                stroke: "hsl(var(--border))",
                 strokeWidth: 1,
                 strokeDasharray: "4 2",
               },
@@ -181,8 +169,8 @@ export function MindMapView({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background">
-      <div className="flex items-center justify-between border-b px-4 py-3">
+    <div className="fixed inset-0 z-50 flex flex-col">
+      <div className="flex items-center justify-between px-4 py-3">
         <h2 className="font-semibold">Mind Map: {data.central_topic}</h2>
         <div className="flex items-center gap-2">
           <Button
@@ -229,12 +217,9 @@ export function MindMapView({
           zoomOnScroll
           preventScrolling
         >
-          <Background color="hsl(var(--muted))" gap={20} size={1} />
+          <Background gap={20} size={1} />
           <Controls showInteractive={false} />
-          <Panel
-            position="bottom-center"
-            className="text-xs text-muted-foreground"
-          >
+          <Panel position="bottom-center" className="text-xs">
             Scroll to zoom • Drag to pan
           </Panel>
         </ReactFlow>

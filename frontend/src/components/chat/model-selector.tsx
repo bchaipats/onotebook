@@ -26,7 +26,7 @@ export function ModelSelector({
 
   if (error) {
     return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <div className="flex items-center gap-2 text-sm">
         <Cpu className="h-4 w-4" />
         <span>Unable to load models</span>
       </div>
@@ -57,11 +57,11 @@ export function ModelSelector({
               onClick={() => onSelectModel?.(model.name)}
               className={cn(
                 "flex flex-col items-start gap-0.5",
-                selectedModel === model.name && "bg-accent",
+                selectedModel === model.name && "",
               )}
             >
               <span className="font-medium">{model.name}</span>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs">
                 {formatModelSize(model.size)}
                 {model.parameter_size && ` • ${model.parameter_size}`}
               </span>

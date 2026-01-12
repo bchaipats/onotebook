@@ -41,10 +41,13 @@ export function NotesList({ notes, onUpdate, onDelete }: NotesListProps) {
 
   return (
     <div className="space-y-2">
-      <h3 className="px-1 text-xs font-medium text-muted-foreground">Notes</h3>
+      <h3 className="px-1 text-xs font-medium text-on-surface-muted">Notes</h3>
       <div className="space-y-2">
         {notes.map((note) => (
-          <div key={note.id} className="rounded-lg border bg-card p-3 text-sm">
+          <div
+            key={note.id}
+            className="rounded-lg bg-surface-variant p-3 text-sm text-on-surface"
+          >
             {editingId === note.id ? (
               <div className="space-y-2">
                 <Input
@@ -81,9 +84,11 @@ export function NotesList({ notes, onUpdate, onDelete }: NotesListProps) {
             ) : (
               <>
                 {note.title && (
-                  <div className="mb-1 font-medium">{note.title}</div>
+                  <div className="mb-1 font-medium text-on-surface">
+                    {note.title}
+                  </div>
                 )}
-                <div className="whitespace-pre-wrap text-muted-foreground">
+                <div className="whitespace-pre-wrap text-on-surface-muted">
                   {note.content}
                 </div>
                 <div className="mt-2 flex justify-end gap-1">
@@ -98,7 +103,7 @@ export function NotesList({ notes, onUpdate, onDelete }: NotesListProps) {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7 text-destructive hover:text-destructive"
+                    className="h-7 w-7"
                     onClick={() => onDelete(note.id)}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -131,7 +136,7 @@ export function AddNoteForm({ onAdd, onCancel }: AddNoteFormProps) {
   }
 
   return (
-    <div className="space-y-2 rounded-lg border bg-card p-3">
+    <div className="space-y-2 rounded-lg bg-surface-variant p-3">
       <Input
         placeholder="Title (optional)"
         value={title}

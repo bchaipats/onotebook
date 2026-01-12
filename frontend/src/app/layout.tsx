@@ -39,13 +39,32 @@ export const metadata: Metadata = {
   description: "Open-source RAG knowledge assistant",
 };
 
+const themeScript = `
+  (function() {
+    try {
+      var theme = localStorage.getItem('onotebook-theme') || 'system';
+      if (theme === 'system') {
+        var isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.classList.toggle('dark', isDark);
+      } else if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.add('light');
+      }
+    } catch (e) {}
+  })();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} ${poppins.variable} ${sourceSerif.variable} antialiased`}
       >

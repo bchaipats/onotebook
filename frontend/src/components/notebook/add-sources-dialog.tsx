@@ -265,7 +265,9 @@ export function AddSourcesDialog({
       <DialogContent className="max-w-xl rounded-2xl">
         <div className="mb-2 flex items-center gap-2">
           <BookOpen className="h-6 w-6 text-primary" />
-          <span className="text-lg font-semibold">ONotebook</span>
+          <span className="text-lg font-semibold text-on-surface">
+            ONotebook
+          </span>
         </div>
 
         <DialogTitle className="text-2xl font-bold">Add sources</DialogTitle>
@@ -281,18 +283,18 @@ export function AddSourcesDialog({
               onClick={() => option.supported && setActiveSourceType(option.id)}
               disabled={!option.supported}
               className={cn(
-                "flex flex-1 flex-col items-center gap-1 rounded-xl border px-3 py-3 transition-all",
+                "flex flex-1 flex-col items-center gap-1 rounded-xl px-3 py-3 transition-all",
                 activeSourceType === option.id
-                  ? "border-primary bg-primary/10"
+                  ? "bg-primary-muted text-on-primary-muted"
                   : option.supported
-                    ? "border-border hover:border-muted-foreground"
-                    : "cursor-not-allowed border-border opacity-50",
+                    ? "bg-surface-variant text-on-surface hover:bg-hover"
+                    : "cursor-not-allowed bg-surface-variant text-on-surface-muted opacity-50",
               )}
             >
               <option.icon className="h-5 w-5" />
               <span className="text-xs font-medium">{option.label}</span>
               {option.description && (
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-[10px] text-on-surface-subtle">
                   {option.description}
                 </span>
               )}
@@ -305,23 +307,23 @@ export function AddSourcesDialog({
             <div
               {...getRootProps()}
               className={cn(
-                "cursor-pointer rounded-2xl border-2 border-dashed p-12 text-center transition-all duration-200",
+                "cursor-pointer rounded-2xl border-2 border-dashed border-border bg-surface-variant p-12 text-center transition-all duration-200 hover:border-primary",
                 isDragActive
-                  ? "scale-[1.02] border-primary bg-primary/5"
-                  : "border-border hover:border-muted-foreground",
+                  ? "scale-[1.02] border-primary bg-primary-muted/20"
+                  : "",
               )}
             >
               <input {...getInputProps()} />
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                <Upload className="h-8 w-8 text-primary" />
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-muted">
+                <Upload className="h-8 w-8 text-on-primary-muted" />
               </div>
-              <p className="mb-1 font-medium">
+              <p className="mb-1 font-medium text-on-surface">
                 Drag & drop or{" "}
                 <span className="text-primary hover:underline">
                   choose files
                 </span>
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-on-surface-muted">
                 PDF, TXT, MD, DOCX, HTML (max 50MB each)
               </p>
             </div>
@@ -331,24 +333,24 @@ export function AddSourcesDialog({
                 {uploadingFiles.map((file) => (
                   <div
                     key={file.name}
-                    className="flex items-center gap-3 rounded-lg border p-3"
+                    className="flex items-center gap-3 rounded-lg bg-surface-variant p-3"
                   >
-                    <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
+                    <FileText className="h-5 w-5 shrink-0 text-on-surface-muted" />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between">
-                        <p className="truncate text-sm font-medium">
+                        <p className="truncate text-sm font-medium text-on-surface">
                           {file.name}
                         </p>
                         {file.status === "complete" && (
-                          <Check className="h-4 w-4 text-green-500" />
+                          <Check className="h-4 w-4 text-success" />
                         )}
                         {file.status === "uploading" && (
-                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          <Loader2 className="h-4 w-4 animate-spin text-primary" />
                         )}
                         {file.status === "error" && (
                           <button
                             onClick={() => removeFile(file.name)}
-                            className="text-destructive hover:text-destructive/80"
+                            className="text-destructive hover:text-destructive-hover"
                           >
                             <X className="h-4 w-4" />
                           </button>
@@ -390,7 +392,7 @@ export function AddSourcesDialog({
                 onChange={(e) => setUrlInput(e.target.value)}
                 disabled={urlLoading}
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-on-surface-muted">
                 Only visible text will be imported. Paywalled articles are not
                 supported.
               </p>
@@ -425,7 +427,7 @@ export function AddSourcesDialog({
                 onChange={(e) => setYoutubeInput(e.target.value)}
                 disabled={youtubeLoading}
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-on-surface-muted">
                 Only the transcript will be imported. Public videos with
                 captions only.
               </p>
@@ -474,7 +476,7 @@ export function AddSourcesDialog({
                 rows={8}
                 className="resize-none"
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-on-surface-muted">
                 Maximum 500KB of text content.
               </p>
             </div>
@@ -499,11 +501,9 @@ export function AddSourcesDialog({
         )}
 
         {activeSourceType === "drive" && (
-          <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-12 text-center">
-            <p className="text-lg font-medium text-muted-foreground">
-              Coming soon
-            </p>
-            <p className="mt-2 text-sm text-muted-foreground">
+          <div className="flex flex-col items-center justify-center rounded-2xl bg-surface-variant p-12 text-center">
+            <p className="text-lg font-medium text-on-surface">Coming soon</p>
+            <p className="mt-2 text-sm text-on-surface-muted">
               Google Drive integration is not yet supported.
             </p>
           </div>

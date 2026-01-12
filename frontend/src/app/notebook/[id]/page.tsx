@@ -39,12 +39,12 @@ export default function NotebookPage({ params }: NotebookPageProps) {
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-4 text-on-background">
           <div className="flex items-center gap-3">
             <BookOpen className="h-10 w-10 text-primary" />
             <span className="text-2xl font-semibold">{APP_NAME}</span>
           </div>
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
       </div>
     );

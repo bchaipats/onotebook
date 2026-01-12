@@ -56,22 +56,22 @@ export default function Home() {
   if (isInitialLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-4 text-on-background">
           <div className="flex items-center gap-3">
             <BookOpen className="h-10 w-10 text-primary" />
             <span className="text-2xl font-semibold">{APP_NAME}</span>
           </div>
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen flex-col bg-background">
+    <div className="flex h-screen flex-col">
       {error && (
-        <div className="flex items-center justify-between gap-4 bg-destructive px-4 py-2 text-destructive-foreground">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-4 bg-destructive-muted px-4 py-2">
+          <div className="flex items-center gap-2 text-on-destructive-muted">
             <AlertTriangle className="h-4 w-4" />
             <span className="text-sm font-medium">
               API connection failed: {error}

@@ -52,7 +52,7 @@ export function NotebookCard({ notebook, onSelect }: NotebookCardProps) {
   return (
     <>
       <div
-        className="group relative cursor-pointer rounded-3xl bg-surface-container-lowest p-8 shadow-elevation-1 transition-all duration-200 hover:shadow-elevation-3 hover:scale-[1.02] active:scale-[0.99]"
+        className="group relative cursor-pointer rounded-3xl bg-surface p-8 shadow-elevation-1 transition-all duration-200 hover:shadow-elevation-3 hover:scale-[1.02] active:scale-[0.99]"
         onClick={onSelect}
       >
         <div className="absolute right-4 top-4 opacity-0 transition-opacity group-hover:opacity-100">
@@ -61,7 +61,7 @@ export function NotebookCard({ notebook, onSelect }: NotebookCardProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 rounded-xl bg-surface-container/80 text-muted-foreground hover:bg-surface-container-high hover:text-foreground"
+                className="h-9 w-9 rounded-xl"
                 onClick={(e) => e.stopPropagation()}
               >
                 <MoreVertical className="h-5 w-5" />
@@ -84,7 +84,7 @@ export function NotebookCard({ notebook, onSelect }: NotebookCardProps) {
                   e.stopPropagation();
                   setDeleteDialogOpen(true);
                 }}
-                className="rounded-lg text-destructive focus:text-destructive"
+                className="rounded-lg"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete
@@ -93,17 +93,17 @@ export function NotebookCard({ notebook, onSelect }: NotebookCardProps) {
           </DropdownMenu>
         </div>
 
-        <div className="mb-6">
+        <div className="mb-6 text-primary">
           <NotebookIcon />
         </div>
 
-        <h3 className="mb-2 line-clamp-1 font-heading text-xl font-semibold text-foreground">
+        <h3 className="mb-2 line-clamp-1 font-heading text-xl font-semibold text-on-surface">
           {notebook.name}
         </h3>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 text-sm text-on-surface-muted">
           <span>{formatDate(notebook.updated_at)}</span>
-          <span className="h-1 w-1 rounded-full bg-muted-foreground/50" />
-          <span className="rounded-full bg-surface-container px-2 py-0.5 text-xs font-medium">
+          <span className="h-1 w-1 rounded-full bg-on-surface-subtle" />
+          <span className="rounded-full bg-surface-variant px-2 py-0.5 text-xs font-medium text-on-surface-muted">
             {notebook.document_count} sources
           </span>
         </div>
@@ -180,16 +180,16 @@ function NotebookIcon() {
     >
       <path
         d="M8 12C8 9.79086 9.79086 8 12 8H36C38.2091 8 40 9.79086 40 12V40C40 42.2091 38.2091 44 36 44H12C9.79086 44 8 42.2091 8 40V12Z"
-        fill="#D4A853"
+        fill="currentColor"
       />
       <path
         d="M8 10C8 7.79086 9.79086 6 12 6H32L40 14V38C40 40.2091 38.2091 42 36 42H12C9.79086 42 8 40.2091 8 38V10Z"
-        fill="#F5C869"
+        fill="currentColor"
       />
-      <path d="M32 6V14H40L32 6Z" fill="#D4A853" />
+      <path d="M32 6V14H40L32 6Z" fill="currentColor" />
       <path
         d="M8 10C8 7.79086 9.79086 6 12 6H14V42H12C9.79086 42 8 40.2091 8 38V10Z"
-        fill="#E8B84A"
+        fill="currentColor"
       />
     </svg>
   );

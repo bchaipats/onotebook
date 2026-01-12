@@ -58,11 +58,11 @@ export function HomePage({ onOpenSettings }: HomePageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background text-on-background">
       <HomeHeader onOpenSettings={onOpenSettings} />
 
       <main className="mx-auto max-w-5xl px-6 py-8 md:px-8 md:py-12">
-        <h1 className="mb-10 font-heading text-4xl font-semibold tracking-tight text-foreground md:text-5xl">
+        <h1 className="mb-10 font-heading text-4xl font-semibold tracking-tight md:text-5xl">
           Welcome to ONotebook
         </h1>
 
@@ -74,7 +74,7 @@ export function HomePage({ onOpenSettings }: HomePageProps) {
             onValueChange={(value) =>
               value && setFilter(value as "all" | "recent")
             }
-            className="rounded-full bg-surface-container p-1"
+            className="rounded-full p-1"
           >
             <ToggleGroupItem value="all" className="rounded-full px-4">
               All
@@ -106,7 +106,7 @@ export function HomePage({ onOpenSettings }: HomePageProps) {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="pill" className="text-primary">
+                <Button variant="ghost" size="pill" className="">
                   {sortBy === "name" ? "Name" : "Most recent"}
                   <ChevronDown className="h-4 w-4" />
                 </Button>
@@ -143,7 +143,7 @@ export function HomePage({ onOpenSettings }: HomePageProps) {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="h-56 animate-pulse rounded-3xl bg-surface-container"
+                className="h-56 animate-pulse rounded-3xl bg-surface-variant"
               />
             ))}
           </div>

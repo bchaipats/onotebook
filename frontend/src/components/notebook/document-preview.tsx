@@ -19,7 +19,7 @@ const PDFViewer = dynamic(() => import("./pdf-viewer"), {
   ssr: false,
   loading: () => (
     <div className="flex items-center justify-center p-8">
-      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      <Loader2 className="h-6 w-6 animate-spin text-primary" />
     </div>
   ),
 });
@@ -53,13 +53,13 @@ export function DocumentPreview({
   return (
     <Sheet open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <SheetContent side="right" className="flex w-full flex-col sm:max-w-xl">
-        <SheetHeader className="border-b pb-4">
+        <SheetHeader className="pb-4">
           <div className="flex items-center gap-2 pr-8">
-            <FileText className="h-5 w-5 text-muted-foreground" />
+            <FileText className="h-5 w-5" />
             <SheetTitle className="truncate">{document?.filename}</SheetTitle>
           </div>
           {document && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2 text-xs">
               <span>{formatFileSize(document.file_size)}</span>
               <span>|</span>
               <span>{document.chunk_count} chunks</span>
@@ -87,7 +87,7 @@ export function DocumentPreview({
               <PDFViewer url={getDocumentFileUrl(document.id)} />
             ) : isLoading ? (
               <div className="flex items-center justify-center p-8">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
               </div>
             ) : fullContent ? (
               <div className="p-4">
@@ -123,17 +123,17 @@ export function DocumentPreview({
                           <li className="mb-1">{children}</li>
                         ),
                         code: ({ children }) => (
-                          <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">
+                          <code className="rounded px-1.5 py-0.5 font-mono text-sm">
                             {children}
                           </code>
                         ),
                         pre: ({ children }) => (
-                          <pre className="mb-3 overflow-x-auto rounded-md bg-muted p-3 font-mono text-sm">
+                          <pre className="mb-3 overflow-x-auto rounded-md p-3 font-mono text-sm">
                             {children}
                           </pre>
                         ),
                         blockquote: ({ children }) => (
-                          <blockquote className="mb-3 border-l-4 border-border pl-4 italic text-muted-foreground">
+                          <blockquote className="mb-3 pl-4 italic">
                             {children}
                           </blockquote>
                         ),
@@ -155,9 +155,9 @@ export function DocumentPreview({
                 )}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground">
-                <FileText className="mb-2 h-8 w-8" />
-                <p>No content available</p>
+              <div className="flex flex-col items-center justify-center p-8 text-center">
+                <FileText className="mb-2 h-8 w-8 text-on-surface-muted" />
+                <p className="text-on-surface-muted">No content available</p>
               </div>
             )}
           </TabsContent>
@@ -165,7 +165,7 @@ export function DocumentPreview({
           <TabsContent value="chunks" className="flex-1 overflow-auto">
             {isLoading ? (
               <div className="flex items-center justify-center p-8">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
               </div>
             ) : chunks && chunks.length > 0 ? (
               <div className="space-y-3 p-4">
@@ -176,9 +176,9 @@ export function DocumentPreview({
                   ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground">
-                <Hash className="mb-2 h-8 w-8" />
-                <p>No chunks available</p>
+              <div className="flex flex-col items-center justify-center p-8 text-center">
+                <Hash className="mb-2 h-8 w-8 text-on-surface-muted" />
+                <p className="text-on-surface-muted">No chunks available</p>
               </div>
             )}
           </TabsContent>
@@ -194,8 +194,8 @@ interface ChunkCardProps {
 
 function ChunkCard({ chunk }: ChunkCardProps) {
   return (
-    <div className="rounded-md border border-border bg-card p-3">
-      <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
+    <div className="rounded-md p-3">
+      <div className="mb-2 flex items-center justify-between text-xs">
         <span className="font-medium">Chunk #{chunk.chunk_index + 1}</span>
         <div className="flex items-center gap-2">
           <span>{chunk.token_count} tokens</span>

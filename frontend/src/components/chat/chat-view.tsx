@@ -202,7 +202,7 @@ export function ChatView({
   if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
       </div>
     );
   }
@@ -231,10 +231,10 @@ export function ChatView({
             ))}
             {isStreaming && streamingContent && (
               <div className="flex gap-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
                   <MessageSquare className="h-4 w-4" />
                 </div>
-                <div className="flex-1 rounded-lg bg-muted p-3">
+                <div className="flex-1 rounded-lg p-3">
                   <div className="prose prose-sm max-w-none dark:prose-invert">
                     <ReactMarkdown
                       components={{
@@ -266,21 +266,21 @@ export function ChatView({
             )}
             {isStreaming && !streamingContent && (
               <div className="flex gap-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
                   <MessageSquare className="h-4 w-4" />
                 </div>
-                <div className="flex items-center gap-2 rounded-lg bg-muted p-3 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                <div className="flex items-center gap-2 rounded-lg p-3 text-sm">
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
                   Thinking...
                 </div>
               </div>
             )}
             {!isStreaming && stoppedContent && (
               <div className="flex gap-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
                   <MessageSquare className="h-4 w-4" />
                 </div>
-                <div className="flex-1 rounded-lg bg-muted p-3">
+                <div className="flex-1 rounded-lg p-3">
                   <div className="prose prose-sm max-w-none dark:prose-invert">
                     <ReactMarkdown
                       components={{
@@ -307,9 +307,7 @@ export function ChatView({
                       {stoppedContent}
                     </ReactMarkdown>
                   </div>
-                  <div className="mt-2 text-xs text-muted-foreground italic">
-                    Generation stopped
-                  </div>
+                  <div className="mt-2 text-xs italic">Generation stopped</div>
                 </div>
               </div>
             )}
@@ -327,13 +325,13 @@ export function ChatView({
 
       {/* Error */}
       {error && (
-        <div className="border-t border-border bg-destructive/10 p-3 text-center text-sm text-destructive">
+        <div className="bg-destructive-muted p-3 text-center text-sm text-on-destructive-muted">
           <span>{error}</span>
           {lastFailedMessage && (
             <Button
               variant="link"
               size="sm"
-              className="ml-2 h-auto p-0 text-destructive font-medium"
+              className="ml-2 h-auto p-0 font-medium"
               onClick={handleRetryMessage}
             >
               <RefreshCw className="mr-1 h-3 w-3" />
@@ -343,7 +341,7 @@ export function ChatView({
           <Button
             variant="link"
             size="sm"
-            className="ml-2 h-auto p-0 text-destructive/70"
+            className="ml-2 h-auto p-0"
             onClick={() => {
               setError(null);
               setLastFailedMessage(null);
@@ -355,7 +353,7 @@ export function ChatView({
       )}
 
       {/* Input */}
-      <div className="border-t border-border p-4">
+      <div className="p-4">
         <div className="mx-auto max-w-3xl">
           <div className="flex gap-2">
             <div className="relative flex-1">
@@ -365,7 +363,7 @@ export function ChatView({
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Ask a question about your documents..."
-                className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full resize-none rounded-lg px-3 py-2 text-sm focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                 rows={1}
                 disabled={isStreaming}
               />
@@ -390,7 +388,7 @@ export function ChatView({
               </Button>
             )}
           </div>
-          <p className="mt-2 text-center text-xs text-muted-foreground">
+          <p className="mt-2 text-center text-xs">
             Press Enter to send, Shift+Enter for new line
           </p>
         </div>
@@ -422,7 +420,7 @@ function CodeBlock({ language, children }: CodeBlockProps) {
     <div className="group/code relative">
       <button
         onClick={handleCopy}
-        className="absolute right-2 top-2 rounded bg-muted p-1.5 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover/code:opacity-100"
+        className="absolute right-2 top-2 rounded p-1.5 opacity-0 transition-opacity group-hover/code:opacity-100"
         title="Copy code"
       >
         {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
@@ -452,7 +450,7 @@ function CitationLink({ index, onClick }: CitationLinkProps) {
   return (
     <button
       onClick={() => onClick(index)}
-      className="inline-flex items-center justify-center rounded bg-primary/20 px-1.5 py-0.5 text-xs font-medium text-primary hover:bg-primary/30 transition-colors"
+      className="inline-flex items-center justify-center rounded px-1.5 py-0.5 text-xs font-medium transition-colors"
       title={`Go to source ${index}`}
     >
       [{index}]
@@ -531,19 +529,11 @@ function MessageBubble({
       <div
         className={cn(
           "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
-          isUser
-            ? "bg-muted text-muted-foreground"
-            : "bg-primary text-primary-foreground",
         )}
       >
         {isUser ? "U" : <MessageSquare className="h-4 w-4" />}
       </div>
-      <div
-        className={cn(
-          "group flex-1 rounded-lg p-3",
-          isUser ? "bg-primary text-primary-foreground" : "bg-muted",
-        )}
-      >
+      <div className={cn("group flex-1 rounded-lg p-3")}>
         <div
           className={cn(
             "prose prose-sm max-w-none",
@@ -621,9 +611,9 @@ function WelcomeState({ onSelectPrompt }: WelcomeStateProps) {
   return (
     <div className="flex h-full items-center justify-center">
       <div className="text-center max-w-md">
-        <MessageSquare className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+        <MessageSquare className="mx-auto mb-4 h-12 w-12" />
         <h2 className="mb-2 text-lg font-semibold">Start a conversation</h2>
-        <p className="mb-6 text-sm text-muted-foreground">
+        <p className="mb-6 text-sm">
           Ask questions about your documents and get answers with citations.
         </p>
         <div className="flex flex-wrap justify-center gap-2">
@@ -691,12 +681,12 @@ function SourcesPanel({
   }
 
   return (
-    <div className="border-t border-border bg-muted/50 p-4">
+    <div className="p-4">
       <div className="mx-auto max-w-3xl">
         <h3 className="mb-3 text-sm font-medium">Sources ({sources.length})</h3>
         {sources.length === 0 ? (
-          <div className="flex items-center justify-center rounded-lg border border-dashed border-border bg-background p-6">
-            <p className="text-sm text-muted-foreground">
+          <div className="flex items-center justify-center rounded-lg p-6">
+            <p className="text-sm">
               Sources will appear when you ask questions
             </p>
           </div>
@@ -712,10 +702,8 @@ function SourcesPanel({
                     sourceRefs.current[source.citation_index] = el;
                   }}
                   className={cn(
-                    "rounded-lg border p-3 transition-all duration-300",
-                    isHighlighted
-                      ? "border-primary bg-primary/5 ring-2 ring-primary ring-offset-2"
-                      : "border-border bg-background",
+                    "rounded-lg p-3 transition-all duration-300",
+                    isHighlighted ? "" : "",
                   )}
                 >
                   <div
@@ -727,23 +715,19 @@ function SourcesPanel({
                     ) : (
                       <ChevronRight className="h-4 w-4 shrink-0" />
                     )}
-                    <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <FileText className="h-4 w-4 shrink-0" />
                     <span className="flex-1 truncate text-sm font-medium">
                       [{source.citation_index}] {source.document_name}
                     </span>
-                    <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                    <span className="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium">
                       {Math.round(source.relevance_score * 100)}%
                     </span>
                   </div>
                   {expanded[source.chunk_id] && (
-                    <div className="mt-2 text-sm text-muted-foreground">
-                      {source.content}
-                    </div>
+                    <div className="mt-2 text-sm">{source.content}</div>
                   )}
                   {!expanded[source.chunk_id] && (
-                    <p className="mt-1 truncate text-xs text-muted-foreground">
-                      {source.content}
-                    </p>
+                    <p className="mt-1 truncate text-xs">{source.content}</p>
                   )}
                 </div>
               );
