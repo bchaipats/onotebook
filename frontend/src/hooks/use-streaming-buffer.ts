@@ -35,7 +35,7 @@ export function useStreamingBuffer(onComplete?: () => void) {
   }, [onComplete]);
 
   const flushLoopRef = useRef<((timestamp: number) => void) | undefined>(
-    undefined
+    undefined,
   );
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export function useStreamingBuffer(onComplete?: () => void) {
       if (shouldFlush && state.pendingBuffer.length > 0) {
         const flushAmount = calculateFlushAmount(
           state.pendingBuffer.length,
-          deltaTime
+          deltaTime,
         );
         const toFlush = state.pendingBuffer.slice(0, flushAmount);
         state.pendingBuffer = state.pendingBuffer.slice(flushAmount);
@@ -89,7 +89,7 @@ export function useStreamingBuffer(onComplete?: () => void) {
       setIsStreaming(true);
       startLoop();
     },
-    [startLoop]
+    [startLoop],
   );
 
   const complete = useCallback(() => {

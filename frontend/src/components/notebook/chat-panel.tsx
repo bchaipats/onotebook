@@ -128,7 +128,11 @@ export function ChatPanel({
   function handleExportMarkdown() {
     if (!hasMessages) return;
     const title = notebook.name || "Chat Export";
-    downloadMarkdown(messages, `${title.toLowerCase().replace(/\s+/g, "-")}.md`, title);
+    downloadMarkdown(
+      messages,
+      `${title.toLowerCase().replace(/\s+/g, "-")}.md`,
+      title,
+    );
   }
 
   function handleExportPdf() {
@@ -167,7 +171,7 @@ export function ChatPanel({
   }
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex min-h-0 flex-1 flex-col">
       <PanelHeader
         title="Chat"
         actions={
@@ -287,7 +291,9 @@ function ChatContent({
 
   const [inputValue, setInputValue] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
-  const [pendingUserMessage, setPendingUserMessage] = useState<string | null>(null);
+  const [pendingUserMessage, setPendingUserMessage] = useState<string | null>(
+    null,
+  );
   const [stoppedContent, setStoppedContent] = useState("");
   const [currentSources, setCurrentSources] = useState<SourceInfo[]>([]);
   const [groundingMetadata, setGroundingMetadata] =
@@ -607,8 +613,11 @@ function ChatContent({
   }
 
   return (
-    <>
-      <div ref={scrollContainerRef} className="chat-scroll-container relative flex-1 overflow-y-auto">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div
+        ref={scrollContainerRef}
+        className="chat-scroll-container relative min-h-0 flex-1 overflow-y-auto"
+      >
         {allMessages.length === 0 && !isStreaming && !stoppedContent ? (
           selectedSources.size === 0 ? (
             <div className="flex h-full flex-col items-center justify-center p-8 text-center">
@@ -710,7 +719,8 @@ function ChatContent({
                   message.role === "assistant" &&
                   message.id === lastAssistantMessage?.id &&
                   !isStreaming
-                    ? (instruction?: string) => handleRegenerate(message.id, instruction)
+                    ? (instruction?: string) =>
+                        handleRegenerate(message.id, instruction)
                     : undefined
                 }
                 showModificationButtons={
@@ -729,7 +739,9 @@ function ChatContent({
                   U
                 </div>
                 <div className="max-w-[85%] rounded-3xl rounded-br-lg bg-primary px-5 py-3 text-on-primary shadow-elevation-1">
-                  <p className="whitespace-pre-wrap text-sm">{pendingUserMessage}</p>
+                  <p className="whitespace-pre-wrap text-sm">
+                    {pendingUserMessage}
+                  </p>
                 </div>
               </div>
             )}
@@ -762,7 +774,11 @@ function ChatContent({
                   ))}
                 </div>
               )}
-            <div ref={sentinelRef} className="scroll-sentinel" aria-hidden="true" />
+            <div
+              ref={sentinelRef}
+              className="scroll-sentinel"
+              aria-hidden="true"
+            />
           </div>
         )}
 
@@ -810,9 +826,9 @@ function ChatContent({
         </div>
       )}
 
-      <div className="p-4">
+      <div className="shrink-0 border-t border-divider bg-surface px-4 pb-2 pt-3">
         <div className="mx-auto max-w-3xl">
-          <div className="flex items-center gap-3 rounded-[28px] bg-surface-variant px-5 py-3 shadow-elevation-1 transition-all duration-200 focus-within:shadow-elevation-2">
+          <div className="flex items-center gap-3 rounded-[28px] border border-border bg-surface-variant px-5 py-3 shadow-elevation-1 transition-all duration-200 focus-within:border-primary focus-within:shadow-elevation-2">
             <textarea
               ref={textareaRef}
               value={inputValue}
@@ -853,12 +869,12 @@ function ChatContent({
           </div>
         </div>
       </div>
-      <div className="py-3 text-center">
+      <div className="shrink-0 pb-3 pt-2 text-center">
         <p className="text-xs text-on-surface-subtle">
           ONotebook may make mistakes. Consider verifying important information.
         </p>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -1120,7 +1136,9 @@ function MessageBubble({
                 variant="filled"
                 size="sm"
                 onClick={handleSaveEdit}
-                disabled={!editContent.trim() || editContent === message.content}
+                disabled={
+                  !editContent.trim() || editContent === message.content
+                }
                 className="h-8"
               >
                 <Check className="mr-1 h-3 w-3" />
@@ -1206,97 +1224,111 @@ function MessageBubble({
                 </Button>
               </div>
             )}
-          {!isUser && (
-            <div className="mt-2 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                onClick={handleCopy}
-                title="Copy response"
-              >
-                {copied ? (
-                  <Check className="h-3.5 w-3.5" />
-                ) : (
-                  <Copy className="h-3.5 w-3.5" />
-                )}
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn("h-7 w-7", message.feedback === "up" && "")}
-                onClick={() => handleRate("up")}
-                title="Good response"
-                disabled={feedbackMutation.isPending}
-              >
-                <ThumbsUp className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn("h-7 w-7", message.feedback === "down" && "")}
-                onClick={() => handleRate("down")}
-                title="Bad response"
-                disabled={feedbackMutation.isPending}
-              >
-                <ThumbsDown className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn("h-7 w-7", saved && "")}
-                onClick={handleSaveToNote}
-                title="Save to note"
-                disabled={createNote.isPending || saved}
-              >
-                {saved ? (
-                  <Check className="h-3.5 w-3.5" />
-                ) : (
-                  <StickyNote className="h-3.5 w-3.5" />
-                )}
-              </Button>
-              {onRegenerate && (
+            {!isUser && (
+              <div className="mt-2 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                 <Button
                   variant="ghost"
-                  size="sm"
-                  className="ml-1 h-7 gap-1 text-xs"
-                  onClick={() => onRegenerate()}
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={handleCopy}
+                  title="Copy response"
                 >
-                  <RefreshCw className="h-3 w-3" />
-                  Regenerate
+                  {copied ? (
+                    <Check className="h-3.5 w-3.5" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5" />
+                  )}
                 </Button>
-              )}
-            </div>
-          )}
-          {/* Modification buttons - Gemini-style */}
-          {!isUser && showModificationButtons && onRegenerate && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button
-                onClick={() => onRegenerate("Make your response shorter and more concise.")}
-                className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-on-surface transition-all hover:bg-hover hover:shadow-sm active:scale-[0.98]"
-              >
-                Shorter
-              </button>
-              <button
-                onClick={() => onRegenerate("Make your response longer with more detail and examples.")}
-                className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-on-surface transition-all hover:bg-hover hover:shadow-sm active:scale-[0.98]"
-              >
-                Longer
-              </button>
-              <button
-                onClick={() => onRegenerate("Make your response simpler and easier to understand. Use plain language.")}
-                className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-on-surface transition-all hover:bg-hover hover:shadow-sm active:scale-[0.98]"
-              >
-                Simpler
-              </button>
-              <button
-                onClick={() => onRegenerate("Make your response more detailed with technical depth and thoroughness.")}
-                className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-on-surface transition-all hover:bg-hover hover:shadow-sm active:scale-[0.98]"
-              >
-                More detailed
-              </button>
-            </div>
-          )}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn("h-7 w-7", message.feedback === "up" && "")}
+                  onClick={() => handleRate("up")}
+                  title="Good response"
+                  disabled={feedbackMutation.isPending}
+                >
+                  <ThumbsUp className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn("h-7 w-7", message.feedback === "down" && "")}
+                  onClick={() => handleRate("down")}
+                  title="Bad response"
+                  disabled={feedbackMutation.isPending}
+                >
+                  <ThumbsDown className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn("h-7 w-7", saved && "")}
+                  onClick={handleSaveToNote}
+                  title="Save to note"
+                  disabled={createNote.isPending || saved}
+                >
+                  {saved ? (
+                    <Check className="h-3.5 w-3.5" />
+                  ) : (
+                    <StickyNote className="h-3.5 w-3.5" />
+                  )}
+                </Button>
+                {onRegenerate && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="ml-1 h-7 gap-1 text-xs"
+                    onClick={() => onRegenerate()}
+                  >
+                    <RefreshCw className="h-3 w-3" />
+                    Regenerate
+                  </Button>
+                )}
+              </div>
+            )}
+            {/* Modification buttons - Gemini-style */}
+            {!isUser && showModificationButtons && onRegenerate && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  onClick={() =>
+                    onRegenerate("Make your response shorter and more concise.")
+                  }
+                  className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-on-surface transition-all hover:bg-hover hover:shadow-sm active:scale-[0.98]"
+                >
+                  Shorter
+                </button>
+                <button
+                  onClick={() =>
+                    onRegenerate(
+                      "Make your response longer with more detail and examples.",
+                    )
+                  }
+                  className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-on-surface transition-all hover:bg-hover hover:shadow-sm active:scale-[0.98]"
+                >
+                  Longer
+                </button>
+                <button
+                  onClick={() =>
+                    onRegenerate(
+                      "Make your response simpler and easier to understand. Use plain language.",
+                    )
+                  }
+                  className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-on-surface transition-all hover:bg-hover hover:shadow-sm active:scale-[0.98]"
+                >
+                  Simpler
+                </button>
+                <button
+                  onClick={() =>
+                    onRegenerate(
+                      "Make your response more detailed with technical depth and thoroughness.",
+                    )
+                  }
+                  className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-on-surface transition-all hover:bg-hover hover:shadow-sm active:scale-[0.98]"
+                >
+                  More detailed
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -1325,7 +1357,7 @@ function StreamingMessage({
     if (containerRef.current) {
       const currentHeight = containerRef.current.scrollHeight;
       setLockedMinHeight((prev) =>
-        prev === null ? currentHeight : Math.max(prev, currentHeight)
+        prev === null ? currentHeight : Math.max(prev, currentHeight),
       );
     }
   }, [content]);

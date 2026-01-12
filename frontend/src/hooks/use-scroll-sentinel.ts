@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export function useScrollSentinel(
-  options: { threshold?: number; rootMargin?: string } = {}
+  options: { threshold?: number; rootMargin?: string } = {},
 ) {
   const { threshold = 0.1, rootMargin = "100px" } = options;
 
@@ -16,7 +16,7 @@ export function useScrollSentinel(
 
     const observer = new IntersectionObserver(
       ([entry]) => setIsAtBottom(entry.isIntersecting),
-      { root: container, threshold, rootMargin }
+      { root: container, threshold, rootMargin },
     );
 
     observer.observe(sentinel);

@@ -54,7 +54,7 @@ export const MemoizedMarkdown = memo(function MemoizedMarkdown({
         return <li>{processChildren(children, onCitationClick, sources)}</li>;
       },
     }),
-    [onCitationClick, sources]
+    [onCitationClick, sources],
   );
 
   return (
@@ -150,7 +150,7 @@ function CitationButton({
 function processChildren(
   children: React.ReactNode,
   onCitationClick: (index: number) => void,
-  sources?: SourceInfo[]
+  sources?: SourceInfo[],
 ): React.ReactNode {
   return React.Children.map(children, (child, idx) => {
     if (typeof child !== "string") return child;
@@ -171,7 +171,7 @@ function processChildren(
           index={citationIndex}
           source={sources?.find((s) => s.citation_index === citationIndex)}
           onClick={onCitationClick}
-        />
+        />,
       );
       lastIndex = match.index + match[0].length;
     }

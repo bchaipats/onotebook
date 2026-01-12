@@ -93,7 +93,7 @@ export function NotebookLayout({
         </aside>
 
         {/* Center: Chat Panel */}
-        <main className="flex flex-1 flex-col overflow-hidden rounded-3xl bg-surface shadow-elevation-1">
+        <main className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl bg-surface shadow-elevation-1">
           <ChatPanel
             notebookId={notebook.id}
             notebook={notebook}
