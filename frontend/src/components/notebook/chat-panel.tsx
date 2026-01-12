@@ -178,22 +178,16 @@ export function ChatPanel({
           <>
             <Button
               variant="ghost"
-              size="icon"
-              className="h-8 w-8"
+              size="icon-sm"
               title="Configure chat"
               onClick={() => setConfigDialogOpen(true)}
             >
-              <SlidersHorizontal className="h-[var(--panel-header-icon-size)] w-[var(--panel-header-icon-size)]" />
+              <SlidersHorizontal />
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  title="Chat options"
-                >
-                  <MoreVertical className="h-[var(--panel-header-icon-size)] w-[var(--panel-header-icon-size)]" />
+                <Button variant="ghost" size="icon-sm" title="Chat options">
+                  <MoreVertical />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">

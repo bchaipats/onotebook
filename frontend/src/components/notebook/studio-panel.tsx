@@ -80,40 +80,43 @@ export function StudioPanel({
 
   if (collapsed) {
     return (
-      <div className="flex h-full flex-col items-center gap-2 py-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onToggleCollapse}
-          className="h-10 w-10 rounded-xl"
-          title="Expand studio"
-        >
-          <PanelLeftOpen className="h-5 w-5" />
-        </Button>
-        <div className="mt-2 flex flex-col items-center gap-1.5">
-          {STUDIO_TOOLS.slice(0, 4).map((tool) => (
-            <Button
-              key={tool.label}
-              variant="ghost"
-              size="icon-sm"
-              disabled={!tool.enabled}
-              className="rounded-lg"
-              title={tool.label}
-              onClick={tool.enabled ? handleMindMapClick : undefined}
-            >
-              <tool.icon className="h-4 w-4" />
-            </Button>
-          ))}
-        </div>
-        <div className="mt-auto">
+      <div className="flex h-full flex-col">
+        <div className="flex h-14 shrink-0 items-center justify-center border-b border-divider">
           <Button
-            variant="fab"
-            size="fab-sm"
-            title="Add note"
+            variant="ghost"
+            size="icon-lg"
             onClick={onToggleCollapse}
+            className="[&_svg]:size-5"
+            title="Expand studio"
           >
-            <StickyNote className="h-5 w-5" />
+            <PanelLeftOpen />
           </Button>
+        </div>
+        <div className="flex flex-1 flex-col items-center py-4">
+          <div className="flex flex-col items-center gap-1.5">
+            {STUDIO_TOOLS.slice(0, 4).map((tool) => (
+              <Button
+                key={tool.label}
+                variant="ghost"
+                size="icon-sm"
+                disabled={!tool.enabled}
+                title={tool.label}
+                onClick={tool.enabled ? handleMindMapClick : undefined}
+              >
+                <tool.icon />
+              </Button>
+            ))}
+          </div>
+          <div className="mt-auto">
+            <Button
+              variant="fab"
+              size="fab-sm"
+              title="Add note"
+              onClick={onToggleCollapse}
+            >
+              <StickyNote />
+            </Button>
+          </div>
         </div>
       </div>
     );

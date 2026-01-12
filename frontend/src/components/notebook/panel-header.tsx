@@ -19,7 +19,7 @@ export function PanelHeader({
   onToggleCollapse,
 }: PanelHeaderProps) {
   return (
-    <div className="flex items-center justify-between border-b border-divider py-[var(--panel-header-padding-y)] pl-[var(--panel-header-padding-left)] pr-[var(--panel-header-padding-right)]">
+    <div className="flex h-14 shrink-0 items-center justify-between border-b border-divider px-4">
       <div className="flex items-center gap-2">
         <h2 className="font-semibold text-on-surface">{title}</h2>
         {children}
@@ -29,14 +29,12 @@ export function PanelHeader({
         {collapseIcon && onToggleCollapse && (
           <Button
             variant="ghost"
-            size="icon"
+            size="icon-lg"
             onClick={onToggleCollapse}
-            className="h-9 w-9 rounded-xl"
+            className="[&_svg]:size-5"
             title="Toggle panel"
           >
-            <span className="h-6 w-6 [&>svg]:h-full [&>svg]:w-full">
-              {collapseIcon}
-            </span>
+            {collapseIcon}
           </Button>
         )}
       </div>

@@ -110,24 +110,33 @@ export function SourcesPanel({
 
   if (collapsed) {
     return (
-      <div className="flex h-full flex-col items-center gap-2 py-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onToggleCollapse}
-          className="h-10 w-10 rounded-xl"
-          title="Expand sources"
-        >
-          <PanelRightOpen className="h-5 w-5" />
-        </Button>
-        <Button
-          variant="fab"
-          size="fab-sm"
-          onClick={() => setIsUploadOpen(true)}
-          title="Add source"
-        >
-          <Plus className="h-5 w-5" />
-        </Button>
+      <div className="flex h-full flex-col">
+        <div className="flex h-14 shrink-0 items-center justify-center border-b border-divider">
+          <Button
+            variant="ghost"
+            size="icon-lg"
+            onClick={onToggleCollapse}
+            className="[&_svg]:size-5"
+            title="Expand sources"
+          >
+            <PanelRightOpen />
+          </Button>
+        </div>
+        <div className="flex flex-1 flex-col items-center py-4">
+          <Button
+            variant="fab"
+            size="fab-sm"
+            onClick={() => setIsUploadOpen(true)}
+            title="Add source"
+          >
+            <Plus />
+          </Button>
+        </div>
+        <AddSourcesDialog
+          open={isUploadOpen}
+          onOpenChange={setIsUploadOpen}
+          notebookId={notebookId}
+        />
       </div>
     );
   }
