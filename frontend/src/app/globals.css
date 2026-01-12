@@ -604,3 +604,45 @@ body {
 .font-reading {
   font-family: var(--font-reading);
 }
+
+/* ===== STREAMING CHAT UX ===== */
+
+/* Scroll anchoring for chat container */
+.chat-scroll-container {
+  overflow-anchor: auto;
+}
+
+/* GPU acceleration for streaming message container */
+.streaming-message-container {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  contain: inline-size;
+}
+
+/* Height locking during streaming (prevents layout shifts) */
+.streaming-bubble-active {
+  transition: min-height 0.1s ease-out;
+}
+
+/* Token appearance animation */
+@keyframes token-appear {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.token-fragment {
+  animation: token-appear 150ms ease-out forwards;
+}
+
+/* Sentinel element for IntersectionObserver (invisible) */
+.scroll-sentinel {
+  height: 1px;
+  width: 100%;
+  overflow-anchor: none;
+}

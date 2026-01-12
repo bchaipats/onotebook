@@ -24,6 +24,7 @@ import {
   FileDown,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { MemoizedMarkdown } from "@/components/chat/memoized-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,8 @@ import {
   useMessageFeedback,
 } from "@/hooks/use-chat";
 import { useCreateNote } from "@/hooks/use-notes";
+import { useStreamingBuffer } from "@/hooks/use-streaming-buffer";
+import { useScrollSentinel } from "@/hooks/use-scroll-sentinel";
 import {
   useNotebookSummary,
   useGenerateNotebookSummary,
@@ -284,7 +287,7 @@ function ChatContent({
 
   const [inputValue, setInputValue] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
-  const [streamingContent, setStreamingContent] = useState("");
+  const [pendingUserMessage, setPendingUserMessage] = useState<string | null>(null);
   const [stoppedContent, setStoppedContent] = useState("");
   const [currentSources, setCurrentSources] = useState<SourceInfo[]>([]);
   const [groundingMetadata, setGroundingMetadata] =
@@ -296,12 +299,29 @@ function ChatContent({
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const stoppedByUserRef = useRef(false);
-  const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
+
+  const {
+    pushToken,
+    renderedContent: streamingContent,
+    complete: completeStreamingBuffer,
+    reset: resetStreamingBuffer,
+    isStreaming: isBufferActive,
+  } = useStreamingBuffer(() => {
+    setPendingUserMessage(null);
+    invalidateMessages();
+    invalidateSessions();
+    setTimeout(resetStreamingBuffer, 100);
+  });
+
+  const {
+    sentinelRef,
+    containerRef: scrollContainerRef,
+    isAtBottom,
+    scrollToBottom,
+  } = useScrollSentinel({ threshold: 0.1, rootMargin: "50px" });
 
   // Handle citation click - notify parent for left panel highlighting
   const handleCitationClick = useCallback(
@@ -321,35 +341,12 @@ function ChatContent({
     [currentSources, onCitationHighlight],
   );
 
-  // Smart auto-scroll: only scroll if user hasn't scrolled up
+  // Auto-scroll during streaming when user is at bottom
   useEffect(() => {
-    if (!isUserScrolledUp) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (isBufferActive && isAtBottom) {
+      scrollToBottom();
     }
-  }, [messages, streamingContent, isUserScrolledUp]);
-
-  // Detect when user scrolls up from the bottom
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    function handleScroll() {
-      if (!container) return;
-      const { scrollTop, scrollHeight, clientHeight } = container;
-      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-      // User is "scrolled up" if more than 100px from bottom
-      setIsUserScrolledUp(distanceFromBottom > 100);
-    }
-
-    container.addEventListener("scroll", handleScroll);
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // Scroll to bottom and reset the scrolled-up state
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    setIsUserScrolledUp(false);
-  }, []);
+  }, [streamingContent, isBufferActive, isAtBottom, scrollToBottom]);
 
   // Fetch initial suggested questions when no messages and sources are selected
   useEffect(() => {
@@ -398,13 +395,13 @@ function ChatContent({
           setGroundingMetadata(event.metadata || null);
           break;
         case "token":
-          setStreamingContent((prev) => prev + (event.content || ""));
+          // Push to buffer instead of direct state update
+          pushToken(event.content || "");
           break;
         case "done":
           setIsStreaming(false);
-          setStreamingContent("");
-          invalidateMessages();
-          invalidateSessions();
+          // Signal buffer to drain - onComplete callback handles invalidation
+          completeStreamingBuffer();
           break;
         case "suggestions":
           setSuggestedQuestions(event.questions || []);
@@ -412,11 +409,11 @@ function ChatContent({
         case "error":
           setError(event.error || "An error occurred");
           setIsStreaming(false);
-          setStreamingContent("");
+          resetStreamingBuffer();
           break;
       }
     },
-    [invalidateMessages, invalidateSessions],
+    [pushToken, completeStreamingBuffer, resetStreamingBuffer],
   );
 
   async function handleSend(retryContent?: string) {
@@ -426,10 +423,11 @@ function ChatContent({
     if (!retryContent) {
       setInputValue("");
     }
+    setPendingUserMessage(content);
     setError(null);
     setLastFailedMessage(null);
     setIsStreaming(true);
-    setStreamingContent("");
+    resetStreamingBuffer();
     setStoppedContent("");
     setCurrentSources([]);
     setGroundingMetadata(null);
@@ -454,15 +452,17 @@ function ChatContent({
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") {
         if (stoppedByUserRef.current) {
+          setPendingUserMessage(null);
           invalidateMessages();
           return;
         }
       } else {
         setError(err instanceof Error ? err.message : "Failed to send message");
         setLastFailedMessage(content);
+        setPendingUserMessage(null);
       }
       setIsStreaming(false);
-      setStreamingContent("");
+      resetStreamingBuffer();
     }
   }
 
@@ -471,12 +471,15 @@ function ChatContent({
     setStoppedContent(streamingContent);
     abortControllerRef.current?.abort();
     setIsStreaming(false);
-  }, [streamingContent]);
+    resetStreamingBuffer();
+    setPendingUserMessage(null);
+    invalidateMessages();
+  }, [streamingContent, resetStreamingBuffer, invalidateMessages]);
 
   async function handleRegenerate(messageId: string, instruction?: string) {
     setError(null);
     setIsStreaming(true);
-    setStreamingContent("");
+    resetStreamingBuffer();
     setStoppedContent("");
     setCurrentSources([]);
     setGroundingMetadata(null);
@@ -501,7 +504,7 @@ function ChatContent({
         setError(err instanceof Error ? err.message : "Failed to regenerate");
       }
       setIsStreaming(false);
-      setStreamingContent("");
+      resetStreamingBuffer();
     }
   }
 
@@ -546,7 +549,7 @@ function ChatContent({
   async function handleEditMessage(messageId: string, newContent: string) {
     setError(null);
     setIsStreaming(true);
-    setStreamingContent("");
+    resetStreamingBuffer();
     setStoppedContent("");
     setCurrentSources([]);
     setGroundingMetadata(null);
@@ -572,7 +575,7 @@ function ChatContent({
         setError(err instanceof Error ? err.message : "Failed to edit message");
       }
       setIsStreaming(false);
-      setStreamingContent("");
+      resetStreamingBuffer();
     }
   }
 
@@ -605,7 +608,7 @@ function ChatContent({
 
   return (
     <>
-      <div ref={scrollContainerRef} className="relative flex-1 overflow-y-auto">
+      <div ref={scrollContainerRef} className="chat-scroll-container relative flex-1 overflow-y-auto">
         {allMessages.length === 0 && !isStreaming && !stoppedContent ? (
           selectedSources.size === 0 ? (
             <div className="flex h-full flex-col items-center justify-center p-8 text-center">
@@ -720,7 +723,17 @@ function ChatContent({
                 isStreaming={isStreaming}
               />
             ))}
-            {isStreaming && streamingContent && (
+            {pendingUserMessage && (
+              <div className="flex flex-row-reverse gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-on-primary shadow-elevation-1">
+                  U
+                </div>
+                <div className="max-w-[85%] rounded-3xl rounded-br-lg bg-primary px-5 py-3 text-on-primary shadow-elevation-1">
+                  <p className="whitespace-pre-wrap text-sm">{pendingUserMessage}</p>
+                </div>
+              </div>
+            )}
+            {streamingContent && (
               <StreamingMessage
                 content={streamingContent}
                 sources={currentSources}
@@ -749,12 +762,12 @@ function ChatContent({
                   ))}
                 </div>
               )}
-            <div ref={messagesEndRef} />
+            <div ref={sentinelRef} className="scroll-sentinel" aria-hidden="true" />
           </div>
         )}
 
         {/* Jump to bottom FAB - shows when user scrolls up */}
-        {isUserScrolledUp && (
+        {!isAtBottom && (
           <div className="sticky bottom-4 flex justify-center">
             <Button
               variant="elevated"
@@ -1304,6 +1317,19 @@ function StreamingMessage({
   groundingMetadata,
   onCitationClick,
 }: StreamingMessageProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [lockedMinHeight, setLockedMinHeight] = useState<number | null>(null);
+
+  // Lock height to prevent layout shifts - only grow, never shrink during streaming
+  useEffect(() => {
+    if (containerRef.current) {
+      const currentHeight = containerRef.current.scrollHeight;
+      setLockedMinHeight((prev) =>
+        prev === null ? currentHeight : Math.max(prev, currentHeight)
+      );
+    }
+  }, [content]);
+
   // Check if this is a refusal response based on grounding metadata or content
   const isRefusal =
     (groundingMetadata && !groundingMetadata.has_relevant_sources) ||
@@ -1314,60 +1340,21 @@ function StreamingMessage({
   }
 
   return (
-    <div className="flex gap-4">
+    <div className="streaming-message-container flex gap-4">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-variant text-on-surface shadow-elevation-1">
         <Bot className="h-5 w-5" />
       </div>
-      <div className="flex-1">
+      <div
+        ref={containerRef}
+        className="streaming-bubble-active flex-1"
+        style={{ minHeight: lockedMinHeight ?? undefined }}
+      >
         <div className="prose prose-sm max-w-none dark:prose-invert">
-          <ReactMarkdown
-            components={{
-              code({ className, children, ...props }) {
-                const match = /language-(\w+)/.exec(className || "");
-                const isInline = !match && !className;
-                if (isInline) {
-                  return (
-                    <code className={className} {...props}>
-                      {children}
-                    </code>
-                  );
-                }
-                return (
-                  <CodeBlock language={match?.[1]}>
-                    {String(children).replace(/\n$/, "")}
-                  </CodeBlock>
-                );
-              },
-              p({ children }) {
-                if (!onCitationClick) return <p>{children}</p>;
-                return (
-                  <p>
-                    {processChildren({
-                      children,
-                      onCitationClick,
-                      sources,
-                      showAllCitations: true, // Always show all during streaming
-                    })}
-                  </p>
-                );
-              },
-              li({ children }) {
-                if (!onCitationClick) return <li>{children}</li>;
-                return (
-                  <li>
-                    {processChildren({
-                      children,
-                      onCitationClick,
-                      sources,
-                      showAllCitations: true, // Always show all during streaming
-                    })}
-                  </li>
-                );
-              },
-            }}
-          >
-            {content}
-          </ReactMarkdown>
+          <MemoizedMarkdown
+            content={content}
+            onCitationClick={onCitationClick}
+            sources={sources}
+          />
         </div>
         {groundingMetadata && groundingMetadata.has_relevant_sources && (
           <div className="mt-2">
