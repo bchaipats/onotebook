@@ -347,7 +347,7 @@ function InlineSourceDetail({
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
               </div>
             ) : guide?.summary ? (
-              <div className="prose prose-sm dark:prose-invert">
+              <div className="prose prose-sm">
                 <p>{guide.summary}</p>
               </div>
             ) : (

@@ -179,9 +179,9 @@ export function SourceItem({
 
 function StatusPill({ status }: { status: string }) {
   const styles = {
-    ready: "bg-success-muted text-success",
-    processing: "bg-info-muted text-info animate-subtle-pulse",
-    failed: "bg-destructive-muted text-destructive",
+    ready: "bg-success-muted text-on-success-muted",
+    processing: "bg-info-muted text-on-info-muted animate-subtle-pulse",
+    failed: "bg-destructive-muted text-on-destructive-muted",
   };
 
   const labels = {

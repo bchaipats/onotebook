@@ -28,47 +28,14 @@ import {
 import { useMindMap, useGenerateMindMap } from "@/hooks/use-studio";
 
 const STUDIO_TOOLS = [
-  {
-    icon: Mic,
-    label: "Audio Overview",
-    color: "",
-  },
-  {
-    icon: Video,
-    label: "Video Overview",
-    color: "",
-  },
-  {
-    icon: GitBranch,
-    label: "Mind Map",
-    enabled: true,
-    color: "",
-  },
-  {
-    icon: FileText,
-    label: "Reports",
-    color: "",
-  },
-  {
-    icon: CreditCard,
-    label: "Flashcards",
-    color: "",
-  },
-  {
-    icon: HelpCircle,
-    label: "Quiz",
-    color: "",
-  },
-  {
-    icon: BarChart3,
-    label: "Infographic",
-    color: "",
-  },
-  {
-    icon: Presentation,
-    label: "Slide Deck",
-    color: "",
-  },
+  { icon: Mic, label: "Audio Overview" },
+  { icon: Video, label: "Video Overview" },
+  { icon: GitBranch, label: "Mind Map", enabled: true },
+  { icon: FileText, label: "Reports" },
+  { icon: CreditCard, label: "Flashcards" },
+  { icon: HelpCircle, label: "Quiz" },
+  { icon: BarChart3, label: "Infographic" },
+  { icon: Presentation, label: "Slide Deck" },
 ];
 
 interface StudioPanelProps {
@@ -181,9 +148,7 @@ export function StudioPanel({
                 onClick={tool.enabled ? handleMindMapClick : undefined}
                 className={`animate-spring-in-up stagger-${Math.min(index + 1, 8)} flex flex-col items-start gap-3 rounded-2xl bg-surface-variant p-4 text-left transition-all duration-200 hover:bg-hover hover:shadow-elevation-1 disabled:cursor-not-allowed disabled:opacity-60`}
               >
-                <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-xl bg-primary-muted text-on-primary-muted ${tool.color}`}
-                >
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-muted text-on-primary-muted">
                   {isLoading ? (
                     <Loader2 className="h-5 w-5 animate-spin text-on-primary-muted" />
                   ) : (
@@ -241,7 +206,7 @@ export function StudioPanel({
         )}
       </div>
 
-      <div className="flex justify-end p-4">
+      <div className="flex justify-center p-4">
         <Button
           onClick={() => setShowAddNote(true)}
           disabled={showAddNote}

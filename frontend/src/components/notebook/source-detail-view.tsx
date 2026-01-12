@@ -26,7 +26,7 @@ import {
   useGenerateSourceGuide,
   useSourceContent,
 } from "@/hooks/use-sources";
-import { cn, formatFileSize } from "@/lib/utils";
+import { formatFileSize } from "@/lib/utils";
 import type { Document } from "@/types/api";
 
 interface SourceDetailViewProps {
@@ -80,7 +80,7 @@ export function SourceDetailView({
                   href={document.source_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-0.5 flex items-center gap-1 text-xs hover:underline"
+                  className="mt-0.5 flex items-center gap-1 text-xs text-primary hover:underline"
                 >
                   <ExternalLink className="h-3 w-3" />
                   <span className="truncate">{document.source_url}</span>
@@ -116,14 +116,16 @@ export function SourceDetailView({
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
               </div>
             ) : guide?.summary ? (
-              <div className="prose prose-sm dark:prose-invert">
+              <div className="prose prose-sm">
                 <GuideContent content={guide.summary} />
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <Sparkles className="mb-3 h-10 w-10" />
-                <p className="font-medium">No source guide yet</p>
-                <p className="mt-1 text-sm">
+                <Sparkles className="mb-3 h-10 w-10 text-on-surface-muted" />
+                <p className="font-medium text-on-surface">
+                  No source guide yet
+                </p>
+                <p className="mt-1 text-sm text-on-surface-muted">
                   Generate an AI summary of this source to help you understand
                   its key concepts.
                 </p>
@@ -161,8 +163,10 @@ export function SourceDetailView({
               />
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <FileText className="mb-3 h-10 w-10" />
-                <p className="font-medium">No content available</p>
+                <FileText className="mb-3 h-10 w-10 text-on-surface-muted" />
+                <p className="font-medium text-on-surface">
+                  No content available
+                </p>
               </div>
             )}
           </TabsContent>
@@ -194,7 +198,7 @@ export function SourceDetailView({
                     href={document.source_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-sm hover:underline"
+                    className="flex items-center gap-1 text-sm text-primary hover:underline"
                   >
                     {document.source_url}
                     <ExternalLink className="h-3 w-3" />
@@ -214,31 +218,33 @@ export function SourceDetailView({
 }
 
 function SourceTypeIcon({ sourceType }: { sourceType: string }) {
-  const baseClass = "h-8 w-8 shrink-0 rounded-lg p-1.5";
+  const baseClass =
+    "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary-muted text-on-primary-muted";
+  const iconClass = "h-4 w-4";
 
   switch (sourceType) {
     case "url":
       return (
-        <div className={cn(baseClass)}>
-          <Globe className="h-full w-full" />
+        <div className={baseClass}>
+          <Globe className={iconClass} />
         </div>
       );
     case "youtube":
       return (
-        <div className={cn(baseClass)}>
-          <Youtube className="h-full w-full" />
+        <div className={baseClass}>
+          <Youtube className={iconClass} />
         </div>
       );
     case "paste":
       return (
-        <div className={cn(baseClass)}>
-          <StickyNote className="h-full w-full" />
+        <div className={baseClass}>
+          <StickyNote className={iconClass} />
         </div>
       );
     default:
       return (
-        <div className={cn(baseClass)}>
-          <File className="h-full w-full" />
+        <div className={baseClass}>
+          <File className={iconClass} />
         </div>
       );
   }
@@ -270,9 +276,11 @@ function InfoRow({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 pb-3">
-      <span className="text-sm">{label}</span>
-      {children || <span className="text-sm font-medium">{value}</span>}
+    <div className="flex items-start justify-between gap-4 border-b border-divider pb-3">
+      <span className="text-sm text-on-surface-muted">{label}</span>
+      {children || (
+        <span className="text-sm font-medium text-on-surface">{value}</span>
+      )}
     </div>
   );
 }
@@ -317,7 +325,7 @@ function HighlightedContent({
 
   if (!highlightText) {
     return (
-      <div className="whitespace-pre-wrap rounded-lg p-4 font-mono text-sm">
+      <div className="whitespace-pre-wrap rounded-lg bg-surface-variant p-4 font-mono text-sm text-on-surface">
         {content}
       </div>
     );
@@ -361,7 +369,7 @@ function HighlightedContent({
 
   if (!match) {
     return (
-      <div className="whitespace-pre-wrap rounded-lg p-4 font-mono text-sm">
+      <div className="whitespace-pre-wrap rounded-lg bg-surface-variant p-4 font-mono text-sm text-on-surface">
         {content}
       </div>
     );
@@ -372,17 +380,17 @@ function HighlightedContent({
   const after = content.slice(match.index + match.length);
 
   return (
-    <div className="relative whitespace-pre-wrap rounded-lg p-4 font-mono text-sm">
+    <div className="relative whitespace-pre-wrap rounded-lg bg-surface-variant p-4 font-mono text-sm text-on-surface">
       {before}
       <span className="relative inline">
         {citationIndex && (
-          <span className="absolute -left-1 -top-5 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-bold">
+          <span className="absolute -left-1 -top-5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold text-on-primary">
             {citationIndex}
           </span>
         )}
         <span
           ref={highlightRef}
-          className="animate-highlight-pulse rounded px-0.5"
+          className="animate-highlight-pulse rounded bg-warning-muted px-0.5"
         >
           {highlighted}
         </span>

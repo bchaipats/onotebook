@@ -31,10 +31,10 @@ export function PanelHeader({
             variant="ghost"
             size="icon"
             onClick={onToggleCollapse}
-            className="h-8 w-8"
+            className="h-9 w-9 rounded-xl"
             title="Toggle panel"
           >
-            <span className="h-[var(--panel-header-icon-size)] w-[var(--panel-header-icon-size)] [&>svg]:h-full [&>svg]:w-full">
+            <span className="h-6 w-6 [&>svg]:h-full [&>svg]:w-full">
               {collapseIcon}
             </span>
           </Button>

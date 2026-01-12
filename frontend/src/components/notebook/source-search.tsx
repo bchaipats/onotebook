@@ -89,13 +89,13 @@ export function SourceSearch({ notebookId }: SourceSearchProps) {
   const isAdding = addSources.isPending;
 
   return (
-    <div className="rounded-xl p-3">
-      <div className="flex items-center gap-2 rounded-lg px-3 py-2">
-        <Search className="h-4 w-4" />
+    <div className="rounded-xl bg-surface-variant p-3">
+      <div className="flex items-center gap-2 rounded-lg bg-surface px-3 py-2">
+        <Search className="h-4 w-4 text-on-surface-muted" />
         <input
           type="text"
           placeholder="Search the web for new sources"
-          className="flex-1 text-sm outline-none"
+          className="flex-1 bg-transparent text-sm text-on-surface placeholder:text-on-surface-subtle outline-none"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -110,15 +110,10 @@ export function SourceSearch({ notebookId }: SourceSearchProps) {
         <div className="flex gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button
-                className={cn(
-                  "flex items-center gap-1 rounded-full px-3 py-1 text-xs transition-colors",
-                  mode === "deep" ? "" : "",
-                )}
-              >
-                <Sparkles className="h-3 w-3" />
+              <button className="flex items-center gap-1 rounded-full bg-surface px-3 py-1 text-xs text-on-surface transition-colors hover:bg-hover">
+                <Sparkles className="h-3 w-3 text-primary" />
                 {mode === "fast" ? "Fast Research" : "Deep Research"}
-                <ChevronDown className="h-3 w-3" />
+                <ChevronDown className="h-3 w-3 text-on-surface-muted" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
@@ -151,7 +146,7 @@ export function SourceSearch({ notebookId }: SourceSearchProps) {
       </div>
 
       {search.error && (
-        <p className="mt-2 text-xs">
+        <p className="mt-2 rounded-lg bg-destructive-muted px-2 py-1 text-xs text-on-destructive-muted">
           {search.error instanceof Error
             ? search.error.message
             : "Search failed. Make sure BRAVE_SEARCH_API_KEY is configured."}
@@ -161,8 +156,13 @@ export function SourceSearch({ notebookId }: SourceSearchProps) {
       {results.length > 0 && (
         <div className="mt-3 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs">{results.length} results found</span>
-            <button onClick={handleClearResults} className="text-xs">
+            <span className="text-xs text-on-surface-muted">
+              {results.length} results found
+            </span>
+            <button
+              onClick={handleClearResults}
+              className="rounded p-1 text-on-surface-muted hover:bg-hover"
+            >
               <X className="h-3 w-3" />
             </button>
           </div>
@@ -217,7 +217,7 @@ function SearchResultRow({
     <div
       className={cn(
         "flex items-start gap-2 rounded-lg p-2 transition-colors",
-        isSelected ? "" : "",
+        isSelected ? "bg-selected" : "hover:bg-hover",
       )}
     >
       <Checkbox
@@ -237,14 +237,18 @@ function SearchResultRow({
               }}
             />
           )}
-          <span className="truncate text-sm font-medium">{result.title}</span>
+          <span className="truncate text-sm font-medium text-on-surface">
+            {result.title}
+          </span>
         </div>
-        <p className="mt-0.5 line-clamp-2 text-xs">{result.snippet}</p>
+        <p className="mt-0.5 line-clamp-2 text-xs text-on-surface-muted">
+          {result.snippet}
+        </p>
         <a
           href={result.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-1 flex items-center gap-1 text-xs hover:underline"
+          className="mt-1 flex items-center gap-1 text-xs text-primary hover:underline"
           onClick={(e) => e.stopPropagation()}
         >
           <ExternalLink className="h-3 w-3" />

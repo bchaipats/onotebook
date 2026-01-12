@@ -37,6 +37,8 @@ function buildNodesAndEdges(data: MindMapData): {
     position: { x: 0, y: 0 },
     data: { label: data.central_topic },
     style: {
+      background: "var(--color-primary)",
+      color: "var(--color-on-primary)",
       border: "none",
       borderRadius: "12px",
       padding: "12px 20px",
@@ -59,6 +61,9 @@ function buildNodesAndEdges(data: MindMapData): {
       position: { x: mainX, y: mainY },
       data: { label: node.label },
       style: {
+        background: "var(--color-primary-muted)",
+        color: "var(--color-on-primary-muted)",
+        border: "none",
         borderRadius: "8px",
         padding: "8px 16px",
         fontWeight: 500,
@@ -73,7 +78,7 @@ function buildNodesAndEdges(data: MindMapData): {
       id: `central-${node.id}`,
       source: "central",
       target: node.id,
-      style: { strokeWidth: 2 },
+      style: { stroke: "var(--color-primary)", strokeWidth: 2 },
       type: "smoothstep",
     });
 
@@ -89,6 +94,9 @@ function buildNodesAndEdges(data: MindMapData): {
           position: { x: childX, y: childY },
           data: { label: child.label },
           style: {
+            background: "var(--color-surface-variant)",
+            color: "var(--color-on-surface)",
+            border: "1px solid var(--color-border)",
             borderRadius: "6px",
             padding: "6px 12px",
             fontSize: "12px",
@@ -102,11 +110,10 @@ function buildNodesAndEdges(data: MindMapData): {
           id: `${node.id}-${child.id}`,
           source: node.id,
           target: child.id,
-          style: { strokeWidth: 1.5 },
+          style: { stroke: "var(--color-border)", strokeWidth: 1.5 },
           type: "smoothstep",
         });
 
-        // Grandchildren
         if (child.children?.length) {
           const gcStartY = childY - ((child.children.length - 1) * 42) / 2;
           child.children.forEach((gc, gcIndex) => {
@@ -115,6 +122,9 @@ function buildNodesAndEdges(data: MindMapData): {
               position: { x: childX + 160, y: gcStartY + gcIndex * 42 },
               data: { label: gc.label },
               style: {
+                background: "var(--color-surface)",
+                color: "var(--color-on-surface-muted)",
+                border: "1px solid var(--color-border-muted)",
                 borderRadius: "4px",
                 padding: "4px 10px",
                 fontSize: "11px",
@@ -128,6 +138,7 @@ function buildNodesAndEdges(data: MindMapData): {
               source: child.id,
               target: gc.id,
               style: {
+                stroke: "var(--color-border-muted)",
                 strokeWidth: 1,
                 strokeDasharray: "4 2",
               },
@@ -169,9 +180,11 @@ export function MindMapView({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col">
-      <div className="flex items-center justify-between px-4 py-3">
-        <h2 className="font-semibold">Mind Map: {data.central_topic}</h2>
+    <div className="fixed inset-0 z-50 flex flex-col bg-background">
+      <div className="flex items-center justify-between border-b border-border bg-surface px-4 py-3">
+        <h2 className="font-semibold text-on-surface">
+          Mind Map: {data.central_topic}
+        </h2>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -219,7 +232,10 @@ export function MindMapView({
         >
           <Background gap={20} size={1} />
           <Controls showInteractive={false} />
-          <Panel position="bottom-center" className="text-xs">
+          <Panel
+            position="bottom-center"
+            className="text-xs text-on-surface-muted"
+          >
             Scroll to zoom • Drag to pan
           </Panel>
         </ReactFlow>
