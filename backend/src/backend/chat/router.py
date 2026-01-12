@@ -7,9 +7,11 @@ from src.backend.chat.schemas import (
     ChatSessionCreate,
     ChatSessionListResponse,
     ChatSessionResponse,
+    EditMessageRequest,
     MessageFeedbackRequest,
     MessageListResponse,
     MessageResponse,
+    RegenerateRequest,
     SendMessageRequest,
     SuggestedQuestionsResponse,
 )
@@ -209,9 +211,10 @@ async def send_message(
 @router.post("/messages/{message_id}/regenerate")
 async def regenerate_message(
     message_id: str,
+    request: RegenerateRequest | None = None,
     db_session: AsyncSession = Depends(get_session),
 ) -> StreamingResponse:
-    """Regenerate the last assistant response."""
+    """Regenerate the last assistant response, optionally with a modification instruction."""
     message = await service.get_message(db_session, message_id)
     if not message:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")
@@ -245,9 +248,65 @@ async def regenerate_message(
     model = message.model or notebook.llm_model or settings.default_llm_model
     history = [m for m in messages if m.id != last_user_message.id]
 
+    # Build query with optional modification instruction
+    query = last_user_message.content
+    if request and request.instruction:
+        query = f"[MODIFICATION INSTRUCTION: {request.instruction}]\n\nOriginal question: {query}"
+
     return StreamingResponse(
         service.stream_rag_response(
-            query=last_user_message.content,
+            query=query,
+            notebook=notebook,
+            session_id=chat_session.id,
+            model=model,
+            conversation_history=history,
+        ),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
+    )
+
+
+@router.patch("/messages/{message_id}")
+async def edit_message(
+    message_id: str,
+    request: EditMessageRequest,
+    db_session: AsyncSession = Depends(get_session),
+) -> StreamingResponse:
+    """Edit a user message, delete subsequent messages, and regenerate the response."""
+    message = await service.get_message(db_session, message_id)
+    if not message:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")
+
+    if message.role != "user":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Can only edit user messages"
+        )
+
+    chat_session = await service.get_session(db_session, message.chat_session_id)
+    if not chat_session:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
+
+    # Update message content
+    message.content = request.content
+    db_session.add(message)
+    await db_session.commit()
+
+    # Delete all messages after this one
+    await service.delete_messages_after(db_session, message)
+
+    notebook = await get_notebook(db_session, chat_session.notebook_id)
+    if not notebook:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Notebook not found")
+
+    # Get remaining messages for conversation history (excluding the edited message)
+    messages = await service.get_messages(db_session, chat_session.id)
+    history = [m for m in messages if m.id != message.id]
+
+    model = notebook.llm_model or settings.default_llm_model
+
+    return StreamingResponse(
+        service.stream_rag_response(
+            query=request.content,
             notebook=notebook,
             session_id=chat_session.id,
             model=model,

@@ -65,5 +65,13 @@ class MessageFeedbackRequest(BaseModel):
     feedback: Literal["up", "down"] | None
 
 
+class RegenerateRequest(BaseModel):
+    instruction: str | None = None
+
+
+class EditMessageRequest(BaseModel):
+    content: str
+
+
 class SuggestedQuestionsResponse(BaseModel):
     questions: list[str]

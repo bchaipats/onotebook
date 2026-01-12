@@ -9,6 +9,7 @@ import {
   Check,
   Bot,
   ArrowUp,
+  ArrowDown,
   Upload,
   SlidersHorizontal,
   MoreVertical,
@@ -17,6 +18,10 @@ import {
   StickyNote,
   AlertCircle,
   FileText,
+  Pencil,
+  X,
+  Download,
+  FileDown,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -26,6 +31,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
@@ -56,8 +62,14 @@ import {
 import {
   sendMessage,
   regenerateMessage,
+  editMessage,
   getSuggestedQuestions,
 } from "@/lib/api";
+import {
+  downloadMarkdown,
+  exportToPdf,
+  copyToClipboard,
+} from "@/lib/export-utils";
 import type {
   ChatMessage,
   SourceInfo,
@@ -97,6 +109,30 @@ export function ChatPanel({
   const deleteSession = useDeleteChatSession(notebookId);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [configDialogOpen, setConfigDialogOpen] = useState(false);
+  const [exportCopied, setExportCopied] = useState(false);
+  const { data: messages } = useMessages(activeSessionId || "");
+  const hasMessages = messages && messages.length > 0;
+
+  async function handleCopyChat() {
+    if (!hasMessages) return;
+    const success = await copyToClipboard(messages);
+    if (success) {
+      setExportCopied(true);
+      setTimeout(() => setExportCopied(false), 2000);
+    }
+  }
+
+  function handleExportMarkdown() {
+    if (!hasMessages) return;
+    const title = notebook.name || "Chat Export";
+    downloadMarkdown(messages, `${title.toLowerCase().replace(/\s+/g, "-")}.md`, title);
+  }
+
+  function handleExportPdf() {
+    if (!hasMessages) return;
+    const title = notebook.name || "Chat Export";
+    exportToPdf(messages, title);
+  }
 
   function handleDeleteChat() {
     if (!activeSessionId) return;
@@ -155,9 +191,40 @@ export function ChatPanel({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem
+                  onClick={handleCopyChat}
+                  disabled={!hasMessages}
+                >
+                  {exportCopied ? (
+                    <>
+                      <Check className="mr-2 h-4 w-4" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="mr-2 h-4 w-4" />
+                      Copy chat
+                    </>
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleExportMarkdown}
+                  disabled={!hasMessages}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Download as Markdown
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleExportPdf}
+                  disabled={!hasMessages}
+                >
+                  <FileDown className="mr-2 h-4 w-4" />
+                  Export as PDF
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
                   onClick={handleDeleteChat}
                   disabled={!activeSessionId || deleteSession.isPending}
-                  className=""
+                  className="text-destructive focus:text-destructive"
                 >
                   {deleteSession.isPending
                     ? "Deleting..."
@@ -230,9 +297,11 @@ function ChatContent({
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const stoppedByUserRef = useRef(false);
+  const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
 
   // Handle citation click - notify parent for left panel highlighting
   const handleCitationClick = useCallback(
@@ -252,9 +321,35 @@ function ChatContent({
     [currentSources, onCitationHighlight],
   );
 
+  // Smart auto-scroll: only scroll if user hasn't scrolled up
   useEffect(() => {
+    if (!isUserScrolledUp) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, streamingContent, isUserScrolledUp]);
+
+  // Detect when user scrolls up from the bottom
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    function handleScroll() {
+      if (!container) return;
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+      // User is "scrolled up" if more than 100px from bottom
+      setIsUserScrolledUp(distanceFromBottom > 100);
+    }
+
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Scroll to bottom and reset the scrolled-up state
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, streamingContent]);
+    setIsUserScrolledUp(false);
+  }, []);
 
   // Fetch initial suggested questions when no messages and sources are selected
   useEffect(() => {
@@ -371,14 +466,14 @@ function ChatContent({
     }
   }
 
-  function handleStop() {
+  const handleStop = useCallback(() => {
     stoppedByUserRef.current = true;
     setStoppedContent(streamingContent);
     abortControllerRef.current?.abort();
     setIsStreaming(false);
-  }
+  }, [streamingContent]);
 
-  async function handleRegenerate(messageId: string) {
+  async function handleRegenerate(messageId: string, instruction?: string) {
     setError(null);
     setIsStreaming(true);
     setStreamingContent("");
@@ -394,6 +489,7 @@ function ChatContent({
         messageId,
         handleEvent,
         abortControllerRef.current.signal,
+        instruction,
       );
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") {
@@ -410,9 +506,73 @@ function ChatContent({
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
+    // Enter to send (without Shift)
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+    }
+    // Cmd/Ctrl + Enter also sends
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      handleSend();
+    }
+    // Escape to stop generation
+    if (e.key === "Escape" && isStreaming) {
+      e.preventDefault();
+      handleStop();
+    }
+    // Arrow up in empty input to populate with last user message
+    if (e.key === "ArrowUp" && !inputValue.trim()) {
+      const lastUserMessage = allMessages?.findLast((m) => m.role === "user");
+      if (lastUserMessage && !isStreaming) {
+        e.preventDefault();
+        setInputValue(lastUserMessage.content);
+      }
+    }
+  }
+
+  // Global escape key handler (works even when textarea not focused)
+  useEffect(() => {
+    function handleGlobalKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape" && isStreaming) {
+        e.preventDefault();
+        handleStop();
+      }
+    }
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  }, [isStreaming, handleStop]);
+
+  async function handleEditMessage(messageId: string, newContent: string) {
+    setError(null);
+    setIsStreaming(true);
+    setStreamingContent("");
+    setStoppedContent("");
+    setCurrentSources([]);
+    setGroundingMetadata(null);
+    setSuggestedQuestions([]);
+    stoppedByUserRef.current = false;
+
+    abortControllerRef.current = new AbortController();
+
+    try {
+      await editMessage(
+        messageId,
+        newContent,
+        handleEvent,
+        abortControllerRef.current.signal,
+      );
+    } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") {
+        if (stoppedByUserRef.current) {
+          invalidateMessages();
+          return;
+        }
+      } else {
+        setError(err instanceof Error ? err.message : "Failed to edit message");
+      }
+      setIsStreaming(false);
+      setStreamingContent("");
     }
   }
 
@@ -445,7 +605,7 @@ function ChatContent({
 
   return (
     <>
-      <div className="flex-1 overflow-y-auto">
+      <div ref={scrollContainerRef} className="relative flex-1 overflow-y-auto">
         {allMessages.length === 0 && !isStreaming && !stoppedContent ? (
           selectedSources.size === 0 ? (
             <div className="flex h-full flex-col items-center justify-center p-8 text-center">
@@ -547,10 +707,17 @@ function ChatContent({
                   message.role === "assistant" &&
                   message.id === lastAssistantMessage?.id &&
                   !isStreaming
-                    ? () => handleRegenerate(message.id)
+                    ? (instruction?: string) => handleRegenerate(message.id, instruction)
                     : undefined
                 }
+                showModificationButtons={
+                  message.role === "assistant" &&
+                  message.id === lastAssistantMessage?.id &&
+                  !isStreaming
+                }
                 onCitationClick={handleCitationClick}
+                onEdit={message.role === "user" ? handleEditMessage : undefined}
+                isStreaming={isStreaming}
               />
             ))}
             {isStreaming && streamingContent && (
@@ -583,6 +750,21 @@ function ChatContent({
                 </div>
               )}
             <div ref={messagesEndRef} />
+          </div>
+        )}
+
+        {/* Jump to bottom FAB - shows when user scrolls up */}
+        {isUserScrolledUp && (
+          <div className="sticky bottom-4 flex justify-center">
+            <Button
+              variant="elevated"
+              size="sm"
+              className="rounded-full shadow-elevation-2"
+              onClick={scrollToBottom}
+            >
+              <ArrowDown className="mr-1.5 h-4 w-4" />
+              Jump to bottom
+            </Button>
           </div>
         )}
       </div>
@@ -792,8 +974,11 @@ interface MessageBubbleProps {
   sessionId: string;
   notebookId: string;
   sources?: SourceInfo[];
-  onRegenerate?: () => void;
+  onRegenerate?: (instruction?: string) => void;
+  showModificationButtons?: boolean;
   onCitationClick?: (index: number) => void;
+  onEdit?: (messageId: string, newContent: string) => void;
+  isStreaming?: boolean;
 }
 
 function MessageBubble({
@@ -802,14 +987,54 @@ function MessageBubble({
   notebookId,
   sources,
   onRegenerate,
+  showModificationButtons,
   onCitationClick,
+  onEdit,
+  isStreaming,
 }: MessageBubbleProps) {
   const isUser = message.role === "user";
   const [showAllCitations, setShowAllCitations] = useState(false);
   const [copied, setCopied] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(message.content);
+  const editTextareaRef = useRef<HTMLTextAreaElement>(null);
   const feedbackMutation = useMessageFeedback(sessionId);
   const createNote = useCreateNote(notebookId);
+
+  useEffect(() => {
+    if (isEditing && editTextareaRef.current) {
+      editTextareaRef.current.style.height = "auto";
+      editTextareaRef.current.style.height = `${editTextareaRef.current.scrollHeight}px`;
+      editTextareaRef.current.focus();
+    }
+  }, [isEditing, editContent]);
+
+  function handleStartEdit() {
+    setEditContent(message.content);
+    setIsEditing(true);
+  }
+
+  function handleCancelEdit() {
+    setEditContent(message.content);
+    setIsEditing(false);
+  }
+
+  function handleSaveEdit() {
+    if (onEdit && editContent.trim() && editContent !== message.content) {
+      onEdit(message.id, editContent.trim());
+    }
+    setIsEditing(false);
+  }
+
+  function handleEditKeyDown(e: React.KeyboardEvent) {
+    if (e.key === "Escape") {
+      handleCancelEdit();
+    } else if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      handleSaveEdit();
+    }
+  }
 
   async function handleCopy() {
     try {
@@ -857,66 +1082,117 @@ function MessageBubble({
           isUser && "flex flex-col items-end",
         )}
       >
-        <div
-          className={cn(
-            "group inline-block rounded-2xl px-4 py-3",
-            isUser
-              ? "bg-primary-muted text-on-primary-muted shadow-elevation-1"
-              : "text-on-surface",
-          )}
-        >
-          <div className="prose prose-sm max-w-none dark:prose-invert">
-            <ReactMarkdown
-              components={{
-                code({ className, children, ...props }) {
-                  const match = /language-(\w+)/.exec(className || "");
-                  const isInline = !match && !className;
-                  if (isInline) {
-                    return (
-                      <code className={className} {...props}>
-                        {children}
-                      </code>
-                    );
-                  }
-                  return (
-                    <CodeBlock language={match?.[1]}>
-                      {String(children).replace(/\n$/, "")}
-                    </CodeBlock>
-                  );
-                },
-                p({ children }) {
-                  if (!onCitationClick || isUser) return <p>{children}</p>;
-                  return (
-                    <p>
-                      {processChildren({
-                        children,
-                        onCitationClick,
-                        sources,
-                        showAllCitations,
-                        onShowMore: () => setShowAllCitations(true),
-                      })}
-                    </p>
-                  );
-                },
-                li({ children }) {
-                  if (!onCitationClick || isUser) return <li>{children}</li>;
-                  return (
-                    <li>
-                      {processChildren({
-                        children,
-                        onCitationClick,
-                        sources,
-                        showAllCitations,
-                        onShowMore: () => setShowAllCitations(true),
-                      })}
-                    </li>
-                  );
-                },
-              }}
-            >
-              {message.content}
-            </ReactMarkdown>
+        {/* User message - edit mode */}
+        {isUser && isEditing ? (
+          <div className="w-full max-w-md">
+            <textarea
+              ref={editTextareaRef}
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              onKeyDown={handleEditKeyDown}
+              className="w-full resize-none rounded-2xl border border-border bg-surface px-4 py-3 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              rows={1}
+            />
+            <div className="mt-2 flex items-center justify-end gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCancelEdit}
+                className="h-8"
+              >
+                <X className="mr-1 h-3 w-3" />
+                Cancel
+              </Button>
+              <Button
+                variant="filled"
+                size="sm"
+                onClick={handleSaveEdit}
+                disabled={!editContent.trim() || editContent === message.content}
+                className="h-8"
+              >
+                <Check className="mr-1 h-3 w-3" />
+                Save & Submit
+              </Button>
+            </div>
+            <p className="mt-1 text-xs text-on-surface-muted">
+              Press Cmd/Ctrl+Enter to save, Escape to cancel
+            </p>
           </div>
+        ) : (
+          <div
+            className={cn(
+              "group inline-block rounded-2xl px-4 py-3",
+              isUser
+                ? "bg-primary-muted text-on-primary-muted shadow-elevation-1"
+                : "text-on-surface",
+            )}
+          >
+            <div className="prose prose-sm max-w-none dark:prose-invert">
+              <ReactMarkdown
+                components={{
+                  code({ className, children, ...props }) {
+                    const match = /language-(\w+)/.exec(className || "");
+                    const isInline = !match && !className;
+                    if (isInline) {
+                      return (
+                        <code className={className} {...props}>
+                          {children}
+                        </code>
+                      );
+                    }
+                    return (
+                      <CodeBlock language={match?.[1]}>
+                        {String(children).replace(/\n$/, "")}
+                      </CodeBlock>
+                    );
+                  },
+                  p({ children }) {
+                    if (!onCitationClick || isUser) return <p>{children}</p>;
+                    return (
+                      <p>
+                        {processChildren({
+                          children,
+                          onCitationClick,
+                          sources,
+                          showAllCitations,
+                          onShowMore: () => setShowAllCitations(true),
+                        })}
+                      </p>
+                    );
+                  },
+                  li({ children }) {
+                    if (!onCitationClick || isUser) return <li>{children}</li>;
+                    return (
+                      <li>
+                        {processChildren({
+                          children,
+                          onCitationClick,
+                          sources,
+                          showAllCitations,
+                          onShowMore: () => setShowAllCitations(true),
+                        })}
+                      </li>
+                    );
+                  },
+                }}
+              >
+                {message.content}
+              </ReactMarkdown>
+            </div>
+            {/* Edit button for user messages */}
+            {isUser && onEdit && !isStreaming && (
+              <div className="mt-2 flex justify-end opacity-0 transition-opacity group-hover:opacity-100">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 gap-1 text-xs"
+                  onClick={handleStartEdit}
+                >
+                  <Pencil className="h-3 w-3" />
+                  Edit
+                </Button>
+              </div>
+            )}
           {!isUser && (
             <div className="mt-2 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
               <Button
@@ -971,7 +1247,7 @@ function MessageBubble({
                   variant="ghost"
                   size="sm"
                   className="ml-1 h-7 gap-1 text-xs"
-                  onClick={onRegenerate}
+                  onClick={() => onRegenerate()}
                 >
                   <RefreshCw className="h-3 w-3" />
                   Regenerate
@@ -979,7 +1255,37 @@ function MessageBubble({
               )}
             </div>
           )}
-        </div>
+          {/* Modification buttons - Gemini-style */}
+          {!isUser && showModificationButtons && onRegenerate && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                onClick={() => onRegenerate("Make your response shorter and more concise.")}
+                className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-on-surface transition-all hover:bg-hover hover:shadow-sm active:scale-[0.98]"
+              >
+                Shorter
+              </button>
+              <button
+                onClick={() => onRegenerate("Make your response longer with more detail and examples.")}
+                className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-on-surface transition-all hover:bg-hover hover:shadow-sm active:scale-[0.98]"
+              >
+                Longer
+              </button>
+              <button
+                onClick={() => onRegenerate("Make your response simpler and easier to understand. Use plain language.")}
+                className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-on-surface transition-all hover:bg-hover hover:shadow-sm active:scale-[0.98]"
+              >
+                Simpler
+              </button>
+              <button
+                onClick={() => onRegenerate("Make your response more detailed with technical depth and thoroughness.")}
+                className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-on-surface transition-all hover:bg-hover hover:shadow-sm active:scale-[0.98]"
+              >
+                More detailed
+              </button>
+            </div>
+          )}
+          </div>
+        )}
       </div>
     </div>
   );

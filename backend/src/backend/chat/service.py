@@ -149,6 +149,22 @@ async def delete_last_assistant_message(
     return message
 
 
+async def delete_messages_after(
+    session: AsyncSession, message: Message
+) -> int:
+    """Delete all messages that come after the specified message in the session."""
+    from sqlalchemy import delete
+
+    stmt = (
+        delete(Message)
+        .where(Message.chat_session_id == message.chat_session_id)
+        .where(Message.created_at > message.created_at)
+    )
+    result = await session.execute(stmt)
+    await session.commit()
+    return result.rowcount or 0
+
+
 def generate_title_from_message(content: str) -> str:
     """Generate a session title from the first message."""
     title = content.strip()

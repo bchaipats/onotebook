@@ -426,10 +426,60 @@ export async function regenerateMessage(
   messageId: string,
   onEvent: (event: StreamEvent) => void,
   signal?: AbortSignal,
+  instruction?: string,
 ): Promise<void> {
   const url = `${API_BASE_URL}/api/messages/${messageId}/regenerate`;
   const response = await fetch(url, {
     method: "POST",
+    headers: instruction ? { "Content-Type": "application/json" } : undefined,
+    body: instruction ? JSON.stringify({ instruction }) : undefined,
+    signal,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new ApiError(response.status, errorText || response.statusText);
+  }
+
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error("No response body");
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
+
+    for (const line of lines) {
+      if (line.startsWith("data: ")) {
+        const data = line.slice(6);
+        try {
+          const event = JSON.parse(data) as StreamEvent;
+          onEvent(event);
+        } catch {
+          // Ignore parse errors
+        }
+      }
+    }
+  }
+}
+
+export async function editMessage(
+  messageId: string,
+  content: string,
+  onEvent: (event: StreamEvent) => void,
+  signal?: AbortSignal,
+): Promise<void> {
+  const url = `${API_BASE_URL}/api/messages/${messageId}`;
+  const response = await fetch(url, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ content }),
     signal,
   });
 
