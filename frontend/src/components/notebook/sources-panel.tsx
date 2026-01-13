@@ -11,6 +11,7 @@ import {
   Info,
   Loader2,
   ExternalLink,
+  Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -73,13 +74,6 @@ export function SourcesPanel({
       }
     }
   }, [highlightedCitation, documents]);
-
-  const handleManualPreview = (doc: Document) => {
-    setPreviewDocument(doc);
-    setHighlightedChunkContent(null);
-    setCitationIndex(null);
-    setShowInlineDetail(false);
-  };
 
   const clearPreview = () => {
     setPreviewDocument(null);
@@ -165,13 +159,7 @@ export function SourcesPanel({
         title="Sources"
         collapseIcon={<PanelRightOpen />}
         onToggleCollapse={onToggleCollapse}
-      >
-        {sourceCount && (
-          <span className="rounded-full bg-surface-variant px-2.5 py-1 text-xs font-medium text-on-surface-muted">
-            {sourceCount.count}/{sourceCount.limit}
-          </span>
-        )}
-      </PanelHeader>
+      />
 
       <div className="px-4 pt-4">
         <Button
@@ -185,47 +173,37 @@ export function SourcesPanel({
         </Button>
       </div>
 
-      <div className="mx-4 mt-4 overflow-hidden rounded-2xl bg-surface-variant p-4">
-        <div className="flex items-start gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary-muted">
-            <Sparkles className="h-4 w-4 text-on-primary-muted" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-on-surface">
-              Deep Research
-            </p>
-            <p className="mt-0.5 text-xs text-on-surface-muted">
-              Get an in-depth report and discover new sources
-            </p>
-          </div>
-        </div>
+      <div className="mx-4 mt-4 flex items-center gap-2 rounded-xl bg-success-muted px-3 py-2.5">
+        <Search className="h-4 w-4 shrink-0 text-on-success-muted" />
+        <p className="text-sm">
+          <button className="font-medium text-primary hover:underline">
+            Try Deep Research
+          </button>
+          <span className="text-on-surface-muted">
+            {" "}
+            for an in-depth report and new sources!
+          </span>
+        </p>
       </div>
 
       <div className="mx-4 mt-4">
         <SourceSearch notebookId={notebookId} />
       </div>
 
-      {documents && documents.length > 0 && (
-        <div className="mt-3 flex items-center gap-3 px-4 pb-3">
-          <Checkbox
-            checked={allSelected}
-            onCheckedChange={(checked) =>
-              checked
-                ? onSelectionChange(new Set(readyDocuments?.map((d) => d.id)))
-                : onSelectionChange(new Set())
-            }
-            className="rounded-md"
-          />
-          <span className="text-sm text-on-surface">
-            Select all sources
-            <span className="ml-2 rounded-full bg-surface-variant px-2 py-0.5 text-xs font-medium text-on-surface-muted">
-              {selectedSources.size}/{readyDocuments?.length || 0}
-            </span>
-          </span>
-        </div>
-      )}
-
       <div className="flex-1 overflow-y-auto px-3 py-2">
+        {documents && documents.length > 0 && (
+          <div className="mb-2 flex items-center justify-between px-2 py-2">
+            <span className="text-sm text-on-surface">Select all sources</span>
+            <Checkbox
+              checked={allSelected}
+              onCheckedChange={(checked) =>
+                checked
+                  ? onSelectionChange(new Set(readyDocuments?.map((d) => d.id)))
+                  : onSelectionChange(new Set())
+              }
+            />
+          </div>
+        )}
         {isLoading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
@@ -243,7 +221,6 @@ export function SourcesPanel({
                 document={doc}
                 isSelected={selectedSources.has(doc.id)}
                 onToggle={() => toggleSource(doc.id)}
-                onPreview={() => handleManualPreview(doc)}
                 className={`animate-spring-in-up stagger-${Math.min(index + 1, 8)}`}
               />
             ))}

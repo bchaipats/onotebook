@@ -152,6 +152,16 @@ export async function deleteDocument(id: string): Promise<void> {
   });
 }
 
+export async function renameDocument(
+  id: string,
+  filename: string,
+): Promise<Document> {
+  return request<Document>(`/api/documents/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ filename }),
+  });
+}
+
 export async function getDocument(id: string): Promise<Document> {
   return request<Document>(`/api/documents/${id}`);
 }

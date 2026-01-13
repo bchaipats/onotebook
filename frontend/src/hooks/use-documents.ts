@@ -3,6 +3,7 @@ import {
   getDocuments,
   uploadDocument,
   deleteDocument,
+  renameDocument,
   retryProcessing,
 } from "@/lib/api";
 import type { Document } from "@/types/api";
@@ -49,6 +50,18 @@ export function useDeleteDocument(notebookId: string) {
       queryClient.invalidateQueries({ queryKey: ["documents", notebookId] });
       queryClient.invalidateQueries({ queryKey: ["notebooks"] });
       queryClient.invalidateQueries({ queryKey: ["source-count", notebookId] });
+    },
+  });
+}
+
+export function useRenameDocument(notebookId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, filename }: { id: string; filename: string }) =>
+      renameDocument(id, filename),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["documents", notebookId] });
     },
   });
 }

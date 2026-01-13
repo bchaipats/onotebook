@@ -7,25 +7,29 @@ import {
   FileCode,
   File,
   Trash2,
-  Eye,
-  ChevronDown,
-  ChevronRight,
+  Pencil,
   Globe,
   Youtube,
   StickyNote,
+  Loader2,
+  MoreVertical,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Progress } from "@/components/ui/progress";
-import { useDeleteDocument } from "@/hooks/use-documents";
-import { cn, formatFileSize } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { useDeleteDocument, useRenameDocument } from "@/hooks/use-documents";
+import { cn } from "@/lib/utils";
 import type { Document } from "@/types/api";
 
 interface SourceItemProps {
   document: Document;
   isSelected: boolean;
   onToggle: () => void;
-  onPreview?: () => void;
   className?: string;
 }
 
@@ -33,241 +37,159 @@ export function SourceItem({
   document,
   isSelected,
   onToggle,
-  onPreview,
   className,
 }: SourceItemProps) {
   const deleteDocument = useDeleteDocument(document.notebook_id);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const renameDocument = useRenameDocument(document.notebook_id);
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [newName, setNewName] = useState(document.filename);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const isReady = document.processing_status === "ready";
   const isProcessing = document.processing_status === "processing";
-  const isFailed = document.processing_status === "failed";
 
-  function handleDelete(e: React.MouseEvent) {
-    e.stopPropagation();
+  function handleDelete() {
     deleteDocument.mutate(document.id);
+  }
+
+  function handleRename() {
+    setNewName(document.filename);
+    setIsRenaming(true);
+  }
+
+  function handleRenameSubmit() {
+    if (newName.trim() && newName !== document.filename) {
+      renameDocument.mutate({ id: document.id, filename: newName.trim() });
+    }
+    setIsRenaming(false);
+  }
+
+  function handleRenameKeyDown(e: React.KeyboardEvent) {
+    if (e.key === "Enter") {
+      handleRenameSubmit();
+    } else if (e.key === "Escape") {
+      setIsRenaming(false);
+    }
+  }
+
+  if (isRenaming) {
+    return (
+      <div
+        className={cn(
+          "flex items-center gap-3 rounded-lg px-2 py-2",
+          className,
+        )}
+      >
+        <SourceIcon
+          sourceType={document.source_type}
+          fileType={document.file_type}
+        />
+        <Input
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          onBlur={handleRenameSubmit}
+          onKeyDown={handleRenameKeyDown}
+          className="h-8 flex-1"
+          autoFocus
+        />
+      </div>
+    );
   }
 
   return (
     <div
       className={cn(
-        "group rounded-2xl p-3 transition-all duration-200",
-        isSelected && isReady
-          ? "bg-selected shadow-elevation-1"
-          : "hover:bg-hover",
+        "group flex items-center gap-3 rounded-lg px-2 py-2 transition-colors",
+        isSelected && isReady ? "bg-selected" : "hover:bg-hover",
         className,
       )}
     >
-      <div className="flex items-start gap-3">
-        <Checkbox
-          checked={isSelected && isReady}
-          onCheckedChange={onToggle}
-          disabled={!isReady}
-          className="mt-1 rounded-md"
-        />
-
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2.5">
-            <SourceIcon
-              sourceType={document.source_type}
-              fileType={document.file_type}
-            />
-            <span className="truncate text-sm font-medium text-on-surface">
-              {document.filename}
-            </span>
-          </div>
-
-          {/* Status indicator */}
-          <div className="mt-2 flex items-center gap-2">
-            <StatusPill status={document.processing_status} />
-            {isReady && (
-              <span className="text-xs text-on-surface-muted">
-                {document.chunk_count} chunks
-              </span>
-            )}
-          </div>
-
-          {/* Processing progress */}
-          {isProcessing && (
-            <div className="mt-2">
-              <Progress
-                value={document.processing_progress}
-                className="h-1.5 rounded-full"
+      <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+        <DropdownMenuTrigger asChild>
+          <button className="relative flex h-5 w-5 shrink-0 items-center justify-center">
+            <span
+              className={cn(
+                "transition-opacity",
+                menuOpen ? "opacity-0" : "opacity-100 group-hover:opacity-0",
+              )}
+            >
+              <SourceIcon
+                sourceType={document.source_type}
+                fileType={document.file_type}
+                isProcessing={isProcessing}
               />
-              <span className="mt-1 block text-xs text-on-surface-muted">
-                Processing... {document.processing_progress}%
-              </span>
-            </div>
-          )}
-
-          {isFailed && (
-            <p className="mt-2 rounded-lg bg-destructive-muted px-2 py-1 text-xs text-on-destructive-muted">
-              {document.processing_error || "Processing failed"}
-            </p>
-          )}
-
-          {/* Expandable details */}
-          {isReady && (
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="mt-2 flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-            >
-              {isExpanded ? (
-                <ChevronDown className="h-3 w-3" />
-              ) : (
-                <ChevronRight className="h-3 w-3" />
+            </span>
+            <MoreVertical
+              className={cn(
+                "absolute inset-0 h-5 w-5 text-on-surface-muted transition-opacity",
+                menuOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100",
               )}
-              {isExpanded ? "Hide details" : "View details"}
-            </button>
-          )}
-
-          {isExpanded && isReady && (
-            <div className="mt-2 space-y-1.5 rounded-xl bg-surface-variant p-3 text-xs animate-spring-in">
-              <p className="flex justify-between text-on-surface-muted">
-                <span>Size</span>
-                <span className="font-medium text-on-surface">
-                  {formatFileSize(document.file_size)}
-                </span>
-              </p>
-              <p className="flex justify-between text-on-surface-muted">
-                <span>Chunks</span>
-                <span className="font-medium text-on-surface">
-                  {document.chunk_count}
-                </span>
-              </p>
-              {document.page_count && (
-                <p className="flex justify-between text-on-surface-muted">
-                  <span>Pages</span>
-                  <span className="font-medium text-on-surface">
-                    {document.page_count}
-                  </span>
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Actions */}
-        <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-          {onPreview && isReady && (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="rounded-xl"
-              onClick={(e) => {
-                e.stopPropagation();
-                onPreview();
-              }}
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
-          )}
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className="rounded-xl"
+            />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start">
+          <DropdownMenuItem
             onClick={handleDelete}
             disabled={deleteDocument.isPending}
           >
             <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+            Remove source
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleRename}>
+            <Pencil className="h-4 w-4" />
+            Rename source
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <span className="min-w-0 flex-1 truncate text-sm text-on-surface">
+        {document.filename}
+      </span>
+
+      <Checkbox
+        checked={isSelected && isReady}
+        onCheckedChange={onToggle}
+        disabled={!isReady}
+      />
     </div>
-  );
-}
-
-function StatusPill({ status }: { status: string }) {
-  const styles = {
-    ready: "bg-success-muted text-on-success-muted",
-    processing: "bg-info-muted text-on-info-muted animate-subtle-pulse",
-    failed: "bg-destructive-muted text-on-destructive-muted",
-  };
-
-  const labels = {
-    ready: "Ready",
-    processing: "Processing",
-    failed: "Failed",
-  };
-
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
-        styles[status as keyof typeof styles] || styles.ready,
-      )}
-    >
-      {labels[status as keyof typeof labels] || status}
-    </span>
   );
 }
 
 function SourceIcon({
   sourceType,
   fileType,
+  isProcessing,
 }: {
   sourceType: string;
   fileType: string;
+  isProcessing?: boolean;
 }) {
-  const iconClass = "h-4 w-4";
-  const wrapperClass =
-    "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary-muted text-on-primary-muted";
-
-  // Handle source type first (URL, YouTube, paste)
-  switch (sourceType) {
-    case "url":
-      return (
-        <div className={cn(wrapperClass)}>
-          <Globe className={iconClass} />
-        </div>
-      );
-    case "youtube":
-      return (
-        <div className={cn(wrapperClass)}>
-          <Youtube className={iconClass} />
-        </div>
-      );
-    case "paste":
-      return (
-        <div className={cn(wrapperClass)}>
-          <StickyNote className={iconClass} />
-        </div>
-      );
+  if (isProcessing) {
+    return <Loader2 className="h-5 w-5 animate-spin text-primary" />;
   }
 
-  // Fall back to file type icons
+  const iconClass = "h-5 w-5";
+
+  switch (sourceType) {
+    case "url":
+      return <Globe className={cn(iconClass, "text-primary")} />;
+    case "youtube":
+      return <Youtube className={cn(iconClass, "text-destructive")} />;
+    case "paste":
+      return <StickyNote className={cn(iconClass, "text-warning")} />;
+  }
+
   switch (fileType) {
     case "pdf":
-      return (
-        <div className={cn(wrapperClass)}>
-          <FileText className={iconClass} />
-        </div>
-      );
+      return <FileText className={cn(iconClass, "text-destructive")} />;
     case "docx":
     case "doc":
-      return (
-        <div className={cn(wrapperClass)}>
-          <FileType className={iconClass} />
-        </div>
-      );
+      return <FileType className={cn(iconClass, "text-primary")} />;
     case "md":
     case "txt":
-      return (
-        <div className={cn(wrapperClass)}>
-          <FileCode className={iconClass} />
-        </div>
-      );
     case "html":
-      return (
-        <div className={cn(wrapperClass)}>
-          <FileCode className={iconClass} />
-        </div>
-      );
+      return <FileCode className={cn(iconClass, "text-success")} />;
     default:
-      return (
-        <div className={cn(wrapperClass)}>
-          <File className={cn(iconClass)} />
-        </div>
-      );
+      return <File className={cn(iconClass, "text-on-surface-muted")} />;
   }
 }

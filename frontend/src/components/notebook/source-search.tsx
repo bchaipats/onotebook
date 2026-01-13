@@ -10,6 +10,7 @@ import {
   Check,
   ExternalLink,
   X,
+  Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -28,10 +29,12 @@ interface SourceSearchProps {
 }
 
 type SearchMode = "fast" | "deep";
+type SourceType = "web" | "youtube" | "scholar";
 
 export function SourceSearch({ notebookId }: SourceSearchProps) {
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState<SearchMode>("fast");
+  const [sourceType, setSourceType] = useState<SourceType>("web");
   const [results, setResults] = useState<SearchResultItem[]>([]);
   const [selectedUrls, setSelectedUrls] = useState<Set<string>>(new Set());
 
@@ -110,8 +113,33 @@ export function SourceSearch({ notebookId }: SourceSearchProps) {
         <div className="flex gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-1 rounded-full bg-surface px-3 py-1 text-xs text-on-surface transition-colors hover:bg-hover">
-                <Sparkles className="h-3 w-3 text-primary" />
+              <button className="flex items-center gap-1.5 rounded-full bg-surface px-3 py-1.5 text-xs text-on-surface transition-colors hover:bg-hover">
+                <Globe className="h-3.5 w-3.5" />
+                {sourceType === "web"
+                  ? "Web"
+                  : sourceType === "youtube"
+                    ? "YouTube"
+                    : "Scholar"}
+                <ChevronDown className="h-3 w-3 text-on-surface-muted" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem onClick={() => setSourceType("web")}>
+                Web
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSourceType("youtube")}>
+                YouTube
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSourceType("scholar")}>
+                Scholar
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-1.5 rounded-full bg-surface px-3 py-1.5 text-xs text-on-surface transition-colors hover:bg-hover">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
                 {mode === "fast" ? "Fast Research" : "Deep Research"}
                 <ChevronDown className="h-3 w-3 text-on-surface-muted" />
               </button>
@@ -120,13 +148,15 @@ export function SourceSearch({ notebookId }: SourceSearchProps) {
               <DropdownMenuItem onClick={() => setMode("fast")}>
                 <div className="flex flex-col gap-0.5">
                   <span className="font-medium">Fast Research</span>
-                  <span className="text-xs">Quick search, 10 results</span>
+                  <span className="text-xs text-on-surface-muted">
+                    Quick search, 10 results
+                  </span>
                 </div>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setMode("deep")}>
                 <div className="flex flex-col gap-0.5">
                   <span className="font-medium">Deep Research</span>
-                  <span className="text-xs">
+                  <span className="text-xs text-on-surface-muted">
                     Comprehensive search, 30 results
                   </span>
                 </div>
@@ -136,12 +166,13 @@ export function SourceSearch({ notebookId }: SourceSearchProps) {
         </div>
 
         <Button
+          variant="ghost"
           size="icon"
-          className="h-7 w-7 rounded-full"
+          className="h-8 w-8 rounded-full bg-surface-variant"
           onClick={handleSearch}
           disabled={!query.trim() || isSearching || isAdding}
         >
-          <ArrowRight className="h-3 w-3" />
+          <ArrowRight className="h-4 w-4" />
         </Button>
       </div>
 
