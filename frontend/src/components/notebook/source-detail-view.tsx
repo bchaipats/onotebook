@@ -9,7 +9,6 @@ import {
   ChevronDown,
   Info,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   useSourceGuide,
   useGenerateSourceGuide,
@@ -32,11 +31,22 @@ export function SourceDetailInline({
 }: SourceDetailInlineProps) {
   const [guideExpanded, setGuideExpanded] = useState(true);
   const [infoExpanded, setInfoExpanded] = useState(false);
+  const [autoGenerateTriggered, setAutoGenerateTriggered] = useState(false);
+
   const { data: guide, isLoading: guideLoading } = useSourceGuide(document.id);
   const { data: content, isLoading: contentLoading } = useSourceContent(
     document.id,
   );
   const generateGuide = useGenerateSourceGuide(document.id);
+
+  const isDocumentReady = document.processing_status === "ready";
+  const needsGuide = !guide?.summary && isDocumentReady;
+  const isGenerating =
+    generateGuide.isPending || (needsGuide && !autoGenerateTriggered);
+
+  useEffect(() => {
+    setAutoGenerateTriggered(false);
+  }, [document.id]);
 
   useEffect(() => {
     if (guide?.summary) {
@@ -44,60 +54,82 @@ export function SourceDetailInline({
     }
   }, [guide?.summary]);
 
+  useEffect(() => {
+    if (
+      !guideLoading &&
+      needsGuide &&
+      !generateGuide.isPending &&
+      !autoGenerateTriggered
+    ) {
+      setAutoGenerateTriggered(true);
+      generateGuide.mutate();
+    }
+  }, [guideLoading, needsGuide, generateGuide, autoGenerateTriggered]);
+
   return (
-    <div className="flex-1 space-y-4 overflow-y-auto p-4">
-      <div>
-        <h2 className="text-xl font-semibold text-on-surface">
-          {document.filename}
-        </h2>
-        {document.source_url && (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="shrink-0 space-y-4 p-4 pb-0">
+        <SourceHeader document={document} />
+        <SourceGuideCard
+          guide={guide}
+          isLoading={guideLoading || isGenerating}
+          expanded={guideExpanded}
+          onToggle={() => setGuideExpanded(!guideExpanded)}
+        />
+      </div>
+
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
+        {document.source_type === "youtube" && document.source_url && (
+          <YouTubeEmbed url={document.source_url} />
+        )}
+
+        <SourceContent
+          content={content?.content}
+          isLoading={contentLoading}
+          highlightText={highlightedChunkContent}
+          citationIndex={citationIndex}
+        />
+
+        <InfoSection
+          document={document}
+          expanded={infoExpanded}
+          onToggle={() => setInfoExpanded(!infoExpanded)}
+        />
+      </div>
+    </div>
+  );
+}
+
+function SourceHeader({ document }: { document: Document }) {
+  const isYouTube = document.source_type === "youtube";
+  const showHostname = document.source_url && !isYouTube;
+
+  return (
+    <div>
+      <h2 className="flex items-center gap-2 text-xl font-semibold text-on-surface">
+        <span className="flex-1 truncate">{document.filename}</span>
+        {isYouTube && document.source_url && (
           <a
             href={document.source_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-1 flex items-center gap-1 text-sm text-primary hover:underline"
+            className="shrink-0 text-primary hover:text-primary-hover"
           >
-            <ExternalLink className="h-3.5 w-3.5" />
-            <span className="truncate">{getHostname(document.source_url)}</span>
+            <ExternalLink className="h-5 w-5" />
           </a>
         )}
-      </div>
-
-      <SourceGuideCard
-        guide={guide}
-        isLoading={guideLoading}
-        expanded={guideExpanded}
-        onToggle={() => setGuideExpanded(!guideExpanded)}
-        onGenerate={() => generateGuide.mutate()}
-        isGenerating={generateGuide.isPending}
-      />
-
-      {document.source_type === "youtube" && document.source_url && (
-        <YouTubeEmbed url={document.source_url} />
+      </h2>
+      {showHostname && (
+        <a
+          href={document.source_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-1 flex items-center gap-1 text-sm text-primary hover:underline"
+        >
+          <ExternalLink className="h-3.5 w-3.5" />
+          <span className="truncate">{getHostname(document.source_url!)}</span>
+        </a>
       )}
-
-      {contentLoading ? (
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
-        </div>
-      ) : content?.content ? (
-        <HighlightedContent
-          content={content.content}
-          highlightText={highlightedChunkContent}
-          citationIndex={citationIndex}
-        />
-      ) : (
-        <div className="flex flex-col items-center py-8 text-center">
-          <FileText className="mb-3 h-10 w-10 text-on-surface-muted" />
-          <p className="font-medium text-on-surface">No content available</p>
-        </div>
-      )}
-
-      <InfoSection
-        document={document}
-        expanded={infoExpanded}
-        onToggle={() => setInfoExpanded(!infoExpanded)}
-      />
     </div>
   );
 }
@@ -107,33 +139,26 @@ function SourceGuideCard({
   isLoading,
   expanded,
   onToggle,
-  onGenerate,
-  isGenerating,
 }: {
   guide: SourceGuide | undefined;
   isLoading: boolean;
   expanded: boolean;
   onToggle: () => void;
-  onGenerate: () => void;
-  isGenerating: boolean;
 }) {
   const hasGuide = !!guide?.summary;
-  const isClickable = hasGuide || isLoading;
+  const showContent = expanded && hasGuide && !isLoading;
 
   return (
     <div className="rounded-xl border border-border bg-surface-variant/50">
       <button
-        onClick={isClickable ? onToggle : undefined}
-        className={cn(
-          "flex w-full items-center gap-2 rounded-xl px-4 py-3 text-left transition-colors",
-          isClickable && "hover:bg-hover",
-          !isClickable && "cursor-default",
-        )}
-        disabled={!isClickable}
+        onClick={onToggle}
+        className="flex w-full items-center gap-2 rounded-xl px-4 py-3 text-left transition-colors hover:bg-hover"
       >
         <Sparkles className="h-4 w-4 shrink-0 text-primary" />
         <span className="flex-1 font-medium text-on-surface">Source guide</span>
-        {isClickable && (
+        {isLoading ? (
+          <Loader2 className="h-4 w-4 animate-spin text-on-surface-muted" />
+        ) : (
           <ChevronDown
             className={cn(
               "h-4 w-4 text-on-surface-muted transition-transform",
@@ -143,74 +168,82 @@ function SourceGuideCard({
         )}
       </button>
 
-      {expanded && (
-        <div className="px-4 pb-4">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-4">
-              <Loader2 className="h-5 w-5 animate-spin text-primary" />
-            </div>
-          ) : hasGuide ? (
-            <div className="space-y-3">
-              <p className="prose prose-sm text-on-surface">
-                {guide
-                  .summary!.split(/(\*\*[^*]+\*\*)/g)
-                  .map((part, i) =>
-                    part.startsWith("**") && part.endsWith("**") ? (
-                      <strong key={i}>{part.slice(2, -2)}</strong>
-                    ) : (
-                      <span key={i}>{part}</span>
-                    ),
-                  )}
-              </p>
-              {guide.topics && guide.topics.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {guide.topics.map((topic, i) => (
-                    <button
-                      key={i}
-                      onClick={() =>
-                        useChatActions
-                          .getState()
-                          .setPendingMessage(`Discuss ${topic}`)
-                      }
-                      className="max-w-[180px] truncate rounded-full border border-border bg-surface px-3 py-1 text-xs text-on-surface-muted transition-colors hover:bg-hover hover:text-on-surface"
-                    >
-                      {topic}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center py-4 text-center">
-              <p className="mb-3 text-sm text-on-surface-muted">
-                Generate an AI summary of this source
-              </p>
-              <Button
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onGenerate();
-                }}
-                disabled={isGenerating}
-                className="gap-2"
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="h-4 w-4" />
-                    Generate Guide
-                  </>
-                )}
-              </Button>
-            </div>
-          )}
+      {showContent && (
+        <div className="max-h-80 overflow-y-auto px-4 pb-4">
+          <GuideContent guide={guide} />
         </div>
       )}
     </div>
+  );
+}
+
+function GuideContent({ guide }: { guide: SourceGuide }) {
+  const setPendingMessage = useChatActions((state) => state.setPendingMessage);
+
+  return (
+    <div className="space-y-3">
+      <p className="prose prose-sm text-on-surface">
+        {guide
+          .summary!.split(/(\*\*[^*]+\*\*)/g)
+          .map((part, i) =>
+            part.startsWith("**") && part.endsWith("**") ? (
+              <strong key={i}>{part.slice(2, -2)}</strong>
+            ) : (
+              <span key={i}>{part}</span>
+            ),
+          )}
+      </p>
+      {guide.topics && guide.topics.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {guide.topics.map((topic, i) => (
+            <button
+              key={i}
+              onClick={() => setPendingMessage(`Discuss ${topic}`)}
+              className="max-w-[180px] truncate rounded-full border border-border bg-surface px-3 py-1 text-xs text-on-surface-muted transition-colors hover:bg-hover hover:text-on-surface"
+            >
+              {topic}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SourceContent({
+  content,
+  isLoading,
+  highlightText,
+  citationIndex,
+}: {
+  content: string | undefined;
+  isLoading: boolean;
+  highlightText: string | null;
+  citationIndex: number | null;
+}) {
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!content) {
+    return (
+      <div className="flex flex-col items-center py-8 text-center">
+        <FileText className="mb-3 h-10 w-10 text-on-surface-muted" />
+        <p className="font-medium text-on-surface">No content available</p>
+      </div>
+    );
+  }
+
+  return (
+    <HighlightedContent
+      content={content}
+      highlightText={highlightText}
+      citationIndex={citationIndex}
+    />
   );
 }
 
@@ -229,13 +262,6 @@ function YouTubeEmbed({ url }: { url: string }) {
       />
     </div>
   );
-}
-
-function extractYouTubeVideoId(url: string): string | null {
-  const match = url.match(
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
-  );
-  return match ? match[1] : null;
 }
 
 function InfoSection({
@@ -274,9 +300,9 @@ function InfoSection({
             }
           />
           <InfoRow label="Size" value={formatFileSize(document.file_size)} />
-          <InfoRow label="Chunks" value={`${document.chunk_count}`} />
+          <InfoRow label="Chunks" value={String(document.chunk_count)} />
           {document.page_count && (
-            <InfoRow label="Pages" value={`${document.page_count}`} />
+            <InfoRow label="Pages" value={String(document.page_count)} />
           )}
           <InfoRow
             label="Added"
@@ -312,6 +338,13 @@ function getHostname(url: string): string {
   }
 }
 
+function extractYouTubeVideoId(url: string): string | null {
+  const match = url.match(
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+  );
+  return match ? match[1] : null;
+}
+
 function HighlightedContent({
   content,
   highlightText,
@@ -335,47 +368,11 @@ function HighlightedContent({
     }
   }, [highlightText]);
 
-  if (!highlightText) {
-    return (
-      <div className="whitespace-pre-wrap rounded-lg bg-surface-variant p-4 font-mono text-sm text-on-surface">
-        {content}
-      </div>
-    );
-  }
-
-  function findMatch(): { index: number; length: number } | null {
-    const exactIndex = content.indexOf(highlightText);
-    if (exactIndex !== -1) {
-      return { index: exactIndex, length: highlightText.length };
-    }
-
-    const normalize = (t: string) => t.replace(/\s+/g, " ").trim();
-    const normalizedContent = normalize(content);
-    const normalizedSearch = normalize(highlightText);
-    const normalizedIndex = normalizedContent.indexOf(normalizedSearch);
-    if (normalizedIndex !== -1) {
-      return { index: normalizedIndex, length: highlightText.length };
-    }
-
-    const prefix = normalize(highlightText.slice(0, 100));
-    if (prefix.length >= 20) {
-      const prefixIndex = normalizedContent.indexOf(prefix);
-      if (prefixIndex !== -1) {
-        return {
-          index: prefixIndex,
-          length: Math.min(highlightText.length, 500),
-        };
-      }
-    }
-
-    return null;
-  }
-
-  const match = findMatch();
+  const match = highlightText ? findTextMatch(content, highlightText) : null;
 
   if (!match) {
     return (
-      <div className="whitespace-pre-wrap rounded-lg bg-surface-variant p-4 font-mono text-sm text-on-surface">
+      <div className="whitespace-pre-wrap rounded-lg bg-surface-variant p-4 font-reading text-sm leading-relaxed text-on-surface">
         {content}
       </div>
     );
@@ -386,7 +383,7 @@ function HighlightedContent({
   const after = content.slice(match.index + match.length);
 
   return (
-    <div className="relative whitespace-pre-wrap rounded-lg bg-surface-variant p-4 font-mono text-sm text-on-surface">
+    <div className="relative whitespace-pre-wrap rounded-lg bg-surface-variant p-4 font-reading text-sm leading-relaxed text-on-surface">
       {before}
       <span className="relative inline">
         {citationIndex && (
@@ -404,4 +401,35 @@ function HighlightedContent({
       {after}
     </div>
   );
+}
+
+function findTextMatch(
+  content: string,
+  searchText: string,
+): { index: number; length: number } | null {
+  const exactIndex = content.indexOf(searchText);
+  if (exactIndex !== -1) {
+    return { index: exactIndex, length: searchText.length };
+  }
+
+  const normalize = (t: string) => t.replace(/\s+/g, " ").trim();
+  const normalizedContent = normalize(content);
+  const normalizedSearch = normalize(searchText);
+  const normalizedIndex = normalizedContent.indexOf(normalizedSearch);
+  if (normalizedIndex !== -1) {
+    return { index: normalizedIndex, length: searchText.length };
+  }
+
+  const prefix = normalize(searchText.slice(0, 100));
+  if (prefix.length >= 20) {
+    const prefixIndex = normalizedContent.indexOf(prefix);
+    if (prefixIndex !== -1) {
+      return {
+        index: prefixIndex,
+        length: Math.min(searchText.length, 500),
+      };
+    }
+  }
+
+  return null;
 }
