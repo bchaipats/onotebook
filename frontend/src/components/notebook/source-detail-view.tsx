@@ -6,7 +6,6 @@ import {
   Loader2,
   Sparkles,
   ExternalLink,
-  ChevronLeft,
   ChevronDown,
   Info,
 } from "lucide-react";
@@ -24,14 +23,12 @@ interface SourceDetailInlineProps {
   document: Document;
   highlightedChunkContent: string | null;
   citationIndex: number | null;
-  onBack: () => void;
 }
 
 export function SourceDetailInline({
   document,
   highlightedChunkContent,
   citationIndex,
-  onBack,
 }: SourceDetailInlineProps) {
   const [guideExpanded, setGuideExpanded] = useState(true);
   const [infoExpanded, setInfoExpanded] = useState(false);
@@ -48,74 +45,60 @@ export function SourceDetailInline({
   }, [guide?.summary]);
 
   return (
-    <>
-      <div className="flex items-center gap-2 border-b border-divider px-4 py-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onBack}
-          className="h-8 w-8 shrink-0"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <div className="min-w-0 flex-1">
-          <h2 className="truncate font-semibold text-on-surface">
-            {document.filename}
-          </h2>
-          {document.source_url && (
-            <a
-              href={document.source_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-xs text-primary hover:underline"
-            >
-              <ExternalLink className="h-3 w-3" />
-              <span className="truncate">
-                {getHostname(document.source_url)}
-              </span>
-            </a>
-          )}
+    <div className="flex-1 space-y-4 overflow-y-auto p-4">
+      <div>
+        <h2 className="text-xl font-semibold text-on-surface">
+          {document.filename}
+        </h2>
+        {document.source_url && (
+          <a
+            href={document.source_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 flex items-center gap-1 text-sm text-primary hover:underline"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            <span className="truncate">{getHostname(document.source_url)}</span>
+          </a>
+        )}
+      </div>
+
+      <SourceGuideCard
+        guide={guide}
+        isLoading={guideLoading}
+        expanded={guideExpanded}
+        onToggle={() => setGuideExpanded(!guideExpanded)}
+        onGenerate={() => generateGuide.mutate()}
+        isGenerating={generateGuide.isPending}
+      />
+
+      {document.source_type === "youtube" && document.source_url && (
+        <YouTubeEmbed url={document.source_url} />
+      )}
+
+      {contentLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
-      </div>
-
-      <div className="flex-1 space-y-4 overflow-y-auto p-4">
-        <SourceGuideCard
-          guide={guide}
-          isLoading={guideLoading}
-          expanded={guideExpanded}
-          onToggle={() => setGuideExpanded(!guideExpanded)}
-          onGenerate={() => generateGuide.mutate()}
-          isGenerating={generateGuide.isPending}
+      ) : content?.content ? (
+        <HighlightedContent
+          content={content.content}
+          highlightText={highlightedChunkContent}
+          citationIndex={citationIndex}
         />
+      ) : (
+        <div className="flex flex-col items-center py-8 text-center">
+          <FileText className="mb-3 h-10 w-10 text-on-surface-muted" />
+          <p className="font-medium text-on-surface">No content available</p>
+        </div>
+      )}
 
-        {document.source_type === "youtube" && document.source_url && (
-          <YouTubeEmbed url={document.source_url} />
-        )}
-
-        {contentLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          </div>
-        ) : content?.content ? (
-          <HighlightedContent
-            content={content.content}
-            highlightText={highlightedChunkContent}
-            citationIndex={citationIndex}
-          />
-        ) : (
-          <div className="flex flex-col items-center py-8 text-center">
-            <FileText className="mb-3 h-10 w-10 text-on-surface-muted" />
-            <p className="font-medium text-on-surface">No content available</p>
-          </div>
-        )}
-
-        <InfoSection
-          document={document}
-          expanded={infoExpanded}
-          onToggle={() => setInfoExpanded(!infoExpanded)}
-        />
-      </div>
-    </>
+      <InfoSection
+        document={document}
+        expanded={infoExpanded}
+        onToggle={() => setInfoExpanded(!infoExpanded)}
+      />
+    </div>
   );
 }
 

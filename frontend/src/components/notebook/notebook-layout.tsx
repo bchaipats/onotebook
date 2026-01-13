@@ -28,6 +28,7 @@ export function NotebookLayout({
   );
   const [sourcesCollapsed, setSourcesCollapsed] = useState(false);
   const [studioCollapsed, setStudioCollapsed] = useState(false);
+  const [isViewingSourceDetail, setIsViewingSourceDetail] = useState(false);
   const [highlightedCitation, setHighlightedCitation] =
     useState<HighlightedCitation | null>(null);
 
@@ -78,7 +79,9 @@ export function NotebookLayout({
             "hidden shrink-0 rounded-3xl bg-surface shadow-elevation-1 transition-[width] duration-300 ease-out md:flex md:flex-col",
             sourcesCollapsed
               ? "w-[var(--panel-width-collapsed)]"
-              : "w-[var(--panel-width-sources)]",
+              : isViewingSourceDetail
+                ? "w-[var(--panel-width-sources-expanded)]"
+                : "w-[var(--panel-width-sources)]",
           )}
         >
           <SourcesPanel
@@ -89,6 +92,7 @@ export function NotebookLayout({
             collapsed={sourcesCollapsed}
             onToggleCollapse={() => setSourcesCollapsed(!sourcesCollapsed)}
             highlightedCitation={highlightedCitation}
+            onViewingDetailChange={setIsViewingSourceDetail}
           />
         </aside>
 
@@ -109,7 +113,9 @@ export function NotebookLayout({
             "hidden shrink-0 rounded-3xl bg-surface shadow-elevation-1 transition-[width] duration-300 ease-out lg:flex lg:flex-col",
             studioCollapsed
               ? "w-[var(--panel-width-collapsed)]"
-              : "w-[var(--panel-width-studio)]",
+              : isViewingSourceDetail
+                ? "w-[var(--panel-width-studio-contracted)]"
+                : "w-[var(--panel-width-studio)]",
           )}
         >
           <StudioPanel

@@ -9,7 +9,9 @@
 
   /* Layout */
   --panel-width-sources: 425px;
+  --panel-width-sources-expanded: 680px;
   --panel-width-studio: 430px;
+  --panel-width-studio-contracted: 280px;
   --panel-width-collapsed: 3.5rem;
   --panel-gap: 0.75rem;
   --h-button-lg: 2.5rem;
@@ -299,7 +301,9 @@
   /* ===== LAYOUT ===== */
   --h-button-lg: var(--h-button-lg);
   --spacing-panel-width-sources: var(--panel-width-sources);
+  --spacing-panel-width-sources-expanded: var(--panel-width-sources-expanded);
   --spacing-panel-width-studio: var(--panel-width-studio);
+  --spacing-panel-width-studio-contracted: var(--panel-width-studio-contracted);
   --spacing-panel-width-collapsed: var(--panel-width-collapsed);
   --spacing-panel-gap: var(--panel-gap);
 

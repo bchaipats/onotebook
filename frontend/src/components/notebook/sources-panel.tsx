@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, FileText, PanelRightOpen, Search } from "lucide-react";
+import {
+  Plus,
+  FileText,
+  PanelRightOpen,
+  Minimize2,
+  Search,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SourceItem } from "./source-item";
@@ -22,6 +28,7 @@ interface SourcesPanelProps {
   collapsed?: boolean;
   onToggleCollapse?: () => void;
   highlightedCitation?: HighlightedCitation | null;
+  onViewingDetailChange?: (isViewing: boolean) => void;
 }
 
 export function SourcesPanel({
@@ -32,6 +39,7 @@ export function SourcesPanel({
   collapsed = false,
   onToggleCollapse,
   highlightedCitation,
+  onViewingDetailChange,
 }: SourcesPanelProps) {
   const { data: documents, isLoading } = useDocuments(notebookId);
   const { data: sourceCount } = useSourceCount(notebookId);
@@ -43,6 +51,10 @@ export function SourcesPanel({
     string | null
   >(null);
   const [citationIndex, setCitationIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    onViewingDetailChange?.(selectedDocument !== null);
+  }, [selectedDocument, onViewingDetailChange]);
 
   useEffect(() => {
     if (highlightedCitation && documents) {
@@ -125,11 +137,15 @@ export function SourcesPanel({
   if (selectedDocument) {
     return (
       <div className="flex h-full flex-col">
+        <PanelHeader
+          title="Sources"
+          collapseIcon={<Minimize2 />}
+          onToggleCollapse={clearSelection}
+        />
         <SourceDetailInline
           document={selectedDocument}
           highlightedChunkContent={highlightedChunkContent}
           citationIndex={citationIndex}
-          onBack={clearSelection}
         />
         <AddSourcesDialog
           open={isUploadOpen}
