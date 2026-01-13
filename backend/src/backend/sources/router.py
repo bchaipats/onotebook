@@ -185,11 +185,21 @@ async def get_source_guide(
     session: AsyncSession = Depends(get_session),
 ) -> SourceGuideResponse:
     """Get the source guide (AI summary) for a document."""
+    import json
+
     document = await get_document_or_404(session, document_id)
+
+    topics = None
+    if document.summary_topics:
+        try:
+            topics = json.loads(document.summary_topics)
+        except json.JSONDecodeError:
+            topics = None
 
     return SourceGuideResponse(
         document_id=document.id,
         summary=document.summary,
+        topics=topics,
         generated_at=document.summary_generated_at,
     )
 
@@ -211,11 +221,12 @@ async def generate_guide(
     try:
         from src.backend.sources.service import generate_source_guide
 
-        summary = await generate_source_guide(session, document)
+        summary, topics = await generate_source_guide(session, document)
 
         return SourceGuideResponse(
             document_id=document.id,
             summary=summary,
+            topics=topics if topics else None,
             generated_at=document.summary_generated_at,
         )
 

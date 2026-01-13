@@ -50,6 +50,7 @@ export interface Document {
 export interface SourceGuide {
   document_id: string;
   summary: string | null;
+  topics: string[] | null;
   generated_at: string | null;
 }
 

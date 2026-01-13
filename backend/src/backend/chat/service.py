@@ -149,9 +149,7 @@ async def delete_last_assistant_message(
     return message
 
 
-async def delete_messages_after(
-    session: AsyncSession, message: Message
-) -> int:
+async def delete_messages_after(session: AsyncSession, message: Message) -> int:
     """Delete all messages that come after the specified message in the session."""
     from sqlalchemy import delete
 

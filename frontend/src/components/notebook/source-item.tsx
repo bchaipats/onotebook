@@ -30,6 +30,7 @@ interface SourceItemProps {
   document: Document;
   isSelected: boolean;
   onToggle: () => void;
+  onClick?: () => void;
   className?: string;
 }
 
@@ -37,6 +38,7 @@ export function SourceItem({
   document,
   isSelected,
   onToggle,
+  onClick,
   className,
 }: SourceItemProps) {
   const deleteDocument = useDeleteDocument(document.notebook_id);
@@ -99,13 +101,18 @@ export function SourceItem({
   return (
     <div
       className={cn(
-        "group flex items-center gap-3 rounded-lg px-2 py-2 transition-colors",
+        "group flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 transition-colors",
         isSelected && isReady ? "bg-selected" : "hover:bg-hover",
         className,
       )}
+      onClick={(e) => {
+        const target = e.target as HTMLElement;
+        if (target.closest("[data-no-click]")) return;
+        onClick?.();
+      }}
     >
       <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
-        <DropdownMenuTrigger asChild>
+        <DropdownMenuTrigger asChild data-no-click>
           <button className="relative flex h-5 w-5 shrink-0 items-center justify-center">
             <span
               className={cn(
@@ -147,6 +154,7 @@ export function SourceItem({
       </span>
 
       <Checkbox
+        data-no-click
         checked={isSelected && isReady}
         onCheckedChange={onToggle}
         disabled={!isReady}

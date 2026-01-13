@@ -34,6 +34,7 @@ CreateSourceRequest = CreateUrlSource | CreateYouTubeSource | CreatePasteSource
 class SourceGuideResponse(BaseModel):
     document_id: str
     summary: str | None
+    topics: list[str] | None
     generated_at: datetime | None
 
     model_config = {"from_attributes": True}

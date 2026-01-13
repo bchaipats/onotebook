@@ -2,301 +2,324 @@
 
 import { useState, useEffect, useRef } from "react";
 import {
-  BookOpen,
   FileText,
-  Info,
   Loader2,
   Sparkles,
   ExternalLink,
-  Globe,
-  Youtube,
-  StickyNote,
-  File,
+  ChevronLeft,
+  ChevronDown,
+  Info,
 } from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   useSourceGuide,
   useGenerateSourceGuide,
   useSourceContent,
 } from "@/hooks/use-sources";
-import { formatFileSize } from "@/lib/utils";
-import type { Document } from "@/types/api";
+import { formatFileSize, cn } from "@/lib/utils";
+import type { Document, SourceGuide } from "@/types/api";
 
-interface SourceDetailViewProps {
-  document: Document | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  highlightedChunkContent?: string | null;
-  citationIndex?: number | null;
+interface SourceDetailInlineProps {
+  document: Document;
+  highlightedChunkContent: string | null;
+  citationIndex: number | null;
+  onBack: () => void;
 }
 
-export function SourceDetailView({
+export function SourceDetailInline({
   document,
-  open,
-  onOpenChange,
   highlightedChunkContent,
   citationIndex,
-}: SourceDetailViewProps) {
-  // Switch to content tab when there's highlighted content
-  const [activeTab, setActiveTab] = useState(
-    highlightedChunkContent ? "content" : "guide",
-  );
-
-  // Update tab when highlighted content changes
-  useEffect(() => {
-    if (highlightedChunkContent) {
-      setActiveTab("content");
-    }
-  }, [highlightedChunkContent]);
-  const { data: guide, isLoading: guideLoading } = useSourceGuide(
-    document?.id ?? null,
-  );
+  onBack,
+}: SourceDetailInlineProps) {
+  const [guideExpanded, setGuideExpanded] = useState(true);
+  const [infoExpanded, setInfoExpanded] = useState(false);
+  const { data: guide, isLoading: guideLoading } = useSourceGuide(document.id);
   const { data: content, isLoading: contentLoading } = useSourceContent(
-    activeTab === "content" ? (document?.id ?? null) : null,
+    document.id,
   );
-  const generateGuide = useGenerateSourceGuide(document?.id ?? "");
+  const generateGuide = useGenerateSourceGuide(document.id);
 
-  if (!document) return null;
+  useEffect(() => {
+    if (guide?.summary) {
+      setGuideExpanded(true);
+    }
+  }, [guide?.summary]);
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="flex w-full flex-col sm:max-w-lg">
-        <SheetHeader className="shrink-0 pb-4">
-          <div className="flex items-center gap-3">
-            <SourceTypeIcon sourceType={document.source_type} />
-            <div className="min-w-0 flex-1">
-              <SheetTitle className="truncate text-left">
-                {document.filename}
-              </SheetTitle>
-              {document.source_url && (
-                <a
-                  href={document.source_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-0.5 flex items-center gap-1 text-xs text-primary hover:underline"
-                >
-                  <ExternalLink className="h-3 w-3" />
-                  <span className="truncate">{document.source_url}</span>
-                </a>
-              )}
-            </div>
-          </div>
-        </SheetHeader>
-
-        <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="flex min-h-0 flex-1 flex-col"
+    <>
+      <div className="flex items-center gap-2 border-b border-divider px-4 py-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onBack}
+          className="h-8 w-8 shrink-0"
         >
-          <TabsList className="mx-0 mt-4 grid w-full shrink-0 grid-cols-3">
-            <TabsTrigger value="guide" className="gap-1.5 text-xs">
-              <BookOpen className="h-3.5 w-3.5" />
-              Source Guide
-            </TabsTrigger>
-            <TabsTrigger value="content" className="gap-1.5 text-xs">
-              <FileText className="h-3.5 w-3.5" />
-              Content
-            </TabsTrigger>
-            <TabsTrigger value="info" className="gap-1.5 text-xs">
-              <Info className="h-3.5 w-3.5" />
-              Info
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="guide" className="mt-4 flex-1 overflow-y-auto">
-            {guideLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              </div>
-            ) : guide?.summary ? (
-              <div className="prose prose-sm">
-                <GuideContent content={guide.summary} />
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <Sparkles className="mb-3 h-10 w-10 text-on-surface-muted" />
-                <p className="font-medium text-on-surface">
-                  No source guide yet
-                </p>
-                <p className="mt-1 text-sm text-on-surface-muted">
-                  Generate an AI summary of this source to help you understand
-                  its key concepts.
-                </p>
-                <Button
-                  onClick={() => generateGuide.mutate()}
-                  className="mt-4 gap-2"
-                  disabled={generateGuide.isPending}
-                >
-                  {generateGuide.isPending ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin text-on-primary" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-4 w-4" />
-                      Generate Source Guide
-                    </>
-                  )}
-                </Button>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="content" className="mt-4 flex-1 overflow-y-auto">
-            {contentLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              </div>
-            ) : content?.content ? (
-              <HighlightedContent
-                content={content.content}
-                highlightText={highlightedChunkContent}
-                citationIndex={citationIndex}
-              />
-            ) : (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <FileText className="mb-3 h-10 w-10 text-on-surface-muted" />
-                <p className="font-medium text-on-surface">
-                  No content available
-                </p>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="info" className="mt-4 flex-1 overflow-y-auto">
-            <div className="space-y-4">
-              <InfoRow
-                label="Source Type"
-                value={formatSourceType(document.source_type)}
-              />
-              <InfoRow
-                label="File Type"
-                value={document.file_type.toUpperCase()}
-              />
-              <InfoRow
-                label="Size"
-                value={formatFileSize(document.file_size)}
-              />
-              <InfoRow
-                label="Chunks"
-                value={`${document.chunk_count} chunks`}
-              />
-              {document.page_count && (
-                <InfoRow label="Pages" value={`${document.page_count} pages`} />
-              )}
-              {document.source_url && (
-                <InfoRow label="Source URL">
-                  <a
-                    href={document.source_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-sm text-primary hover:underline"
-                  >
-                    {document.source_url}
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
-                </InfoRow>
-              )}
-              <InfoRow
-                label="Added"
-                value={new Date(document.created_at).toLocaleString()}
-              />
-            </div>
-          </TabsContent>
-        </Tabs>
-      </SheetContent>
-    </Sheet>
-  );
-}
-
-function SourceTypeIcon({ sourceType }: { sourceType: string }) {
-  const baseClass =
-    "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary-muted text-on-primary-muted";
-  const iconClass = "h-4 w-4";
-
-  switch (sourceType) {
-    case "url":
-      return (
-        <div className={baseClass}>
-          <Globe className={iconClass} />
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <div className="min-w-0 flex-1">
+          <h2 className="truncate font-semibold text-on-surface">
+            {document.filename}
+          </h2>
+          {document.source_url && (
+            <a
+              href={document.source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-xs text-primary hover:underline"
+            >
+              <ExternalLink className="h-3 w-3" />
+              <span className="truncate">
+                {getHostname(document.source_url)}
+              </span>
+            </a>
+          )}
         </div>
-      );
-    case "youtube":
-      return (
-        <div className={baseClass}>
-          <Youtube className={iconClass} />
-        </div>
-      );
-    case "paste":
-      return (
-        <div className={baseClass}>
-          <StickyNote className={iconClass} />
-        </div>
-      );
-    default:
-      return (
-        <div className={baseClass}>
-          <File className={iconClass} />
-        </div>
-      );
-  }
-}
+      </div>
 
-function GuideContent({ content }: { content: string }) {
-  const parts = content.split(/(\*\*[^*]+\*\*)/g);
+      <div className="flex-1 space-y-4 overflow-y-auto p-4">
+        <SourceGuideCard
+          guide={guide}
+          isLoading={guideLoading}
+          expanded={guideExpanded}
+          onToggle={() => setGuideExpanded(!guideExpanded)}
+          onGenerate={() => generateGuide.mutate()}
+          isGenerating={generateGuide.isPending}
+        />
 
-  return (
-    <p>
-      {parts.map((part, i) =>
-        part.startsWith("**") && part.endsWith("**") ? (
-          <strong key={i}>{part.slice(2, -2)}</strong>
+        {document.source_type === "youtube" && document.source_url && (
+          <YouTubeEmbed url={document.source_url} />
+        )}
+
+        {contentLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          </div>
+        ) : content?.content ? (
+          <HighlightedContent
+            content={content.content}
+            highlightText={highlightedChunkContent}
+            citationIndex={citationIndex}
+          />
         ) : (
-          <span key={i}>{part}</span>
-        ),
-      )}
-    </p>
+          <div className="flex flex-col items-center py-8 text-center">
+            <FileText className="mb-3 h-10 w-10 text-on-surface-muted" />
+            <p className="font-medium text-on-surface">No content available</p>
+          </div>
+        )}
+
+        <InfoSection
+          document={document}
+          expanded={infoExpanded}
+          onToggle={() => setInfoExpanded(!infoExpanded)}
+        />
+      </div>
+    </>
   );
 }
 
-function InfoRow({
-  label,
-  value,
-  children,
+function SourceGuideCard({
+  guide,
+  isLoading,
+  expanded,
+  onToggle,
+  onGenerate,
+  isGenerating,
 }: {
-  label: string;
-  value?: string;
-  children?: React.ReactNode;
+  guide: SourceGuide | undefined;
+  isLoading: boolean;
+  expanded: boolean;
+  onToggle: () => void;
+  onGenerate: () => void;
+  isGenerating: boolean;
 }) {
+  const hasGuide = !!guide?.summary;
+  const isClickable = hasGuide || isLoading;
+
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-divider pb-3">
-      <span className="text-sm text-on-surface-muted">{label}</span>
-      {children || (
-        <span className="text-sm font-medium text-on-surface">{value}</span>
+    <div className="rounded-xl border border-border bg-surface-variant/50">
+      <button
+        onClick={isClickable ? onToggle : undefined}
+        className={cn(
+          "flex w-full items-center gap-2 rounded-xl px-4 py-3 text-left transition-colors",
+          isClickable && "hover:bg-hover",
+          !isClickable && "cursor-default",
+        )}
+        disabled={!isClickable}
+      >
+        <Sparkles className="h-4 w-4 shrink-0 text-primary" />
+        <span className="flex-1 font-medium text-on-surface">Source guide</span>
+        {isClickable && (
+          <ChevronDown
+            className={cn(
+              "h-4 w-4 text-on-surface-muted transition-transform",
+              expanded && "rotate-180",
+            )}
+          />
+        )}
+      </button>
+
+      {expanded && (
+        <div className="px-4 pb-4">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+            </div>
+          ) : hasGuide ? (
+            <div className="space-y-3">
+              <p className="prose prose-sm text-on-surface">
+                {guide
+                  .summary!.split(/(\*\*[^*]+\*\*)/g)
+                  .map((part, i) =>
+                    part.startsWith("**") && part.endsWith("**") ? (
+                      <strong key={i}>{part.slice(2, -2)}</strong>
+                    ) : (
+                      <span key={i}>{part}</span>
+                    ),
+                  )}
+              </p>
+              {guide.topics && guide.topics.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {guide.topics.map((topic, i) => (
+                    <span
+                      key={i}
+                      className="max-w-[180px] truncate rounded-full border border-border bg-surface px-3 py-1 text-xs text-on-surface-muted"
+                    >
+                      {topic}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center py-4 text-center">
+              <p className="mb-3 text-sm text-on-surface-muted">
+                Generate an AI summary of this source
+              </p>
+              <Button
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onGenerate();
+                }}
+                disabled={isGenerating}
+                className="gap-2"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4" />
+                    Generate Guide
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
 }
 
-function formatSourceType(sourceType: string): string {
-  switch (sourceType) {
-    case "url":
-      return "Website";
-    case "youtube":
-      return "YouTube Video";
-    case "paste":
-      return "Pasted Text";
-    case "file":
-      return "Uploaded File";
-    default:
-      return sourceType;
+function YouTubeEmbed({ url }: { url: string }) {
+  const videoId = extractYouTubeVideoId(url);
+  if (!videoId) return null;
+
+  return (
+    <div className="aspect-video w-full overflow-hidden rounded-xl bg-surface-variant">
+      <iframe
+        src={`https://www.youtube.com/embed/${videoId}`}
+        title="YouTube video"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+        className="h-full w-full"
+      />
+    </div>
+  );
+}
+
+function extractYouTubeVideoId(url: string): string | null {
+  const match = url.match(
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+  );
+  return match ? match[1] : null;
+}
+
+function InfoSection({
+  document,
+  expanded,
+  onToggle,
+}: {
+  document: Document;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="rounded-xl border border-border">
+      <button
+        onClick={onToggle}
+        className="flex w-full items-center gap-2 rounded-xl px-4 py-3 text-left transition-colors hover:bg-hover"
+      >
+        <Info className="h-4 w-4 shrink-0 text-on-surface-muted" />
+        <span className="flex-1 text-sm font-medium text-on-surface">
+          Source info
+        </span>
+        <ChevronDown
+          className={cn(
+            "h-4 w-4 text-on-surface-muted transition-transform",
+            expanded && "rotate-180",
+          )}
+        />
+      </button>
+
+      {expanded && (
+        <div className="space-y-2 px-4 pb-4">
+          <InfoRow
+            label="Type"
+            value={
+              SOURCE_TYPE_LABELS[document.source_type] ?? document.source_type
+            }
+          />
+          <InfoRow label="Size" value={formatFileSize(document.file_size)} />
+          <InfoRow label="Chunks" value={`${document.chunk_count}`} />
+          {document.page_count && (
+            <InfoRow label="Pages" value={`${document.page_count}`} />
+          )}
+          <InfoRow
+            label="Added"
+            value={new Date(document.created_at).toLocaleDateString()}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between text-sm">
+      <span className="text-on-surface-muted">{label}</span>
+      <span className="font-medium text-on-surface">{value}</span>
+    </div>
+  );
+}
+
+const SOURCE_TYPE_LABELS: Record<string, string> = {
+  url: "Website",
+  youtube: "YouTube Video",
+  paste: "Pasted Text",
+  file: "Uploaded File",
+};
+
+function getHostname(url: string): string {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return url;
   }
 }
 
@@ -306,8 +329,8 @@ function HighlightedContent({
   citationIndex,
 }: {
   content: string;
-  highlightText?: string | null;
-  citationIndex?: number | null;
+  highlightText: string | null;
+  citationIndex: number | null;
 }) {
   const highlightRef = useRef<HTMLSpanElement>(null);
 
@@ -331,33 +354,27 @@ function HighlightedContent({
     );
   }
 
-  const searchText = highlightText;
-
-  // Find highlight using exact match, then normalized match, then prefix match
   function findMatch(): { index: number; length: number } | null {
-    // Exact match
-    const exactIndex = content.indexOf(searchText);
+    const exactIndex = content.indexOf(highlightText);
     if (exactIndex !== -1) {
-      return { index: exactIndex, length: searchText.length };
+      return { index: exactIndex, length: highlightText.length };
     }
 
-    // Normalized whitespace match
     const normalize = (t: string) => t.replace(/\s+/g, " ").trim();
     const normalizedContent = normalize(content);
-    const normalizedSearch = normalize(searchText);
+    const normalizedSearch = normalize(highlightText);
     const normalizedIndex = normalizedContent.indexOf(normalizedSearch);
     if (normalizedIndex !== -1) {
-      return { index: normalizedIndex, length: searchText.length };
+      return { index: normalizedIndex, length: highlightText.length };
     }
 
-    // Prefix match (first 100 chars)
-    const prefix = normalize(searchText.slice(0, 100));
+    const prefix = normalize(highlightText.slice(0, 100));
     if (prefix.length >= 20) {
       const prefixIndex = normalizedContent.indexOf(prefix);
       if (prefixIndex !== -1) {
         return {
           index: prefixIndex,
-          length: Math.min(searchText.length, 500),
+          length: Math.min(highlightText.length, 500),
         };
       }
     }

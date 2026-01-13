@@ -167,8 +167,8 @@ async def process_non_file_source(
         raise
 
 
-async def generate_source_guide(session: AsyncSession, document: Document) -> str:
-    """Generate AI summary for a document using Ollama."""
+async def generate_source_guide(session: AsyncSession, document: Document) -> tuple[str, list[str]]:
+    """Generate AI summary and topics for a document using Ollama."""
     import json
 
     import httpx
@@ -188,16 +188,17 @@ async def generate_source_guide(session: AsyncSession, document: Document) -> st
     if len(context) > 12000:
         context = context[:12000] + "\n\n[Content truncated...]"
 
-    prompt = f"""Analyze this document and provide a concise summary (2-3 paragraphs).
-Highlight key topics and important terms by making them **bold**.
-Focus on the main themes, arguments, conclusions, and key facts.
+    prompt = f"""Analyze this document and provide:
+1. A concise summary (2-3 paragraphs) with key topics in **bold**
+2. A list of 3-5 key topic phrases (short, 2-4 words each)
+
+You MUST respond in this exact JSON format:
+{{"summary": "Your summary here with **bold** terms...", "topics": ["Topic 1", "Topic 2", "Topic 3"]}}
 
 Document content:
-{context}
+{context}"""
 
-Summary:"""
-
-    summary_parts = []
+    response_parts = []
     async with (
         httpx.AsyncClient(timeout=float(settings.ollama_timeout)) as client,
         client.stream(
@@ -214,13 +215,33 @@ Summary:"""
             if line:
                 chunk = json.loads(line)
                 if "message" in chunk and "content" in chunk["message"]:
-                    summary_parts.append(chunk["message"]["content"])
+                    response_parts.append(chunk["message"]["content"])
 
-    summary = "".join(summary_parts).strip()
+    raw_response = "".join(response_parts).strip()
+
+    # Parse JSON response
+    try:
+        # Find JSON in response (handle markdown code blocks)
+        json_str = raw_response
+        if "```json" in json_str:
+            json_str = json_str.split("```json")[1].split("```")[0]
+        elif "```" in json_str:
+            json_str = json_str.split("```")[1].split("```")[0]
+
+        parsed = json.loads(json_str.strip())
+        summary = parsed.get("summary", raw_response)
+        topics = parsed.get("topics", [])
+        if not isinstance(topics, list):
+            topics = []
+        topics = [str(t) for t in topics[:5]]
+    except (json.JSONDecodeError, IndexError):
+        summary = raw_response
+        topics = []
 
     document.summary = summary
+    document.summary_topics = json.dumps(topics) if topics else None
     document.summary_generated_at = utc_now()
     await session.commit()
     await session.refresh(document)
 
-    return summary
+    return summary, topics

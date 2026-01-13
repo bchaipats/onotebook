@@ -74,6 +74,7 @@ class Document(SQLModel, table=True):
     source_url: str | None = None
     # AI-generated source guide summary
     summary: str | None = None
+    summary_topics: str | None = None  # JSON array of topic strings
     summary_generated_at: datetime | None = None
 
     notebook: Notebook | None = Relationship(back_populates="documents")
