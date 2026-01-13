@@ -83,6 +83,7 @@ import type {
 } from "@/types/api";
 import { ChatConfigDialog } from "./chat-config-dialog";
 import { PanelHeader } from "./panel-header";
+import { useChatActions } from "@/stores/chat-actions";
 
 export interface HighlightedCitation {
   documentId: string;
@@ -377,6 +378,15 @@ function ChatContent({
     suggestedQuestions.length,
     isLoadingSuggestions,
   ]);
+
+  const { pendingMessage, setPendingMessage } = useChatActions();
+  useEffect(() => {
+    if (pendingMessage && !isStreaming && selectedSources.size > 0) {
+      handleSend(pendingMessage);
+      setPendingMessage(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingMessage, isStreaming, selectedSources.size, setPendingMessage]);
 
   useEffect(() => {
     if (textareaRef.current) {

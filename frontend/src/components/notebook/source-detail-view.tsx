@@ -17,6 +17,7 @@ import {
   useSourceContent,
 } from "@/hooks/use-sources";
 import { formatFileSize, cn } from "@/lib/utils";
+import { useChatActions } from "@/stores/chat-actions";
 import type { Document, SourceGuide } from "@/types/api";
 
 interface SourceDetailInlineProps {
@@ -181,12 +182,17 @@ function SourceGuideCard({
               {guide.topics && guide.topics.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {guide.topics.map((topic, i) => (
-                    <span
+                    <button
                       key={i}
-                      className="max-w-[180px] truncate rounded-full border border-border bg-surface px-3 py-1 text-xs text-on-surface-muted"
+                      onClick={() =>
+                        useChatActions
+                          .getState()
+                          .setPendingMessage(`Discuss ${topic}`)
+                      }
+                      className="max-w-[180px] truncate rounded-full border border-border bg-surface px-3 py-1 text-xs text-on-surface-muted transition-colors hover:bg-hover hover:text-on-surface"
                     >
                       {topic}
-                    </span>
+                    </button>
                   ))}
                 </div>
               )}
