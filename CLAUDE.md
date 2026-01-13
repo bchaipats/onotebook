@@ -1,6 +1,8 @@
 # CLAUDE.md
 
-ONotebook is an open-source RAG knowledge assistant.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+ONotebook is an open-source RAG knowledge assistant (self-hosted NotebookLM alternative).
 
 ## Project Structure
 
@@ -107,3 +109,36 @@ src/
 - Zustand for client state, TanStack Query for server state, useState for local
 - Tailwind only; use `cn()` for conditional classes
 - All API calls through TanStack Query hooks in `hooks/use-<resource>.ts`
+
+---
+
+## Architecture
+
+### Data Flow
+
+1. **Sources** (Documents) are uploaded or created from URLs/YouTube/paste
+2. **Processing** extracts text, chunks it, and generates embeddings
+3. **ChromaDB** stores embeddings per notebook collection
+4. **Chat** retrieves relevant chunks via vector search, builds RAG prompt, streams response
+
+### Key Concepts
+
+- **Notebook**: Container for sources, chat sessions, notes, and studio outputs
+- **Document/Source**: A source of knowledge (file, URL, YouTube, paste); chunks stored in vector DB
+- **ChatSession**: Conversation thread within a notebook; messages link to source chunks via citations
+- **StudioOutput**: Generated artifacts (mind maps, etc.) from notebook content
+
+### LLM Abstraction
+
+The `llm/` module provides a unified interface for multiple providers:
+- `base.py`: `LLMProvider` abstract class with `chat_stream()` method
+- `factory.py`: `get_provider(name)` returns cached provider instance
+- Providers: Ollama (default), Anthropic, OpenAI
+
+### Vector Store
+
+ChromaDB with one collection per notebook (`notebook_{id}`). Embeddings use `sentence-transformers` with BGE model. Search returns chunks with cosine distance scores.
+
+### Streaming Responses
+
+Chat uses Server-Sent Events (SSE). Stream events: `sources`, `grounding`, `token`, `done`, `suggestions`, `error`.
