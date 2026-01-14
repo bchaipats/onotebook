@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { StickyNote, PanelLeftOpen, Wand2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NotesList, AddNoteForm } from "./notes-list";
@@ -11,14 +11,23 @@ import {
   MindMapView,
 } from "@/components/studio/artifacts";
 import { ArtifactCard } from "@/components/studio/artifact-card";
+import { ArtifactGallery } from "@/components/studio/artifact-gallery";
+import { CustomizeMindMapDialog } from "@/components/studio/customize-mindmap-dialog";
+import { showToast } from "@/components/ui/toast";
 import {
   useNotes,
   useCreateNote,
   useUpdateNote,
   useDeleteNote,
 } from "@/hooks/use-notes";
+import { useDocuments } from "@/hooks/use-documents";
 import { useStudioCollapsed } from "@/stores/notebook-store";
 import { useActiveTask } from "@/stores/task-store";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface StudioPanelProps {
   notebookId: string;
@@ -32,27 +41,73 @@ export function StudioPanel({
   const collapsed = useStudioCollapsed();
   const [showAddNote, setShowAddNote] = useState(false);
   const [viewingArtifact, setViewingArtifact] = useState<string | null>(null);
+  const [customizingArtifact, setCustomizingArtifact] = useState<string | null>(
+    null,
+  );
 
   const { data: notes = [] } = useNotes(notebookId);
   const createNote = useCreateNote(notebookId);
   const updateNote = useUpdateNote(notebookId);
   const deleteNote = useDeleteNote(notebookId);
 
+  const { data: documents = [] } = useDocuments(notebookId);
+  const hasReadySources = documents.some(
+    (doc) => doc.processing_status === "ready",
+  );
+
   const { mindmap } = useArtifacts(notebookId);
-  const { query: mindMapQuery, generate: mindMapGenerate } = mindmap;
+  const {
+    query: mindMapQuery,
+    generate: mindMapGenerate,
+    delete: mindMapDelete,
+  } = mindmap;
 
   const activeTask = useActiveTask(notebookId, "mindmap");
   const isGenerating =
     activeTask?.status === "pending" || activeTask?.status === "processing";
+
+  const previousStatusRef = useRef<string | null>(null);
+  const mindMapStatus = mindMapQuery.data?.generation_status ?? null;
+
+  useEffect(() => {
+    const previous = previousStatusRef.current;
+    previousStatusRef.current = mindMapStatus;
+
+    const wasGenerating = previous === "pending" || previous === "processing";
+    if (!wasGenerating) return;
+
+    if (mindMapStatus === "ready") {
+      showToast("Mind Map is ready", "success", {
+        label: "View",
+        onClick: () => setViewingArtifact("mindmap"),
+      });
+    } else if (mindMapStatus === "failed") {
+      showToast("Failed to generate Mind Map", "error");
+    }
+  }, [mindMapStatus]);
+
+  const readySourceCount = documents.filter(
+    (doc) => doc.processing_status === "ready",
+  ).length;
+
+  const generatedArtifacts =
+    mindMapQuery.data?.generation_status === "ready"
+      ? [{ type: "mindmap" as const, data: mindMapQuery.data }]
+      : [];
 
   function handleArtifactClick(id: string) {
     if (id === "mindmap") {
       if (mindMapQuery.data?.generation_status === "ready") {
         setViewingArtifact("mindmap");
       } else if (!isGenerating) {
-        mindMapGenerate.mutate();
+        setCustomizingArtifact("mindmap");
       }
     }
+  }
+
+  function handleGenerateMindMap(options: { focusTopic?: string }) {
+    mindMapGenerate.mutate(options);
+    setCustomizingArtifact(null);
   }
 
   if (collapsed) {
@@ -72,20 +127,30 @@ export function StudioPanel({
         <div className="flex flex-1 flex-col items-center py-4">
           <div className="flex flex-col items-center gap-1.5">
             {ARTIFACTS.slice(0, 4).map((artifact) => (
-              <Button
-                key={artifact.id}
-                variant="ghost"
-                size="icon-sm"
-                disabled={!artifact.enabled}
-                title={artifact.label}
-                onClick={
-                  artifact.enabled
-                    ? () => handleArtifactClick(artifact.id)
-                    : undefined
-                }
-              >
-                <artifact.icon />
-              </Button>
+              <Tooltip key={artifact.id}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    disabled={!artifact.enabled || !hasReadySources}
+                    title={artifact.label}
+                    onClick={
+                      artifact.enabled && hasReadySources
+                        ? () => handleArtifactClick(artifact.id)
+                        : undefined
+                    }
+                  >
+                    <artifact.icon />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="left">
+                  <p>
+                    {!hasReadySources
+                      ? "Add sources to enable"
+                      : artifact.label}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
             ))}
           </div>
           <div className="mt-auto">
@@ -128,8 +193,8 @@ export function StudioPanel({
         />
       )}
 
-      <div className="flex-1 overflow-y-auto px-4 py-4">
-        <div className="grid grid-cols-2 gap-3">
+      <div className="flex-1 overflow-y-auto px-4 py-3">
+        <div className="grid grid-cols-2 gap-2">
           {ARTIFACTS.map((artifact, index) => (
             <ArtifactCard
               key={artifact.id}
@@ -140,9 +205,33 @@ export function StudioPanel({
               }
               onClick={() => handleArtifactClick(artifact.id)}
               index={index}
+              disabled={!hasReadySources}
+              disabledReason="Add sources to enable"
             />
           ))}
         </div>
+
+        {generatedArtifacts.length > 0 && (
+          <>
+            <div className="-mx-4 my-5 border-t border-divider" />
+            <ArtifactGallery
+              artifacts={generatedArtifacts}
+              sourceCount={readySourceCount}
+              onView={(type) => setViewingArtifact(type)}
+              onRegenerate={(type) => {
+                if (type === "mindmap") {
+                  mindMapGenerate.mutate();
+                }
+              }}
+              onDelete={(type) => {
+                if (type === "mindmap") {
+                  mindMapDelete.mutate();
+                  showToast("Mind Map deleted", "info");
+                }
+              }}
+            />
+          </>
+        )}
 
         {showAddNote && (
           <div className="mt-4">
@@ -171,20 +260,22 @@ export function StudioPanel({
           </div>
         )}
 
-        {notes.length === 0 && !showAddNote && (
-          <div className="mt-8 flex flex-col items-center rounded-2xl bg-surface-variant p-6 text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-muted">
-              <Wand2 className="h-7 w-7 text-on-primary-muted" />
+        {generatedArtifacts.length === 0 &&
+          notes.length === 0 &&
+          !showAddNote && (
+            <div className="mt-8 flex flex-col items-center py-4 text-center">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-surface-variant">
+                <Wand2 className="h-5 w-5 text-on-surface-muted" />
+              </div>
+              <p className="text-sm text-on-surface-muted">
+                Studio output will appear here
+              </p>
+              <p className="mt-1 max-w-[220px] text-xs text-on-surface-subtle">
+                Generate Audio Overviews, Mind Maps, Study Guides, and more from
+                your sources
+              </p>
             </div>
-            <p className="font-heading text-sm font-semibold text-on-surface">
-              Studio output will appear here
-            </p>
-            <p className="mt-2 max-w-[200px] text-xs text-on-surface-muted">
-              Generate Audio Overviews, Mind Maps, Study Guides, and more from
-              your sources
-            </p>
-          </div>
-        )}
+          )}
       </div>
 
       <div className="flex justify-center p-4">
@@ -198,6 +289,13 @@ export function StudioPanel({
           Add note
         </Button>
       </div>
+
+      <CustomizeMindMapDialog
+        open={customizingArtifact === "mindmap"}
+        onOpenChange={(open) => !open && setCustomizingArtifact(null)}
+        onGenerate={handleGenerateMindMap}
+        isGenerating={isGenerating}
+      />
     </div>
   );
 }

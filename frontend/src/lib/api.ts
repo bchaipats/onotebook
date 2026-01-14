@@ -634,10 +634,25 @@ export async function getMindMap(
 
 export async function generateMindMap(
   notebookId: string,
+  options?: { focusTopic?: string },
 ): Promise<MindMapResponse> {
   return request<MindMapResponse>(
     `/api/notebooks/${notebookId}/studio/mindmap/generate`,
-    { method: "POST" },
+    {
+      method: "POST",
+      body: options?.focusTopic
+        ? JSON.stringify({ focus_topic: options.focusTopic })
+        : undefined,
+    },
+  );
+}
+
+export async function deleteMindMap(
+  notebookId: string,
+): Promise<{ success: boolean }> {
+  return request<{ success: boolean }>(
+    `/api/notebooks/${notebookId}/studio/mindmap`,
+    { method: "DELETE" },
   );
 }
 

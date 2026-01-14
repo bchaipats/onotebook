@@ -14,6 +14,10 @@ class MindMapData(BaseModel):
     nodes: list[MindMapNode]
 
 
+class GenerateMindMapRequest(BaseModel):
+    focus_topic: str | None = None
+
+
 class MindMapResponse(BaseModel):
     id: str
     notebook_id: str
@@ -36,3 +40,7 @@ class StudioOutputResponse(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class DeleteResponse(BaseModel):
+    success: bool

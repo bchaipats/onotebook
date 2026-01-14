@@ -1,12 +1,19 @@
+import asyncio
 import json
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.backend.database import get_session
 from src.backend.notebooks.service import get_notebook
 from src.backend.studio import service
-from src.backend.studio.schemas import MindMapData, MindMapResponse
+from src.backend.studio.schemas import (
+    DeleteResponse,
+    GenerateMindMapRequest,
+    MindMapData,
+    MindMapResponse,
+)
 
 router = APIRouter(prefix="/api", tags=["studio"])
 
@@ -51,6 +58,7 @@ async def get_mindmap(
 async def generate_mindmap(
     notebook_id: str,
     background_tasks: BackgroundTasks,
+    request: GenerateMindMapRequest | None = None,
     session: AsyncSession = Depends(get_session),
 ) -> MindMapResponse:
     """Start mindmap generation in the background.
@@ -64,7 +72,8 @@ async def generate_mindmap(
             detail="Notebook not found",
         )
 
-    task = await service.create_mindmap_task(session, notebook)
+    focus_topic = request.focus_topic if request else None
+    task = await service.create_mindmap_task(session, notebook, focus_topic)
 
     background_tasks.add_task(
         service.generate_mindmap_background,
@@ -73,6 +82,7 @@ async def generate_mindmap(
         notebook.name,
         notebook.llm_provider,
         notebook.llm_model,
+        focus_topic,
     )
 
     return MindMapResponse(
@@ -84,4 +94,79 @@ async def generate_mindmap(
         generation_status=task.generation_status,
         generation_progress=task.generation_progress,
         generation_error=task.generation_error,
+    )
+
+
+@router.delete(
+    "/notebooks/{notebook_id}/studio/mindmap",
+    response_model=DeleteResponse,
+)
+async def delete_mindmap(
+    notebook_id: str,
+    session: AsyncSession = Depends(get_session),
+) -> DeleteResponse:
+    """Delete the mindmap for a notebook."""
+    notebook = await get_notebook(session, notebook_id)
+    if not notebook:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Notebook not found",
+        )
+
+    success = await service.delete_mindmap(session, notebook_id)
+    return DeleteResponse(success=success)
+
+
+@router.get("/notebooks/{notebook_id}/studio/mindmap/progress")
+async def stream_mindmap_progress(
+    notebook_id: str,
+    session: AsyncSession = Depends(get_session),
+) -> StreamingResponse:
+    """Stream mindmap generation progress via SSE."""
+    notebook = await get_notebook(session, notebook_id)
+    if not notebook:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Notebook not found",
+        )
+
+    async def event_generator():
+        from src.backend.database import async_session
+
+        last_status = None
+        last_progress = None
+
+        while True:
+            async with async_session() as db:
+                output = await service.get_mindmap(db, notebook_id)
+
+                if not output:
+                    yield f"data: {json.dumps({'status': 'not_found'})}\n\n"
+                    break
+
+                current_status = output.generation_status
+                current_progress = output.generation_progress
+
+                if current_status != last_status or current_progress != last_progress:
+                    event_data = {
+                        "status": current_status,
+                        "progress": current_progress,
+                        "error": output.generation_error,
+                    }
+                    yield f"data: {json.dumps(event_data)}\n\n"
+                    last_status = current_status
+                    last_progress = current_progress
+
+                if current_status in ("ready", "failed"):
+                    break
+
+            await asyncio.sleep(0.5)
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+        },
     )

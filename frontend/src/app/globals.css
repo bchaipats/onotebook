@@ -101,6 +101,24 @@
   --color-selected: oklch(94% 0.04 250);
   --color-disabled: oklch(70% 0 0 / 50%);
 
+  /* Studio Artifact Colors - Light Theme */
+  --color-artifact-audio: oklch(96% 0.025 300);
+  --color-artifact-audio-icon: oklch(55% 0.15 300);
+  --color-artifact-video: oklch(96% 0.025 155);
+  --color-artifact-video-icon: oklch(50% 0.12 155);
+  --color-artifact-mindmap: oklch(96% 0.025 350);
+  --color-artifact-mindmap-icon: oklch(55% 0.15 350);
+  --color-artifact-report: oklch(96% 0.02 145);
+  --color-artifact-report-icon: oklch(50% 0.1 145);
+  --color-artifact-flashcards: oklch(96% 0.03 55);
+  --color-artifact-flashcards-icon: oklch(60% 0.15 55);
+  --color-artifact-quiz: oklch(96% 0.025 200);
+  --color-artifact-quiz-icon: oklch(55% 0.12 200);
+  --color-artifact-infographic: oklch(96% 0.02 85);
+  --color-artifact-infographic-icon: oklch(55% 0.1 85);
+  --color-artifact-slides: oklch(96% 0.025 95);
+  --color-artifact-slides-icon: oklch(55% 0.12 95);
+
   /* Shadows */
   --shadow-elevation-1:
     0 1px 3px oklch(0% 0 0 / 8%), 0 1px 2px oklch(0% 0 0 / 6%);
@@ -189,6 +207,24 @@
   --color-active: oklch(100% 0 0 / 15%);
   --color-selected: oklch(28% 0.06 250);
   --color-disabled: oklch(50% 0 0 / 50%);
+
+  /* Studio Artifact Colors - Dark Theme */
+  --color-artifact-audio: oklch(25% 0.04 300);
+  --color-artifact-audio-icon: oklch(75% 0.12 300);
+  --color-artifact-video: oklch(25% 0.04 155);
+  --color-artifact-video-icon: oklch(70% 0.1 155);
+  --color-artifact-mindmap: oklch(25% 0.04 350);
+  --color-artifact-mindmap-icon: oklch(75% 0.12 350);
+  --color-artifact-report: oklch(25% 0.03 145);
+  --color-artifact-report-icon: oklch(70% 0.08 145);
+  --color-artifact-flashcards: oklch(25% 0.04 55);
+  --color-artifact-flashcards-icon: oklch(75% 0.12 55);
+  --color-artifact-quiz: oklch(25% 0.04 200);
+  --color-artifact-quiz-icon: oklch(70% 0.1 200);
+  --color-artifact-infographic: oklch(25% 0.03 85);
+  --color-artifact-infographic-icon: oklch(70% 0.08 85);
+  --color-artifact-slides: oklch(25% 0.04 95);
+  --color-artifact-slides-icon: oklch(70% 0.1 95);
 
   /* Shadows */
   --shadow-elevation-1:
@@ -279,6 +315,24 @@
     --color-active: oklch(100% 0 0 / 15%);
     --color-selected: oklch(28% 0.06 250);
     --color-disabled: oklch(50% 0 0 / 50%);
+
+    /* Studio Artifact Colors - Dark Theme (media query) */
+    --color-artifact-audio: oklch(25% 0.04 300);
+    --color-artifact-audio-icon: oklch(75% 0.12 300);
+    --color-artifact-video: oklch(25% 0.04 155);
+    --color-artifact-video-icon: oklch(70% 0.1 155);
+    --color-artifact-mindmap: oklch(25% 0.04 350);
+    --color-artifact-mindmap-icon: oklch(75% 0.12 350);
+    --color-artifact-report: oklch(25% 0.03 145);
+    --color-artifact-report-icon: oklch(70% 0.08 145);
+    --color-artifact-flashcards: oklch(25% 0.04 55);
+    --color-artifact-flashcards-icon: oklch(75% 0.12 55);
+    --color-artifact-quiz: oklch(25% 0.04 200);
+    --color-artifact-quiz-icon: oklch(70% 0.1 200);
+    --color-artifact-infographic: oklch(25% 0.03 85);
+    --color-artifact-infographic-icon: oklch(70% 0.08 85);
+    --color-artifact-slides: oklch(25% 0.04 95);
+    --color-artifact-slides-icon: oklch(70% 0.1 95);
 
     /* Shadows */
     --shadow-elevation-1:
@@ -390,6 +444,24 @@
   --color-active: var(--color-active);
   --color-selected: var(--color-selected);
   --color-disabled: var(--color-disabled);
+
+  /* Studio Artifact Colors */
+  --color-artifact-audio: var(--color-artifact-audio);
+  --color-artifact-audio-icon: var(--color-artifact-audio-icon);
+  --color-artifact-video: var(--color-artifact-video);
+  --color-artifact-video-icon: var(--color-artifact-video-icon);
+  --color-artifact-mindmap: var(--color-artifact-mindmap);
+  --color-artifact-mindmap-icon: var(--color-artifact-mindmap-icon);
+  --color-artifact-report: var(--color-artifact-report);
+  --color-artifact-report-icon: var(--color-artifact-report-icon);
+  --color-artifact-flashcards: var(--color-artifact-flashcards);
+  --color-artifact-flashcards-icon: var(--color-artifact-flashcards-icon);
+  --color-artifact-quiz: var(--color-artifact-quiz);
+  --color-artifact-quiz-icon: var(--color-artifact-quiz-icon);
+  --color-artifact-infographic: var(--color-artifact-infographic);
+  --color-artifact-infographic-icon: var(--color-artifact-infographic-icon);
+  --color-artifact-slides: var(--color-artifact-slides);
+  --color-artifact-slides-icon: var(--color-artifact-slides-icon);
 
   /* ===== SHADOWS ===== */
   --shadow-elevation-1: var(--shadow-elevation-1);

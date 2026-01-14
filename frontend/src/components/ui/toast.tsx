@@ -7,20 +7,31 @@ import { cn } from "@/lib/utils";
 
 export type ToastType = "error" | "success" | "info";
 
+interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
 interface Toast {
   id: string;
   message: string;
   type: ToastType;
+  action?: ToastAction;
 }
 
 let toastId = 0;
 const listeners: Set<(toast: Toast) => void> = new Set();
 
-export function showToast(message: string, type: ToastType = "info") {
+export function showToast(
+  message: string,
+  type: ToastType = "info",
+  action?: ToastAction,
+) {
   const toast: Toast = {
     id: `toast-${++toastId}`,
     message,
     type,
+    action,
   };
   listeners.forEach((listener) => listener(toast));
 }
@@ -33,7 +44,6 @@ export function Toaster() {
     setMounted(true);
     const listener = (toast: Toast) => {
       setToasts((prev) => [...prev, toast]);
-      // Auto-dismiss after 5 seconds
       setTimeout(() => {
         setToasts((prev) => prev.filter((t) => t.id !== toast.id));
       }, 5000);
@@ -75,6 +85,17 @@ export function Toaster() {
             <Info className="h-4 w-4 shrink-0 text-info" />
           )}
           <span className="text-sm font-medium">{toast.message}</span>
+          {toast.action && (
+            <button
+              onClick={() => {
+                toast.action!.onClick();
+                dismissToast(toast.id);
+              }}
+              className="ml-2 rounded px-2 py-0.5 text-sm font-medium underline-offset-2 hover:underline"
+            >
+              {toast.action.label}
+            </button>
+          )}
           <button
             onClick={() => dismissToast(toast.id)}
             className="ml-2 rounded p-0.5 hover:bg-hover"

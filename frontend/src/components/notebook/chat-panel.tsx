@@ -968,6 +968,16 @@ function ChatWelcome({
   hasDocuments: boolean;
   onCreateSession: () => void;
 }) {
+  const pendingMessage = usePendingChatMessage();
+  const handledRef = useRef(false);
+
+  useEffect(() => {
+    if (pendingMessage && hasDocuments && !handledRef.current) {
+      handledRef.current = true;
+      onCreateSession();
+    }
+  }, [pendingMessage, hasDocuments, onCreateSession]);
+
   if (hasDocuments) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">

@@ -22,13 +22,17 @@ async def get_mindmap(session: AsyncSession, notebook_id: str) -> StudioOutput |
     return result.scalar_one_or_none()
 
 
-async def create_mindmap_task(session: AsyncSession, notebook: Notebook) -> StudioOutput:
+async def create_mindmap_task(
+    session: AsyncSession, notebook: Notebook, focus_topic: str | None = None
+) -> StudioOutput:
     """Create a pending mindmap task for background generation."""
+    title = f"Mind Map: {focus_topic}" if focus_topic else f"Mind Map: {notebook.name}"
+    central_topic = focus_topic or notebook.name
     output = StudioOutput(
         notebook_id=notebook.id,
         output_type="mindmap",
-        title=f"Mind Map: {notebook.name}",
-        data=json.dumps({"central_topic": notebook.name, "nodes": []}),
+        title=title,
+        data=json.dumps({"central_topic": central_topic, "nodes": []}),
         generation_status="pending",
         generation_progress=0,
     )
@@ -43,6 +47,16 @@ async def get_task_by_id(session: AsyncSession, task_id: str) -> StudioOutput | 
     stmt = select(StudioOutput).where(StudioOutput.id == task_id)
     result = await session.execute(stmt)
     return result.scalar_one_or_none()
+
+
+async def delete_mindmap(session: AsyncSession, notebook_id: str) -> bool:
+    """Delete the mindmap for a notebook."""
+    output = await get_mindmap(session, notebook_id)
+    if not output:
+        return False
+    await session.delete(output)
+    await session.commit()
+    return True
 
 
 async def _update_task_status(
@@ -68,6 +82,7 @@ async def generate_mindmap_background(
     notebook_name: str,
     provider_name: str,
     model: str,
+    focus_topic: str | None = None,
 ) -> None:
     """Background task to generate mindmap. Opens its own database session."""
     from src.backend.database import async_session
@@ -78,6 +93,8 @@ async def generate_mindmap_background(
             return
 
         await _update_task_status(session, task, "processing", 10)
+
+        central_topic = focus_topic or notebook_name
 
         try:
             # Collect content snippets from documents
@@ -114,16 +131,25 @@ async def generate_mindmap_background(
 
             if not snippets:
                 await _update_task_status(
-                    session, task, "ready", 100, data={"central_topic": notebook_name, "nodes": []}
+                    session, task, "ready", 100, data={"central_topic": central_topic, "nodes": []}
                 )
                 return
 
             context = "\n\n---\n\n".join(snippets)
+
+            focus_instruction = ""
+            if focus_topic:
+                focus_instruction = f"""
+IMPORTANT: Focus the mind map specifically on "{focus_topic}".
+Only include concepts and topics related to this focus area.
+The central topic should be "{focus_topic}".
+"""
+
             prompt = f"""Analyze the following content and create a hierarchical mind map structure. The mind map should have:
 1. A central topic that captures the main theme
 2. 3-6 main branches representing major topics/themes
 3. Each main branch can have 2-4 sub-branches with more specific concepts
-
+{focus_instruction}
 Content to analyze:
 {context}
 
@@ -180,7 +206,7 @@ Generate unique IDs for each node. Only return the JSON object, nothing else."""
                 "failed",
                 0,
                 error=str(e),
-                data={"central_topic": notebook_name, "nodes": []},
+                data={"central_topic": central_topic, "nodes": []},
             )
 
 
