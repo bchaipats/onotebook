@@ -24,6 +24,7 @@ import {
   useSourcesCollapsed,
   useHighlightedCitation,
   useViewedSourceId,
+  useAddSourcesRequested,
   useNotebookActions,
 } from "@/stores/notebook-store";
 
@@ -46,6 +47,7 @@ export function SourcesPanel({
   const collapsed = useSourcesCollapsed();
   const highlightedCitation = useHighlightedCitation();
   const viewedSourceId = useViewedSourceId();
+  const addSourcesRequested = useAddSourcesRequested();
 
   // Store actions
   const {
@@ -53,6 +55,7 @@ export function SourcesPanel({
     setSelectedSources,
     viewSourceDetail,
     closeSourceDetail,
+    clearAddSourcesRequest,
   } = useNotebookActions();
 
   // Local UI state
@@ -63,6 +66,14 @@ export function SourcesPanel({
   const [citationIndex, setCitationIndex] = useState<number | null>(null);
   const [highlightSearch, setHighlightSearch] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+
+  // Respond to cross-panel add sources request
+  useEffect(() => {
+    if (addSourcesRequested) {
+      setIsUploadOpen(true);
+      clearAddSourcesRequest();
+    }
+  }, [addSourcesRequested, clearAddSourcesRequest]);
 
   function handleDiscoverSources() {
     setHighlightSearch(true);

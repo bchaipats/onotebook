@@ -31,9 +31,6 @@ export function HomeHeader({ onOpenSettings }: HomeHeaderProps) {
             <Settings className="h-4 w-4" />
             Settings
           </Button>
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-medium text-on-primary">
-            U
-          </div>
         </div>
       </div>
     </header>

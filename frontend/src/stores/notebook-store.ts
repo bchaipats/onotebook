@@ -20,6 +20,8 @@ interface NotebookActions {
   clearHighlightedCitation: () => void;
   askInChat: (message: string) => void;
   consumePendingChatMessage: () => string | null;
+  requestAddSources: () => void;
+  clearAddSourcesRequest: () => void;
 }
 
 interface NotebookStore {
@@ -30,6 +32,7 @@ interface NotebookStore {
   viewedSourceId: string | null;
   highlightedCitation: HighlightedCitation | null;
   pendingChatMessage: string | null;
+  addSourcesRequested: boolean;
   actions: NotebookActions;
 }
 
@@ -41,6 +44,7 @@ const INITIAL_STATE = {
   viewedSourceId: null as string | null,
   highlightedCitation: null as HighlightedCitation | null,
   pendingChatMessage: null as string | null,
+  addSourcesRequested: false,
 };
 
 export const useNotebookStore = create<NotebookStore>((set, get) => ({
@@ -56,6 +60,7 @@ export const useNotebookStore = create<NotebookStore>((set, get) => ({
         viewedSourceId: null,
         highlightedCitation: null,
         pendingChatMessage: null,
+        addSourcesRequested: false,
       }),
 
     setSelectedSources: (sources) => set({ selectedSources: sources }),
@@ -103,6 +108,9 @@ export const useNotebookStore = create<NotebookStore>((set, get) => ({
       }
       return message;
     },
+
+    requestAddSources: () => set({ addSourcesRequested: true }),
+    clearAddSourcesRequest: () => set({ addSourcesRequested: false }),
   },
 }));
 
@@ -120,4 +128,6 @@ export const useHighlightedCitation = () =>
   useNotebookStore((s) => s.highlightedCitation);
 export const usePendingChatMessage = () =>
   useNotebookStore((s) => s.pendingChatMessage);
+export const useAddSourcesRequested = () =>
+  useNotebookStore((s) => s.addSourcesRequested);
 export const useNotebookActions = () => useNotebookStore((s) => s.actions);

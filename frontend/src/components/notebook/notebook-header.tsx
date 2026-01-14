@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Share2, Settings } from "lucide-react";
+import { Plus, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUpdateNotebook, useCreateNotebook } from "@/hooks/use-notebooks";
 import type { Notebook } from "@/types/api";
@@ -112,22 +112,12 @@ export function NotebookHeader({
         </Button>
         <Button
           variant="outline"
-          className="h-[var(--header-button-height)] gap-2 rounded-full px-5"
-        >
-          <Share2 className="h-4 w-4" />
-          Share
-        </Button>
-        <Button
-          variant="outline"
           onClick={onOpenSettings}
           className="h-[var(--header-button-height)] gap-2 rounded-full px-5"
         >
           <Settings className="h-4 w-4" />
           Settings
         </Button>
-        <div className="flex h-[var(--header-button-height)] w-[var(--header-button-height)] items-center justify-center rounded-full text-sm font-medium">
-          U
-        </div>
       </div>
     </header>
   );

@@ -262,7 +262,8 @@ function ChatContent({ sessionId, notebookId }: ChatContentProps) {
   // Store state
   const selectedSources = useSelectedSources();
   const pendingMessage = usePendingChatMessage();
-  const { highlightCitation, consumePendingChatMessage } = useNotebookActions();
+  const { highlightCitation, consumePendingChatMessage, requestAddSources } =
+    useNotebookActions();
   const { data: messages, isLoading } = useMessages(sessionId);
   const invalidateMessages = useInvalidateMessages(sessionId);
   const invalidateSessions = useInvalidateChatSessions(notebookId);
@@ -627,7 +628,7 @@ function ChatContent({ sessionId, notebookId }: ChatContentProps) {
                 <Button
                   variant="outline"
                   className="rounded-full"
-                  onClick={() => {}}
+                  onClick={requestAddSources}
                 >
                   Upload a source
                 </Button>
@@ -734,9 +735,6 @@ function ChatContent({ sessionId, notebookId }: ChatContentProps) {
               ))}
               {pendingUserMessage && (
                 <div className="flex flex-row-reverse gap-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-on-primary shadow-elevation-1">
-                    U
-                  </div>
                   <div className="max-w-[85%] rounded-3xl rounded-br-lg bg-primary px-5 py-3 text-on-primary shadow-elevation-1">
                     <p className="whitespace-pre-wrap text-sm">
                       {pendingUserMessage}
@@ -969,6 +967,7 @@ function ChatWelcome({
   onCreateSession: () => void;
 }) {
   const pendingMessage = usePendingChatMessage();
+  const { requestAddSources } = useNotebookActions();
   const handledRef = useRef(false);
 
   useEffect(() => {
@@ -1005,7 +1004,11 @@ function ChatWelcome({
       <h2 className="mb-3 text-lg font-medium text-on-surface">
         Add a source to get started
       </h2>
-      <Button variant="outline" className="rounded-full">
+      <Button
+        variant="outline"
+        className="rounded-full"
+        onClick={requestAddSources}
+      >
         Upload a source
       </Button>
     </div>
@@ -1109,16 +1112,11 @@ function MessageBubble({
 
   return (
     <div className={cn("flex gap-4", isUser && "flex-row-reverse")}>
-      <div
-        className={cn(
-          "flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold shadow-elevation-1",
-          isUser
-            ? "bg-primary text-on-primary"
-            : "bg-surface-variant text-on-surface",
-        )}
-      >
-        {isUser ? "U" : <Bot className="h-5 w-5" />}
-      </div>
+      {!isUser && (
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-variant text-on-surface shadow-elevation-1">
+          <Bot className="h-5 w-5" />
+        </div>
+      )}
       <div
         className={cn(
           "max-w-[85%] flex-1",
