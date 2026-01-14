@@ -83,29 +83,22 @@ import type {
 } from "@/types/api";
 import { ChatConfigDialog } from "./chat-config-dialog";
 import { PanelHeader } from "./panel-header";
-import { useChatActions } from "@/stores/chat-actions";
-
-export interface HighlightedCitation {
-  documentId: string;
-  documentName: string;
-  chunkContent: string;
-  citationIndex: number;
-}
+import {
+  useSelectedSources,
+  usePendingChatMessage,
+  useNotebookActions,
+} from "@/stores/notebook-store";
 
 interface ChatPanelProps {
   notebookId: string;
   notebook: Notebook;
-  selectedSources: Set<string>;
   hasDocuments: boolean;
-  onCitationHighlight?: (citation: HighlightedCitation) => void;
 }
 
 export function ChatPanel({
   notebookId,
   notebook,
-  selectedSources,
   hasDocuments,
-  onCitationHighlight,
 }: ChatPanelProps) {
   const { data: sessions, isLoading: sessionsLoading } =
     useChatSessions(notebookId);
@@ -249,12 +242,7 @@ export function ChatPanel({
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
       ) : activeSessionId ? (
-        <ChatContent
-          sessionId={activeSessionId}
-          notebookId={notebookId}
-          selectedSources={selectedSources}
-          onCitationHighlight={onCitationHighlight}
-        />
+        <ChatContent sessionId={activeSessionId} notebookId={notebookId} />
       ) : (
         <ChatWelcome
           hasDocuments={hasDocuments}
@@ -268,16 +256,13 @@ export function ChatPanel({
 interface ChatContentProps {
   sessionId: string;
   notebookId: string;
-  selectedSources: Set<string>;
-  onCitationHighlight?: (citation: HighlightedCitation) => void;
 }
 
-function ChatContent({
-  sessionId,
-  notebookId,
-  selectedSources,
-  onCitationHighlight,
-}: ChatContentProps) {
+function ChatContent({ sessionId, notebookId }: ChatContentProps) {
+  // Store state
+  const selectedSources = useSelectedSources();
+  const pendingMessage = usePendingChatMessage();
+  const { highlightCitation, consumePendingChatMessage } = useNotebookActions();
   const { data: messages, isLoading } = useMessages(sessionId);
   const invalidateMessages = useInvalidateMessages(sessionId);
   const invalidateSessions = useInvalidateChatSessions(notebookId);
@@ -324,13 +309,13 @@ function ChatContent({
     scrollToBottom,
   } = useScrollSentinel({ threshold: 0.1, rootMargin: "50px" });
 
-  // Handle citation click - notify parent for left panel highlighting
+  // Handle citation click - highlight in sources panel via store
   const handleCitationClick = useCallback(
     (index: number) => {
-      if (onCitationHighlight && currentSources.length > 0) {
+      if (currentSources.length > 0) {
         const source = currentSources.find((s) => s.citation_index === index);
         if (source) {
-          onCitationHighlight({
+          highlightCitation({
             documentId: source.document_id,
             documentName: source.document_name,
             chunkContent: source.content,
@@ -339,7 +324,7 @@ function ChatContent({
         }
       }
     },
-    [currentSources, onCitationHighlight],
+    [currentSources, highlightCitation],
   );
 
   // Auto-scroll during streaming when user is at bottom
@@ -379,14 +364,21 @@ function ChatContent({
     isLoadingSuggestions,
   ]);
 
-  const { pendingMessage, setPendingMessage } = useChatActions();
+  // Handle cross-panel messages from Studio/Sources
   useEffect(() => {
     if (pendingMessage && !isStreaming && selectedSources.size > 0) {
-      handleSend(pendingMessage);
-      setPendingMessage(null);
+      const message = consumePendingChatMessage();
+      if (message) {
+        handleSend(message);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pendingMessage, isStreaming, selectedSources.size, setPendingMessage]);
+  }, [
+    pendingMessage,
+    isStreaming,
+    selectedSources.size,
+    consumePendingChatMessage,
+  ]);
 
   useEffect(() => {
     if (textareaRef.current) {

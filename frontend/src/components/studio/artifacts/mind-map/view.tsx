@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useCallback } from "react";
 import {
   ReactFlow,
   Node,
@@ -10,20 +10,36 @@ import {
   Background,
   Controls,
   Panel,
+  type NodeMouseHandler,
 } from "@xyflow/react";
 import { toPng } from "html-to-image";
-import { Download, X, RefreshCw, Loader2 } from "lucide-react";
+import { Download, X, RefreshCw, Loader2, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { MindMapData } from "@/types/api";
+import { useNotebookActions } from "@/stores/notebook-store";
+import type { ArtifactViewProps } from "../types";
 
 import "@xyflow/react/dist/style.css";
 
-interface MindMapViewProps {
-  data: MindMapData;
-  onClose: () => void;
-  onRegenerate: () => void;
-  isRegenerating: boolean;
-}
+const NODE_CLASSES = {
+  central:
+    "bg-primary text-on-primary rounded-xl px-5 py-3 font-semibold text-sm min-w-[200px]",
+  main: "bg-primary-muted text-on-primary-muted rounded-lg px-4 py-2 font-medium text-[13px] min-w-[150px]",
+  child:
+    "bg-surface-variant text-on-surface border border-border rounded-md px-3 py-1.5 text-xs min-w-[130px]",
+  grandchild:
+    "bg-surface text-on-surface-muted border border-border-muted rounded px-2.5 py-1 text-[11px] min-w-[110px]",
+} as const;
+
+const EDGE_STYLES = {
+  central: { stroke: "var(--color-primary)", strokeWidth: 2 },
+  main: { stroke: "var(--color-border)", strokeWidth: 1.5 },
+  child: {
+    stroke: "var(--color-border-muted)",
+    strokeWidth: 1,
+    strokeDasharray: "4 2",
+  },
+} as const;
 
 function buildNodesAndEdges(data: MindMapData): {
   nodes: Node[];
@@ -36,16 +52,7 @@ function buildNodesAndEdges(data: MindMapData): {
     id: "central",
     position: { x: 0, y: 0 },
     data: { label: data.central_topic },
-    style: {
-      background: "var(--color-primary)",
-      color: "var(--color-on-primary)",
-      border: "none",
-      borderRadius: "12px",
-      padding: "12px 20px",
-      fontWeight: 600,
-      fontSize: "14px",
-      minWidth: 200,
-    },
+    className: NODE_CLASSES.central,
     sourcePosition: Position.Right,
     targetPosition: Position.Left,
   });
@@ -60,16 +67,7 @@ function buildNodesAndEdges(data: MindMapData): {
       id: node.id,
       position: { x: mainX, y: mainY },
       data: { label: node.label },
-      style: {
-        background: "var(--color-primary-muted)",
-        color: "var(--color-on-primary-muted)",
-        border: "none",
-        borderRadius: "8px",
-        padding: "8px 16px",
-        fontWeight: 500,
-        fontSize: "13px",
-        minWidth: 150,
-      },
+      className: NODE_CLASSES.main,
       sourcePosition: Position.Right,
       targetPosition: Position.Left,
     });
@@ -78,7 +76,7 @@ function buildNodesAndEdges(data: MindMapData): {
       id: `central-${node.id}`,
       source: "central",
       target: node.id,
-      style: { stroke: "var(--color-primary)", strokeWidth: 2 },
+      style: EDGE_STYLES.central,
       type: "smoothstep",
     });
 
@@ -93,15 +91,7 @@ function buildNodesAndEdges(data: MindMapData): {
           id: child.id,
           position: { x: childX, y: childY },
           data: { label: child.label },
-          style: {
-            background: "var(--color-surface-variant)",
-            color: "var(--color-on-surface)",
-            border: "1px solid var(--color-border)",
-            borderRadius: "6px",
-            padding: "6px 12px",
-            fontSize: "12px",
-            minWidth: 130,
-          },
+          className: NODE_CLASSES.child,
           sourcePosition: Position.Right,
           targetPosition: Position.Left,
         });
@@ -110,7 +100,7 @@ function buildNodesAndEdges(data: MindMapData): {
           id: `${node.id}-${child.id}`,
           source: node.id,
           target: child.id,
-          style: { stroke: "var(--color-border)", strokeWidth: 1.5 },
+          style: EDGE_STYLES.main,
           type: "smoothstep",
         });
 
@@ -121,15 +111,7 @@ function buildNodesAndEdges(data: MindMapData): {
               id: gc.id,
               position: { x: childX + 160, y: gcStartY + gcIndex * 42 },
               data: { label: gc.label },
-              style: {
-                background: "var(--color-surface)",
-                color: "var(--color-on-surface-muted)",
-                border: "1px solid var(--color-border-muted)",
-                borderRadius: "4px",
-                padding: "4px 10px",
-                fontSize: "11px",
-                minWidth: 110,
-              },
+              className: NODE_CLASSES.grandchild,
               sourcePosition: Position.Right,
               targetPosition: Position.Left,
             });
@@ -137,11 +119,7 @@ function buildNodesAndEdges(data: MindMapData): {
               id: `${child.id}-${gc.id}`,
               source: child.id,
               target: gc.id,
-              style: {
-                stroke: "var(--color-border-muted)",
-                strokeWidth: 1,
-                strokeDasharray: "4 2",
-              },
+              style: EDGE_STYLES.child,
               type: "smoothstep",
             });
           });
@@ -158,9 +136,21 @@ export function MindMapView({
   onClose,
   onRegenerate,
   isRegenerating,
-}: MindMapViewProps) {
+}: ArtifactViewProps<MindMapData>) {
   const reactFlowRef = useRef<HTMLDivElement>(null);
   const { nodes, edges } = useMemo(() => buildNodesAndEdges(data), [data]);
+  const { askInChat } = useNotebookActions();
+
+  const handleNodeClick: NodeMouseHandler = useCallback(
+    (_event, node) => {
+      const label = node.data?.label as string | undefined;
+      if (label) {
+        askInChat(`Tell me more about "${label}" based on my sources.`);
+        onClose();
+      }
+    },
+    [askInChat, onClose],
+  );
 
   async function handleDownload() {
     if (!reactFlowRef.current) return;
@@ -225,7 +215,8 @@ export function MindMapView({
           maxZoom={2}
           nodesDraggable={false}
           nodesConnectable={false}
-          elementsSelectable={false}
+          elementsSelectable={true}
+          onNodeClick={handleNodeClick}
           panOnDrag
           zoomOnScroll
           preventScrolling
@@ -234,9 +225,13 @@ export function MindMapView({
           <Controls showInteractive={false} />
           <Panel
             position="bottom-center"
-            className="text-xs text-on-surface-muted"
+            className="flex items-center gap-3 text-xs text-on-surface-muted"
           >
-            Scroll to zoom • Drag to pan
+            <span>Scroll to zoom • Drag to pan</span>
+            <span className="flex items-center gap-1 rounded-full bg-primary-muted px-2 py-1 text-on-primary-muted">
+              <MessageCircle className="h-3 w-3" />
+              Click any node to ask about it
+            </span>
           </Panel>
         </ReactFlow>
       </div>

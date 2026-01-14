@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import {
   Panel,
   Group,
@@ -10,10 +10,17 @@ import {
 import { NotebookHeader } from "./notebook-header";
 import { SourcesPanel } from "./sources-panel";
 import { StudioPanel } from "./studio-panel";
-import { ChatPanel, type HighlightedCitation } from "./chat-panel";
+import { ChatPanel } from "./chat-panel";
 import { ResizeHandle } from "./panel-resize-handle";
 import { useDocuments } from "@/hooks/use-documents";
 import { useBreakpoint } from "@/hooks/use-breakpoint";
+import {
+  useNotebookActions,
+  useSourcesCollapsed,
+  useStudioCollapsed,
+  useIsViewingSourceDetail,
+  useHighlightedCitation,
+} from "@/stores/notebook-store";
 import type { Notebook } from "@/types/api";
 
 interface NotebookLayoutProps {
@@ -42,19 +49,32 @@ export function NotebookLayout({
   autoOpenAddSources = false,
 }: NotebookLayoutProps) {
   const { data: documents } = useDocuments(notebook.id);
-  const [selectedSources, setSelectedSources] = useState<Set<string>>(
-    new Set(),
-  );
-  const [sourcesCollapsed, setSourcesCollapsed] = useState(false);
-  const [studioCollapsed, setStudioCollapsed] = useState(false);
-  const [isViewingSourceDetail, setIsViewingSourceDetail] = useState(false);
-  const [highlightedCitation, setHighlightedCitation] =
-    useState<HighlightedCitation | null>(null);
+
+  // Store state (selective subscriptions)
+  const sourcesCollapsed = useSourcesCollapsed();
+  const studioCollapsed = useStudioCollapsed();
+  const isViewingSourceDetail = useIsViewingSourceDetail();
+  const highlightedCitation = useHighlightedCitation();
+
+  // Store actions
+  const {
+    resetForNotebook,
+    setSelectedSources,
+    setSourcesCollapsed,
+    setStudioCollapsed,
+    clearHighlightedCitation,
+  } = useNotebookActions();
 
   const breakpoint = useBreakpoint();
   const sourcesPanelRef = useRef<PanelImperativeHandle>(null);
   const studioPanelRef = useRef<PanelImperativeHandle>(null);
 
+  // Reset store when notebook changes
+  useEffect(() => {
+    resetForNotebook();
+  }, [notebook.id, resetForNotebook]);
+
+  // Initialize selected sources when documents load
   useEffect(() => {
     if (documents && documents.length > 0) {
       const readyDocs = documents.filter(
@@ -62,7 +82,7 @@ export function NotebookLayout({
       );
       setSelectedSources(new Set(readyDocs.map((d) => d.id)));
     }
-  }, [documents]);
+  }, [documents, setSelectedSources]);
 
   const handleSourcesToggleCollapse = useCallback(() => {
     if (sourcesPanelRef.current?.isCollapsed()) {
@@ -80,22 +100,21 @@ export function NotebookLayout({
     }
   }, []);
 
-  const handleCitationHighlight = useCallback(
-    (citation: HighlightedCitation) => {
-      setHighlightedCitation(citation);
-      if (sourcesPanelRef.current?.isCollapsed()) {
-        sourcesPanelRef.current.expand();
-      }
-    },
-    [],
-  );
-
+  // Auto-expand sources panel when citation is highlighted
   useEffect(() => {
-    if (!highlightedCitation) return;
-    const timeout = setTimeout(() => setHighlightedCitation(null), 5000);
-    return () => clearTimeout(timeout);
+    if (highlightedCitation && sourcesPanelRef.current?.isCollapsed()) {
+      sourcesPanelRef.current.expand();
+    }
   }, [highlightedCitation]);
 
+  // Auto-clear highlighted citation after 5 seconds
+  useEffect(() => {
+    if (!highlightedCitation) return;
+    const timeout = setTimeout(() => clearHighlightedCitation(), 5000);
+    return () => clearTimeout(timeout);
+  }, [highlightedCitation, clearHighlightedCitation]);
+
+  // Resize panels when viewing source detail
   useEffect(() => {
     if (!sourcesPanelRef.current) return;
 
@@ -123,7 +142,7 @@ export function NotebookLayout({
         setSourcesCollapsed(isNowCollapsed);
       }
     },
-    [sourcesCollapsed],
+    [sourcesCollapsed, setSourcesCollapsed],
   );
 
   const handleStudioResize = useCallback(
@@ -133,21 +152,16 @@ export function NotebookLayout({
         setStudioCollapsed(isNowCollapsed);
       }
     },
-    [studioCollapsed],
+    [studioCollapsed, setStudioCollapsed],
   );
 
-  // Shared panel content components
+  // Panel content components - panels now read from store directly
   const sourcesContent = (
     <div className="flex h-full flex-col rounded-3xl bg-surface shadow-elevation-1">
       <SourcesPanel
         notebookId={notebook.id}
-        selectedSources={selectedSources}
-        onSelectionChange={setSelectedSources}
         autoOpenAddSources={autoOpenAddSources}
-        collapsed={sourcesCollapsed}
         onToggleCollapse={handleSourcesToggleCollapse}
-        highlightedCitation={highlightedCitation}
-        onViewingDetailChange={setIsViewingSourceDetail}
       />
     </div>
   );
@@ -157,9 +171,7 @@ export function NotebookLayout({
       <ChatPanel
         notebookId={notebook.id}
         notebook={notebook}
-        selectedSources={selectedSources}
         hasDocuments={!!documents && documents.length > 0}
-        onCitationHighlight={handleCitationHighlight}
       />
     </div>
   );
@@ -168,7 +180,6 @@ export function NotebookLayout({
     <div className="flex h-full flex-col rounded-3xl bg-surface shadow-elevation-1">
       <StudioPanel
         notebookId={notebook.id}
-        collapsed={studioCollapsed}
         onToggleCollapse={handleStudioToggleCollapse}
       />
     </div>
@@ -188,10 +199,7 @@ export function NotebookLayout({
 
         {/* Medium screens: Sources + Chat */}
         {breakpoint === "md" && (
-          <Group
-            orientation="horizontal"
-            className="flex-1"
-          >
+          <Group orientation="horizontal" className="flex-1">
             <Panel
               id="sources"
               panelRef={sourcesPanelRef}
@@ -212,10 +220,7 @@ export function NotebookLayout({
 
         {/* Large screens: Sources + Chat + Studio */}
         {breakpoint === "lg" && (
-          <Group
-            orientation="horizontal"
-            className="flex-1"
-          >
+          <Group orientation="horizontal" className="flex-1">
             <Panel
               id="sources"
               panelRef={sourcesPanelRef}

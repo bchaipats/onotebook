@@ -17,7 +17,9 @@ function getBreakpoint(): Breakpoint {
 }
 
 export function useBreakpoint(): Breakpoint {
-  const [breakpoint, setBreakpoint] = useState<Breakpoint>(() => getBreakpoint());
+  const [breakpoint, setBreakpoint] = useState<Breakpoint>(() =>
+    getBreakpoint(),
+  );
 
   useEffect(() => {
     function handleResize() {

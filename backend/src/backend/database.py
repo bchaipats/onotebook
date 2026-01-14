@@ -41,6 +41,28 @@ async def init_db() -> None:
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
     await run_migrations()
+    await recover_stale_tasks()
+
+
+async def recover_stale_tasks() -> None:
+    """Mark any 'processing' studio tasks as 'failed' on startup.
+
+    This handles the case where the server restarts during background generation.
+    Without this, tasks would be stuck in 'processing' forever.
+    """
+    import contextlib
+
+    from sqlalchemy import text
+
+    async with engine.begin() as conn:
+        with contextlib.suppress(Exception):
+            await conn.execute(
+                text(
+                    "UPDATE studio_output SET generation_status = 'failed', "
+                    "generation_error = 'Server restarted during generation' "
+                    "WHERE generation_status = 'processing'"
+                )
+            )
 
 
 async def run_migrations() -> None:

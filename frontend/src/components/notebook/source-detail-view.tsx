@@ -15,7 +15,7 @@ import {
   useSourceContent,
 } from "@/hooks/use-sources";
 import { formatFileSize, cn } from "@/lib/utils";
-import { useChatActions } from "@/stores/chat-actions";
+import { useNotebookActions } from "@/stores/notebook-store";
 import type { Document, SourceGuide } from "@/types/api";
 
 interface SourceDetailInlineProps {
@@ -119,7 +119,7 @@ function SourceHeader({ document }: { document: Document }) {
           </a>
         )}
       </h2>
-      {showHostname && (
+      {showHostname && document.source_url && (
         <a
           href={document.source_url}
           target="_blank"
@@ -127,7 +127,7 @@ function SourceHeader({ document }: { document: Document }) {
           className="mt-1 flex items-center gap-1 text-sm text-primary hover:underline"
         >
           <ExternalLink className="h-3.5 w-3.5" />
-          <span className="truncate">{getHostname(document.source_url!)}</span>
+          <span className="truncate">{getHostname(document.source_url)}</span>
         </a>
       )}
     </div>
@@ -178,7 +178,7 @@ function SourceGuideCard({
 }
 
 function GuideContent({ guide }: { guide: SourceGuide }) {
-  const setPendingMessage = useChatActions((state) => state.setPendingMessage);
+  const { askInChat } = useNotebookActions();
 
   return (
     <div className="space-y-3">
@@ -198,7 +198,7 @@ function GuideContent({ guide }: { guide: SourceGuide }) {
           {guide.topics.map((topic, i) => (
             <button
               key={i}
-              onClick={() => setPendingMessage(`Discuss ${topic}`)}
+              onClick={() => askInChat(`Discuss ${topic}`)}
               className="max-w-[180px] truncate rounded-full border border-border bg-surface px-3 py-1 text-xs text-on-surface-muted transition-colors hover:bg-hover hover:text-on-surface"
             >
               {topic}

@@ -224,10 +224,15 @@ export interface MindMapData {
   nodes: MindMapNode[];
 }
 
+export type GenerationStatus = "pending" | "processing" | "ready" | "failed";
+
 export interface MindMapResponse {
   id: string;
   notebook_id: string;
   title: string | null;
   data: MindMapData;
   created_at: string;
+  generation_status: GenerationStatus;
+  generation_progress: number;
+  generation_error: string | null;
 }

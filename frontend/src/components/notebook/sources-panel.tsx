@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Plus,
   FileText,
@@ -18,65 +18,77 @@ import { PanelHeader } from "./panel-header";
 import { useDocuments } from "@/hooks/use-documents";
 import { useSourceCount } from "@/hooks/use-sources";
 import type { Document } from "@/types/api";
-import type { HighlightedCitation } from "./chat-panel";
+import {
+  useSelectedSources,
+  useSourcesCollapsed,
+  useHighlightedCitation,
+  useViewedSourceId,
+  useNotebookActions,
+} from "@/stores/notebook-store";
 
 interface SourcesPanelProps {
   notebookId: string;
-  selectedSources: Set<string>;
-  onSelectionChange: (sources: Set<string>) => void;
   autoOpenAddSources?: boolean;
-  collapsed?: boolean;
   onToggleCollapse?: () => void;
-  highlightedCitation?: HighlightedCitation | null;
-  onViewingDetailChange?: (isViewing: boolean) => void;
 }
 
 export function SourcesPanel({
   notebookId,
-  selectedSources,
-  onSelectionChange,
   autoOpenAddSources = false,
-  collapsed = false,
   onToggleCollapse,
-  highlightedCitation,
-  onViewingDetailChange,
 }: SourcesPanelProps) {
   const { data: documents, isLoading } = useDocuments(notebookId);
   const { data: sourceCount } = useSourceCount(notebookId);
+
+  // Store state
+  const selectedSources = useSelectedSources();
+  const collapsed = useSourcesCollapsed();
+  const highlightedCitation = useHighlightedCitation();
+  const viewedSourceId = useViewedSourceId();
+
+  // Store actions
+  const {
+    toggleSource,
+    setSelectedSources,
+    viewSourceDetail,
+    closeSourceDetail,
+  } = useNotebookActions();
+
+  // Local UI state
   const [isUploadOpen, setIsUploadOpen] = useState(autoOpenAddSources);
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(
-    null,
-  );
   const [highlightedChunkContent, setHighlightedChunkContent] = useState<
     string | null
   >(null);
   const [citationIndex, setCitationIndex] = useState<number | null>(null);
 
-  useEffect(() => {
-    onViewingDetailChange?.(selectedDocument !== null);
-  }, [selectedDocument, onViewingDetailChange]);
+  // Derive selected document from store's viewedSourceId
+  const selectedDocument = useMemo(() => {
+    if (!viewedSourceId || !documents) return null;
+    return documents.find((d) => d.id === viewedSourceId) ?? null;
+  }, [viewedSourceId, documents]);
 
+  // Handle citation highlight from chat
   useEffect(() => {
     if (highlightedCitation && documents) {
       const doc = documents.find(
         (d) => d.id === highlightedCitation.documentId,
       );
       if (doc) {
-        setSelectedDocument(doc);
+        viewSourceDetail(doc.id);
         setHighlightedChunkContent(highlightedCitation.chunkContent);
         setCitationIndex(highlightedCitation.citationIndex);
       }
     }
-  }, [highlightedCitation, documents]);
+  }, [highlightedCitation, documents, viewSourceDetail]);
 
   function clearSelection() {
-    setSelectedDocument(null);
+    closeSourceDetail();
     setHighlightedChunkContent(null);
     setCitationIndex(null);
   }
 
   function handleSourceClick(doc: Document) {
-    setSelectedDocument(doc);
+    viewSourceDetail(doc.id);
     setHighlightedChunkContent(null);
     setCitationIndex(null);
   }
@@ -90,16 +102,6 @@ export function SourcesPanel({
     readyDocuments &&
     readyDocuments.length > 0 &&
     readyDocuments.every((d) => selectedSources.has(d.id));
-
-  function toggleSource(id: string) {
-    const newSelection = new Set(selectedSources);
-    if (newSelection.has(id)) {
-      newSelection.delete(id);
-    } else {
-      newSelection.add(id);
-    }
-    onSelectionChange(newSelection);
-  }
 
   if (collapsed) {
     return (
@@ -201,8 +203,10 @@ export function SourcesPanel({
               checked={allSelected}
               onCheckedChange={(checked) =>
                 checked
-                  ? onSelectionChange(new Set(readyDocuments?.map((d) => d.id)))
-                  : onSelectionChange(new Set())
+                  ? setSelectedSources(
+                      new Set(readyDocuments?.map((d) => d.id)),
+                    )
+                  : setSelectedSources(new Set())
               }
             />
           </div>

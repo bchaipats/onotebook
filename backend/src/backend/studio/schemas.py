@@ -20,6 +20,9 @@ class MindMapResponse(BaseModel):
     title: str | None
     data: MindMapData
     created_at: datetime
+    generation_status: str = "ready"
+    generation_progress: int = 100
+    generation_error: str | None = None
 
     model_config = {"from_attributes": True}
 

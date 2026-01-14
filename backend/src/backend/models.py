@@ -180,4 +180,11 @@ class StudioOutput(SQLModel, table=True):
     data: str = Field(nullable=False)  # JSON blob
     created_at: datetime = Field(default_factory=utc_now)
 
+    # Background generation tracking
+    generation_status: str = Field(
+        default="ready", index=True
+    )  # pending, processing, ready, failed
+    generation_progress: int = Field(default=100)  # 0-100
+    generation_error: str | None = None
+
     notebook: Notebook | None = Relationship(back_populates="studio_outputs")

@@ -1,80 +1,57 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Mic,
-  Video,
-  GitBranch,
-  FileText,
-  CreditCard,
-  HelpCircle,
-  BarChart3,
-  Presentation,
-  StickyNote,
-  PanelLeftOpen,
-  Wand2,
-  Loader2,
-} from "lucide-react";
+import { StickyNote, PanelLeftOpen, Wand2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NotesList, AddNoteForm } from "./notes-list";
 import { PanelHeader } from "./panel-header";
-import { MindMapView } from "@/components/studio/mind-map";
+import {
+  ARTIFACTS,
+  useArtifacts,
+  MindMapView,
+} from "@/components/studio/artifacts";
+import { ArtifactCard } from "@/components/studio/artifact-card";
 import {
   useNotes,
   useCreateNote,
   useUpdateNote,
   useDeleteNote,
 } from "@/hooks/use-notes";
-import { useMindMap, useGenerateMindMap } from "@/hooks/use-studio";
-
-const STUDIO_TOOLS = [
-  { icon: Mic, label: "Audio Overview" },
-  { icon: Video, label: "Video Overview" },
-  { icon: GitBranch, label: "Mind Map", enabled: true },
-  { icon: FileText, label: "Reports" },
-  { icon: CreditCard, label: "Flashcards" },
-  { icon: HelpCircle, label: "Quiz" },
-  { icon: BarChart3, label: "Infographic" },
-  { icon: Presentation, label: "Slide Deck" },
-];
+import { useStudioCollapsed } from "@/stores/notebook-store";
+import { useActiveTask } from "@/stores/task-store";
 
 interface StudioPanelProps {
   notebookId: string;
-  collapsed?: boolean;
   onToggleCollapse?: () => void;
 }
 
 export function StudioPanel({
   notebookId,
-  collapsed = false,
   onToggleCollapse,
 }: StudioPanelProps) {
+  const collapsed = useStudioCollapsed();
   const [showAddNote, setShowAddNote] = useState(false);
-  const [showMindMap, setShowMindMap] = useState(false);
-  const [isGeneratingMindMap, setIsGeneratingMindMap] = useState(false);
+  const [viewingArtifact, setViewingArtifact] = useState<string | null>(null);
 
   const { data: notes = [] } = useNotes(notebookId);
   const createNote = useCreateNote(notebookId);
   const updateNote = useUpdateNote(notebookId);
   const deleteNote = useDeleteNote(notebookId);
 
-  const { data: mindMapData } = useMindMap(notebookId);
-  const generateMindMap = useGenerateMindMap(notebookId);
+  const { mindmap } = useArtifacts(notebookId);
+  const { query: mindMapQuery, generate: mindMapGenerate } = mindmap;
 
-  function handleMindMapClick() {
-    if (mindMapData) {
-      setShowMindMap(true);
-    } else {
-      setIsGeneratingMindMap(true);
-      generateMindMap.mutate(undefined, {
-        onSuccess: () => {
-          setIsGeneratingMindMap(false);
-          setShowMindMap(true);
-        },
-        onError: () => {
-          setIsGeneratingMindMap(false);
-        },
-      });
+  const activeTask = useActiveTask(notebookId, "mindmap");
+  const isGenerating =
+    activeTask?.status === "pending" || activeTask?.status === "processing";
+
+  function handleArtifactClick(id: string) {
+    if (id === "mindmap") {
+      if (mindMapQuery.data?.generation_status === "ready") {
+        setViewingArtifact("mindmap");
+      } else if (!isGenerating) {
+        mindMapGenerate.mutate();
+      }
     }
   }
 
@@ -94,16 +71,20 @@ export function StudioPanel({
         </div>
         <div className="flex flex-1 flex-col items-center py-4">
           <div className="flex flex-col items-center gap-1.5">
-            {STUDIO_TOOLS.slice(0, 4).map((tool) => (
+            {ARTIFACTS.slice(0, 4).map((artifact) => (
               <Button
-                key={tool.label}
+                key={artifact.id}
                 variant="ghost"
                 size="icon-sm"
-                disabled={!tool.enabled}
-                title={tool.label}
-                onClick={tool.enabled ? handleMindMapClick : undefined}
+                disabled={!artifact.enabled}
+                title={artifact.label}
+                onClick={
+                  artifact.enabled
+                    ? () => handleArtifactClick(artifact.id)
+                    : undefined
+                }
               >
-                <tool.icon />
+                <artifact.icon />
               </Button>
             ))}
           </div>
@@ -128,42 +109,39 @@ export function StudioPanel({
         title="Studio"
         collapseIcon={<PanelLeftOpen />}
         onToggleCollapse={onToggleCollapse}
+        actions={
+          isGenerating && (
+            <div className="flex items-center gap-2 text-xs text-on-surface-muted">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              <span>{activeTask?.progress ?? 0}%</span>
+            </div>
+          )
+        }
       />
 
-      {showMindMap && mindMapData && (
+      {viewingArtifact === "mindmap" && mindMapQuery.data && (
         <MindMapView
-          data={mindMapData.data}
-          onClose={() => setShowMindMap(false)}
-          onRegenerate={() => generateMindMap.mutate()}
-          isRegenerating={generateMindMap.isPending}
+          data={mindMapQuery.data.data}
+          onClose={() => setViewingArtifact(null)}
+          onRegenerate={() => mindMapGenerate.mutate()}
+          isRegenerating={mindMapGenerate.isPending}
         />
       )}
 
       <div className="flex-1 overflow-y-auto px-4 py-4">
         <div className="grid grid-cols-2 gap-3">
-          {STUDIO_TOOLS.map((tool, index) => {
-            const isMindMap = tool.label === "Mind Map";
-            const isLoading = isMindMap && isGeneratingMindMap;
-            return (
-              <button
-                key={tool.label}
-                disabled={!tool.enabled || isLoading}
-                onClick={tool.enabled ? handleMindMapClick : undefined}
-                className={`animate-spring-in-up stagger-${Math.min(index + 1, 8)} flex flex-col items-start gap-3 rounded-2xl bg-surface-variant p-4 text-left transition-all duration-200 hover:bg-hover hover:shadow-elevation-1 disabled:cursor-not-allowed disabled:opacity-60`}
-              >
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-muted text-on-primary-muted">
-                  {isLoading ? (
-                    <Loader2 className="h-5 w-5 animate-spin text-on-primary-muted" />
-                  ) : (
-                    <tool.icon className="h-5 w-5" />
-                  )}
-                </div>
-                <span className="text-sm font-medium text-on-surface">
-                  {isLoading ? "Generating..." : tool.label}
-                </span>
-              </button>
-            );
-          })}
+          {ARTIFACTS.map((artifact, index) => (
+            <ArtifactCard
+              key={artifact.id}
+              artifact={artifact}
+              isLoading={artifact.id === "mindmap" && isGenerating}
+              progress={
+                artifact.id === "mindmap" ? (activeTask?.progress ?? 0) : 0
+              }
+              onClick={() => handleArtifactClick(artifact.id)}
+              index={index}
+            />
+          ))}
         </div>
 
         {showAddNote && (

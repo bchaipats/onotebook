@@ -1,6 +1,6 @@
 import json
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.backend.database import get_session
@@ -37,19 +37,26 @@ async def get_mindmap(
         title=output.title,
         data=MindMapData(**json.loads(output.data)),
         created_at=output.created_at,
+        generation_status=output.generation_status,
+        generation_progress=output.generation_progress,
+        generation_error=output.generation_error,
     )
 
 
 @router.post(
     "/notebooks/{notebook_id}/studio/mindmap/generate",
     response_model=MindMapResponse,
-    status_code=status.HTTP_201_CREATED,
+    status_code=status.HTTP_202_ACCEPTED,
 )
 async def generate_mindmap(
     notebook_id: str,
+    background_tasks: BackgroundTasks,
     session: AsyncSession = Depends(get_session),
 ) -> MindMapResponse:
-    """Generate a new mindmap for a notebook."""
+    """Start mindmap generation in the background.
+
+    Returns immediately with a pending task. Poll GET /mindmap to check status.
+    """
     notebook = await get_notebook(session, notebook_id)
     if not notebook:
         raise HTTPException(
@@ -57,12 +64,24 @@ async def generate_mindmap(
             detail="Notebook not found",
         )
 
-    output = await service.generate_mindmap(session, notebook)
+    task = await service.create_mindmap_task(session, notebook)
+
+    background_tasks.add_task(
+        service.generate_mindmap_background,
+        task.id,
+        notebook.id,
+        notebook.name,
+        notebook.llm_provider,
+        notebook.llm_model,
+    )
 
     return MindMapResponse(
-        id=output.id,
-        notebook_id=output.notebook_id,
-        title=output.title,
-        data=MindMapData(**json.loads(output.data)),
-        created_at=output.created_at,
+        id=task.id,
+        notebook_id=task.notebook_id,
+        title=task.title,
+        data=MindMapData(**json.loads(task.data)),
+        created_at=task.created_at,
+        generation_status=task.generation_status,
+        generation_progress=task.generation_progress,
+        generation_error=task.generation_error,
     )
