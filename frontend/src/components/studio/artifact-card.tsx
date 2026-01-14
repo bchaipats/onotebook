@@ -59,12 +59,7 @@ export function ArtifactCard({
       )}
     >
       <div className="flex w-full items-center justify-between">
-        <div
-          className={cn(
-            "shrink-0",
-            colors.icon,
-          )}
-        >
+        <div className={cn("shrink-0", colors.icon)}>
           {isLoading ? (
             <Loader2 className="h-6 w-6 animate-spin" />
           ) : (

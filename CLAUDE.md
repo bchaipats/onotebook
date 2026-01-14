@@ -110,6 +110,35 @@ Chat uses Server-Sent Events (SSE). Stream events: `sources`, `grounding`, `toke
 - Three similar lines beats a premature abstraction
 - Delete unused code immediately
 
+## Quality Standards
+
+**Before implementing, always:**
+- Explore existing code patterns, design tokens, and abstractions in the area you're modifying
+- Identify if libraries already in `package.json` or `pyproject.toml` solve the problem
+- Consider modern, well-maintained libraries for the tech stack that would handle this better than custom code—suggest adding them if the benefit is clear
+- Consider 2-3 approaches, analyze tradeoffs, and pick one decisively—don't hedge or ask unless genuinely uncertain
+
+**While implementing:**
+- Match existing UI patterns exactly: spacing, colors, typography, animations, component composition
+- Extend design tokens (`globals.css`, `tailwind.config.ts`) rather than hardcoding values
+- Use libraries for non-trivial logic (dates, validation, formatting, animations); write custom code only when simpler
+- Code should be self-documenting—add comments only for non-obvious "why", never for "what"
+- No defensive code for impossible states; trust internal functions and framework guarantees
+- No abstractions, helpers, or utilities for one-time operations
+
+**After implementing:**
+- Delete all dead code, unused imports, and orphaned files—no `_unused` prefixes or `// removed` comments
+- Verify the change works in isolation without breaking existing behavior
+- For larger changes, mentally walk through: "Is there anything here I wouldn't want to maintain in 6 months?"
+
+**Signs of over-engineering to avoid:**
+- Config objects for things that won't change
+- Wrapper functions that just call another function
+- Validation for internal data that's already validated
+- Error handling for errors that can't occur
+- Feature flags for features that will always be on
+- Backward-compatibility shims when you can just change the code
+
 ## Committing
 
 1. Run `make lint` before committing

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import {
   Plus,
   FileText,
@@ -18,6 +18,7 @@ import { PanelHeader } from "./panel-header";
 import { useDocuments } from "@/hooks/use-documents";
 import { useSourceCount } from "@/hooks/use-sources";
 import type { Document } from "@/types/api";
+import { cn } from "@/lib/utils";
 import {
   useSelectedSources,
   useSourcesCollapsed,
@@ -60,6 +61,24 @@ export function SourcesPanel({
     string | null
   >(null);
   const [citationIndex, setCitationIndex] = useState<number | null>(null);
+  const [highlightSearch, setHighlightSearch] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  function handleDiscoverSources() {
+    setHighlightSearch(true);
+    // Scroll to the search component
+    setTimeout(() => {
+      searchRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      // Focus the search input
+      const input = searchRef.current?.querySelector("input");
+      input?.focus();
+    }, 100);
+    // Remove highlight after animation
+    setTimeout(() => setHighlightSearch(false), 2000);
+  }
 
   // Derive selected document from store's viewedSourceId
   const selectedDocument = useMemo(() => {
@@ -131,6 +150,7 @@ export function SourcesPanel({
           open={isUploadOpen}
           onOpenChange={setIsUploadOpen}
           notebookId={notebookId}
+          onDiscoverSources={handleDiscoverSources}
         />
       </div>
     );
@@ -153,6 +173,7 @@ export function SourcesPanel({
           open={isUploadOpen}
           onOpenChange={setIsUploadOpen}
           notebookId={notebookId}
+          onDiscoverSources={handleDiscoverSources}
         />
       </div>
     );
@@ -191,7 +212,14 @@ export function SourcesPanel({
         </p>
       </div>
 
-      <div className="mx-4 mt-4">
+      <div
+        ref={searchRef}
+        className={cn(
+          "mx-4 mt-4 rounded-xl transition-all duration-500",
+          highlightSearch &&
+            "ring-2 ring-primary ring-offset-2 ring-offset-background",
+        )}
+      >
         <SourceSearch notebookId={notebookId} />
       </div>
 
@@ -252,6 +280,7 @@ export function SourcesPanel({
         open={isUploadOpen}
         onOpenChange={setIsUploadOpen}
         notebookId={notebookId}
+        onDiscoverSources={handleDiscoverSources}
       />
     </div>
   );
