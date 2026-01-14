@@ -1,6 +1,8 @@
 .PHONY: dev backend frontend stop clean
 
-dev: backend frontend
+dev: stop
+	@sleep 0.5
+	@$(MAKE) -j2 backend frontend
 
 backend:
 	@cd backend && uv run fastapi dev src/backend/main.py &
@@ -9,8 +11,10 @@ frontend:
 	@cd frontend && bun run dev &
 
 stop:
-	@-pkill -f "fastapi dev" 2>/dev/null
-	@-pkill -f "next dev" 2>/dev/null
+	@-lsof -ti :8000 | xargs kill -9 2>/dev/null || true
+	@-lsof -ti :3000 | xargs kill -9 2>/dev/null || true
+	@-pkill -f "fastapi dev" 2>/dev/null || true
+	@-pkill -f "next dev" 2>/dev/null || true
 	@echo "Services stopped"
 
 clean: stop
