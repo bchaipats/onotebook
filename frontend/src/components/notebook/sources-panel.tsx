@@ -222,14 +222,14 @@ export function SourcesPanel({
           </div>
         ) : documents && documents.length > 0 ? (
           <div className="space-y-2">
-            {documents.map((doc, index) => (
+            {documents.map((doc) => (
               <SourceItem
                 key={doc.id}
                 document={doc}
                 isSelected={selectedSources.has(doc.id)}
                 onToggle={() => toggleSource(doc.id)}
                 onClick={() => handleSourceClick(doc)}
-                className={`animate-spring-in-up stagger-${Math.min(index + 1, 8)}`}
+                className="animate-fade-in-up"
               />
             ))}
           </div>

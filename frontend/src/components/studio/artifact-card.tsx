@@ -30,7 +30,6 @@ interface ArtifactCardProps {
   isLoading: boolean;
   progress: number;
   onClick: () => void;
-  index: number;
   disabled?: boolean;
   disabledReason?: string;
 }
@@ -40,7 +39,6 @@ export function ArtifactCard({
   isLoading,
   progress,
   onClick,
-  index,
   disabled = false,
   disabledReason,
 }: ArtifactCardProps) {
@@ -53,10 +51,9 @@ export function ArtifactCard({
       disabled={isDisabled}
       onClick={!isDisabled ? onClick : undefined}
       className={cn(
-        `animate-spring-in-up stagger-${Math.min(index + 1, 8)}`,
         "group flex w-full flex-col gap-1 rounded-xl p-3",
-        "transition-all duration-200",
-        "hover:brightness-[0.97] active:scale-[0.98]",
+        "transition-colors duration-200",
+        "hover:brightness-[0.97]",
         "disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100",
         colors.bg,
       )}
@@ -64,7 +61,7 @@ export function ArtifactCard({
       <div className="flex w-full items-center justify-between">
         <div
           className={cn(
-            "shrink-0 transition-transform duration-200 group-hover:scale-110",
+            "shrink-0",
             colors.icon,
           )}
         >
@@ -81,7 +78,7 @@ export function ArtifactCard({
             <span>{progress}%</span>
           </div>
         ) : (
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-on-surface/6 text-on-surface/40 transition-all duration-150 group-hover:bg-on-surface/10 group-hover:text-on-surface-muted">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-on-surface/6 text-on-surface/40 transition-colors duration-150 group-hover:bg-on-surface/10 group-hover:text-on-surface-muted">
             <Pencil className="h-3.5 w-3.5" />
           </div>
         )}

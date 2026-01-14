@@ -115,7 +115,7 @@ function CitationButton({
   const button = (
     <button
       onClick={() => onClick(index)}
-      className="mx-0.5 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary-muted px-2 text-xs font-semibold text-on-primary-muted shadow-sm transition-all duration-150 hover:shadow-elevation-1 active:scale-95"
+      className="mx-0.5 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary-muted px-2 text-xs font-semibold text-on-primary-muted shadow-sm transition-colors duration-150 hover:bg-primary-muted/80"
     >
       {index}
     </button>

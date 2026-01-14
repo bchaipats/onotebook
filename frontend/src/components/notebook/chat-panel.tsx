@@ -689,7 +689,7 @@ function ChatContent({ sessionId, notebookId }: ChatContentProps) {
                         <button
                           key={question}
                           onClick={() => handleSuggestedQuestion(question)}
-                          className="rounded-full bg-surface-variant px-4 py-2.5 text-sm text-on-surface shadow-sm transition-all duration-200 hover:bg-hover hover:shadow-elevation-1 active:scale-[0.98]"
+                          className="rounded-full bg-surface-variant px-4 py-2.5 text-sm text-on-surface shadow-sm transition-colors duration-200 hover:bg-hover"
                         >
                           {question}
                         </button>
@@ -766,7 +766,7 @@ function ChatContent({ sessionId, notebookId }: ChatContentProps) {
                       <button
                         key={question}
                         onClick={() => handleSuggestedQuestion(question)}
-                        className="rounded-full bg-surface-variant px-4 py-2 text-sm text-on-surface shadow-sm transition-all duration-200 hover:bg-hover hover:shadow-elevation-1 active:scale-[0.98]"
+                        className="rounded-full bg-surface-variant px-4 py-2 text-sm text-on-surface shadow-sm transition-colors duration-200 hover:bg-hover"
                       >
                         {question}
                       </button>
@@ -1307,7 +1307,7 @@ function MessageBubble({
                   onClick={() =>
                     onRegenerate("Make your response shorter and more concise.")
                   }
-                  className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-on-surface transition-all hover:bg-hover hover:shadow-sm active:scale-[0.98]"
+                  className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-on-surface transition-colors hover:bg-hover"
                 >
                   Shorter
                 </button>
@@ -1317,7 +1317,7 @@ function MessageBubble({
                       "Make your response longer with more detail and examples.",
                     )
                   }
-                  className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-on-surface transition-all hover:bg-hover hover:shadow-sm active:scale-[0.98]"
+                  className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-on-surface transition-colors hover:bg-hover"
                 >
                   Longer
                 </button>
@@ -1327,7 +1327,7 @@ function MessageBubble({
                       "Make your response simpler and easier to understand. Use plain language.",
                     )
                   }
-                  className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-on-surface transition-all hover:bg-hover hover:shadow-sm active:scale-[0.98]"
+                  className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-on-surface transition-colors hover:bg-hover"
                 >
                   Simpler
                 </button>
@@ -1337,7 +1337,7 @@ function MessageBubble({
                       "Make your response more detailed with technical depth and thoroughness.",
                     )
                   }
-                  className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-on-surface transition-all hover:bg-hover hover:shadow-sm active:scale-[0.98]"
+                  className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-on-surface transition-colors hover:bg-hover"
                 >
                   More detailed
                 </button>
@@ -1499,7 +1499,7 @@ function CitationButton({ index, source, onClick }: CitationButtonProps) {
   const button = (
     <button
       onClick={() => onClick(index)}
-      className="mx-0.5 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary-muted px-2 text-xs font-semibold text-on-primary-muted shadow-sm transition-all duration-150 hover:shadow-elevation-1 active:scale-95"
+      className="mx-0.5 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary-muted px-2 text-xs font-semibold text-on-primary-muted shadow-sm transition-colors duration-150 hover:bg-primary-muted/80"
     >
       {index}
     </button>

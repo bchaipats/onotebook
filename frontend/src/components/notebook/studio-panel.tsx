@@ -195,7 +195,7 @@ export function StudioPanel({
 
       <div className="flex-1 overflow-y-auto px-4 py-3">
         <div className="grid grid-cols-2 gap-2">
-          {ARTIFACTS.map((artifact, index) => (
+          {ARTIFACTS.map((artifact) => (
             <ArtifactCard
               key={artifact.id}
               artifact={artifact}
@@ -204,7 +204,6 @@ export function StudioPanel({
                 artifact.id === "mindmap" ? (activeTask?.progress ?? 0) : 0
               }
               onClick={() => handleArtifactClick(artifact.id)}
-              index={index}
               disabled={!hasReadySources}
               disabledReason="Add sources to enable"
             />

@@ -19,7 +19,7 @@ const toggleGroupVariants = cva("inline-flex items-center justify-center", {
 });
 
 const toggleGroupItemVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
