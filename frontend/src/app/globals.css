@@ -8,12 +8,7 @@
   --font-reading: var(--font-reading), Georgia, serif;
 
   /* Layout */
-  --panel-width-sources: 425px;
-  --panel-width-sources-expanded: 680px;
-  --panel-width-studio: 430px;
-  --panel-width-studio-contracted: 280px;
   --panel-width-collapsed: 3.5rem;
-  --panel-gap: 0.75rem;
   --h-button-lg: 2.5rem;
   --radius: 0.75rem;
   --radius-card: 1rem;
@@ -300,12 +295,7 @@
 @theme inline {
   /* ===== LAYOUT ===== */
   --h-button-lg: var(--h-button-lg);
-  --spacing-panel-width-sources: var(--panel-width-sources);
-  --spacing-panel-width-sources-expanded: var(--panel-width-sources-expanded);
-  --spacing-panel-width-studio: var(--panel-width-studio);
-  --spacing-panel-width-studio-contracted: var(--panel-width-studio-contracted);
   --spacing-panel-width-collapsed: var(--panel-width-collapsed);
-  --spacing-panel-gap: var(--panel-gap);
 
   /* ===== RADII ===== */
   --radius-sm: calc(var(--radius) - 4px);
@@ -664,4 +654,13 @@ body {
   height: 1px;
   width: 100%;
   overflow-anchor: none;
+}
+
+/* ===== RESIZABLE PANELS ===== */
+[data-panel-group-direction="horizontal"] > [data-resize-handle] {
+  cursor: col-resize;
+}
+
+[data-panel-group-direction="horizontal"] > [data-resize-handle]:active {
+  cursor: col-resize;
 }
