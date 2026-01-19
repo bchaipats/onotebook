@@ -1,7 +1,16 @@
-from datetime import datetime
-from typing import Literal
+from datetime import UTC, datetime
+from typing import Annotated, Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, PlainSerializer
+
+# Serialize datetime to ISO format with Z suffix for UTC
+UTCDateTime = Annotated[
+    datetime,
+    PlainSerializer(
+        lambda dt: dt.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        return_type=str,
+    ),
+]
 
 
 class ChatSessionCreate(BaseModel):
@@ -12,8 +21,8 @@ class ChatSessionResponse(BaseModel):
     id: str
     notebook_id: str
     title: str | None
-    created_at: datetime
-    updated_at: datetime
+    created_at: UTCDateTime
+    updated_at: UTCDateTime
 
     model_config = {"from_attributes": True}
 
@@ -29,7 +38,7 @@ class MessageResponse(BaseModel):
     content: str
     model: str | None
     feedback: str | None
-    created_at: datetime
+    created_at: UTCDateTime
 
     model_config = {"from_attributes": True}
 

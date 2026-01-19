@@ -1,9 +1,15 @@
 "use client";
 
-import React, { memo, useState, useEffect, useRef } from "react";
-import { Bot, Pencil, X, Check, ChevronDown, ChevronUp } from "lucide-react";
+import React, {
+  memo,
+  useState,
+  useEffect,
+  useRef,
+  useLayoutEffect,
+} from "react";
+import { Bot, Pencil, X, Check } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useMessageFeedback } from "@/hooks/use-chat";
@@ -47,13 +53,20 @@ export const MessageBubble = memo(function MessageBubble({
   const [saved, setSaved] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [initialHeight, setInitialHeight] = useState<number | null>(null);
   const editTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const bubbleRef = useRef<HTMLDivElement>(null);
   const feedbackMutation = useMessageFeedback(sessionId);
   const createNote = useCreateNote(notebookId);
 
-  const COLLAPSE_THRESHOLD = 500;
-  const isCollapsible = message.content.length > COLLAPSE_THRESHOLD && !isUser;
+  useLayoutEffect(() => {
+    if (!isUser && bubbleRef.current && initialHeight === null) {
+      setInitialHeight(bubbleRef.current.scrollHeight);
+      const timer = setTimeout(() => setInitialHeight(null), 150);
+      return () => clearTimeout(timer);
+    }
+  }, [isUser, initialHeight]);
+
   const hasSearchMatch =
     searchQuery &&
     searchQuery.length > 0 &&
@@ -131,9 +144,15 @@ export const MessageBubble = memo(function MessageBubble({
     />
   );
 
-  const timestamp = formatDistanceToNow(new Date(message.created_at), {
-    addSuffix: true,
-  });
+  // Ensure timestamp is parsed as UTC (append Z if no timezone indicator)
+  const timestamp = message.created_at;
+  const messageDate = new Date(
+    timestamp.endsWith("Z") || timestamp.includes("+")
+      ? timestamp
+      : timestamp + "Z",
+  );
+  const relativeTime = formatDistanceToNow(messageDate, { addSuffix: true });
+  const absoluteTime = format(messageDate, "PPpp");
 
   return (
     <div className={cn("flex gap-4", isUser && "flex-row-reverse")}>
@@ -160,28 +179,30 @@ export const MessageBubble = memo(function MessageBubble({
           />
         ) : (
           <div
+            ref={!isUser ? bubbleRef : undefined}
             className={cn(
-              "group relative inline-block rounded-2xl px-4 py-3",
+              "group relative inline-block rounded-2xl px-4 py-3 transition-[min-height] duration-150",
               isUser
                 ? "bg-primary-muted text-on-primary-muted shadow-elevation-1"
                 : "text-on-surface",
               hasSearchMatch && "ring-2 ring-primary/50",
             )}
+            style={
+              !isUser && initialHeight
+                ? { minHeight: initialHeight }
+                : undefined
+            }
           >
             <div
               className={cn(
                 "mb-1 text-[10px] text-on-surface-muted opacity-0 transition-opacity group-hover:opacity-100",
                 isUser && "text-right",
               )}
+              title={absoluteTime}
             >
-              {timestamp}
+              {relativeTime}
             </div>
-            <div
-              className={cn(
-                "prose prose-sm max-w-none overflow-hidden transition-[max-height] duration-300",
-                isCollapsible && !isExpanded && "max-h-[200px]",
-              )}
-            >
+            <div className="prose prose-sm max-w-none">
               <ReactMarkdown
                 components={{
                   code({ className, children, ...props }) {
@@ -235,29 +256,6 @@ export const MessageBubble = memo(function MessageBubble({
                 {message.content}
               </ReactMarkdown>
             </div>
-            {isCollapsible && !isExpanded && (
-              <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-surface to-transparent" />
-            )}
-            {isCollapsible && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="mt-2 h-7 gap-1 text-xs text-on-surface-muted"
-                onClick={() => setIsExpanded(!isExpanded)}
-              >
-                {isExpanded ? (
-                  <>
-                    <ChevronUp className="h-3 w-3" />
-                    Show less
-                  </>
-                ) : (
-                  <>
-                    <ChevronDown className="h-3 w-3" />
-                    Show more
-                  </>
-                )}
-              </Button>
-            )}
             {isUser && onEdit && !isStreaming && (
               <div className="mt-2 flex justify-end opacity-0 transition-opacity group-hover:opacity-100">
                 <Button

@@ -69,7 +69,12 @@ export function ChatContent({ sessionId, notebookId }: ChatContentProps) {
     containerRef: scrollContainerRef,
     isAtBottom,
     scrollToBottom,
-  } = useScrollSentinel({ threshold: 0.1, rootMargin: "50px" });
+    userScrolledAway,
+  } = useScrollSentinel({
+    threshold: 0.1,
+    rootMargin: "50px",
+    isStreaming: streaming.isBufferActive,
+  });
 
   const handleCitationClick = useCallback(
     (index: number) => {
@@ -90,12 +95,18 @@ export function ChatContent({ sessionId, notebookId }: ChatContentProps) {
     [streaming.sources, highlightCitation],
   );
 
-  // Auto-scroll during streaming
+  // Auto-scroll during streaming (respects user scroll intent)
   useEffect(() => {
-    if (streaming.isBufferActive && isAtBottom) {
+    if (streaming.isBufferActive && isAtBottom && !userScrolledAway) {
       scrollToBottom();
     }
-  }, [streaming.content, streaming.isBufferActive, isAtBottom, scrollToBottom]);
+  }, [
+    streaming.content,
+    streaming.isBufferActive,
+    isAtBottom,
+    userScrolledAway,
+    scrollToBottom,
+  ]);
 
   // Fetch initial suggested questions
   useEffect(() => {
@@ -323,25 +334,23 @@ export function ChatContent({ sessionId, notebookId }: ChatContentProps) {
               onLoadMore={handleLoadMoreMessages}
             />
           )}
-
-          {!isAtBottom && (
-            <div className="sticky bottom-4 flex justify-center">
-              <Button
-                variant="elevated"
-                size="sm"
-                className="rounded-full shadow-elevation-2"
-                onClick={scrollToBottom}
-              >
-                <ArrowDown className="mr-1.5 h-4 w-4" />
-                Jump to bottom
-              </Button>
-            </div>
-          )}
         </div>
         <div
           className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-surface/90 to-transparent"
           aria-hidden="true"
         />
+        {(!isAtBottom || userScrolledAway) && (
+          <div className="absolute inset-x-0 bottom-4 z-10 flex justify-center">
+            <Button
+              size="icon-sm"
+              className="rounded-full border border-border bg-surface text-on-surface shadow-elevation-2 hover:bg-surface-variant active:bg-surface-variant"
+              onClick={scrollToBottom}
+              aria-label="Scroll to bottom"
+            >
+              <ArrowDown className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </div>
 
       {error.message && (

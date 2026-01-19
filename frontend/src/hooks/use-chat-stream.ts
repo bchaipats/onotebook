@@ -55,7 +55,8 @@ export function useChatStream({
     setPendingUserMessage(null);
     invalidateMessages();
     invalidateSessions();
-    setTimeout(() => resetBufferRef.current?.(), 100);
+    // Short delay before resetting buffer to allow React Query to settle
+    setTimeout(() => resetBufferRef.current?.(), 50);
   });
 
   useEffect(() => {

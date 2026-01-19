@@ -41,27 +41,29 @@ export function StreamingMessage({
   }
 
   return (
-    <div className="streaming-message-container flex gap-4">
+    <div className="flex gap-4">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-variant text-on-surface shadow-elevation-1">
         <Bot className="h-5 w-5" />
       </div>
-      <div
-        ref={containerRef}
-        className="streaming-bubble-active flex-1"
-        style={{ minHeight: lockedMinHeight ?? undefined }}
-      >
-        <div className="prose prose-sm max-w-none">
-          <MemoizedMarkdown
-            content={content}
-            onCitationClick={onCitationClick}
-            sources={sources}
-          />
-        </div>
-        {groundingMetadata && groundingMetadata.has_relevant_sources && (
-          <div className="mt-2">
-            <ConfidenceBadge metadata={groundingMetadata} />
+      <div className="max-w-[85%] flex-1">
+        <div
+          ref={containerRef}
+          className="group relative inline-block rounded-2xl px-4 py-3 text-on-surface transition-[min-height] duration-200"
+          style={{ minHeight: lockedMinHeight ?? undefined }}
+        >
+          <div className="prose prose-sm max-w-none">
+            <MemoizedMarkdown
+              content={content}
+              onCitationClick={onCitationClick}
+              sources={sources}
+            />
           </div>
-        )}
+          {groundingMetadata && groundingMetadata.has_relevant_sources && (
+            <div className="mt-2">
+              <ConfidenceBadge metadata={groundingMetadata} />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

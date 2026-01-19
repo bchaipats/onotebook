@@ -65,6 +65,12 @@ export const ChatMessagesView = forwardRef<
 ) {
   const lastAssistantMessage = messages.findLast((m) => m.role === "assistant");
 
+  // Guard against showing streaming message if it's already persisted
+  const streamingAlreadyPersisted =
+    streamingContent &&
+    lastAssistantMessage &&
+    lastAssistantMessage.content.startsWith(streamingContent.slice(0, 100));
+
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-6 pb-16 pt-6">
       {hasMoreMessages && (
@@ -121,7 +127,7 @@ export const ChatMessagesView = forwardRef<
           </div>
         </div>
       )}
-      {streamingContent && (
+      {streamingContent && !streamingAlreadyPersisted && (
         <StreamingMessage
           content={streamingContent}
           sources={currentSources}
