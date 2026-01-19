@@ -1,11 +1,18 @@
 "use client";
 
 import { forwardRef } from "react";
+import { ChevronUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { MessageBubble } from "./message-bubble";
 import { StreamingMessage } from "./streaming-message";
 import { ThinkingIndicator } from "./thinking-indicator";
 import { StoppedMessage } from "./stopped-message";
-import type { ChatMessage, SourceInfo, GroundingMetadata } from "@/types/api";
+import type {
+  ChatMessage,
+  SourceInfo,
+  GroundingMetadata,
+  StreamingStage,
+} from "@/types/api";
 
 interface ChatMessagesViewProps {
   messages: ChatMessage[];
@@ -18,10 +25,15 @@ interface ChatMessagesViewProps {
   pendingUserMessage: string | null;
   stoppedContent: string;
   suggestedQuestions: string[];
+  streamingStage: StreamingStage | null;
+  searchQuery: string;
+  hasMoreMessages: boolean;
   onCitationClick: (index: number) => void;
   onRegenerate: (messageId: string, instruction?: string) => void;
   onEdit: (messageId: string, newContent: string) => void;
   onQuestionClick: (question: string) => void;
+  onContinue: () => void;
+  onLoadMore: () => void;
 }
 
 export const ChatMessagesView = forwardRef<
@@ -39,10 +51,15 @@ export const ChatMessagesView = forwardRef<
     pendingUserMessage,
     stoppedContent,
     suggestedQuestions,
+    streamingStage,
+    searchQuery,
+    hasMoreMessages,
     onCitationClick,
     onRegenerate,
     onEdit,
     onQuestionClick,
+    onContinue,
+    onLoadMore,
   },
   sentinelRef,
 ) {
@@ -50,6 +67,19 @@ export const ChatMessagesView = forwardRef<
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-6 pb-16 pt-6">
+      {hasMoreMessages && (
+        <div className="flex justify-center pb-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1 text-on-surface-muted"
+            onClick={onLoadMore}
+          >
+            <ChevronUp className="h-4 w-4" />
+            Load earlier messages
+          </Button>
+        </div>
+      )}
       {messages.map((message) => (
         <MessageBubble
           key={message.id}
@@ -73,7 +103,15 @@ export const ChatMessagesView = forwardRef<
           }
           onCitationClick={onCitationClick}
           onEdit={message.role === "user" ? onEdit : undefined}
+          onContinue={
+            message.role === "assistant" &&
+            message.id === lastAssistantMessage?.id &&
+            !isStreaming
+              ? onContinue
+              : undefined
+          }
           isStreaming={isStreaming}
+          searchQuery={searchQuery}
         />
       ))}
       {pendingUserMessage && (
@@ -91,7 +129,9 @@ export const ChatMessagesView = forwardRef<
           onCitationClick={onCitationClick}
         />
       )}
-      {isStreaming && !streamingContent && <ThinkingIndicator />}
+      {isStreaming && !streamingContent && (
+        <ThinkingIndicator stage={streamingStage} />
+      )}
       {!isStreaming && stoppedContent && (
         <StoppedMessage content={stoppedContent} />
       )}

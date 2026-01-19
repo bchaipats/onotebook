@@ -1,8 +1,9 @@
 "use client";
 
 import React, { memo, useState, useEffect, useRef } from "react";
-import { Bot, Pencil, X, Check } from "lucide-react";
+import { Bot, Pencil, X, Check, ChevronDown, ChevronUp } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useMessageFeedback } from "@/hooks/use-chat";
@@ -23,7 +24,9 @@ interface MessageBubbleProps {
   showModificationButtons?: boolean;
   onCitationClick?: (index: number) => void;
   onEdit?: (messageId: string, newContent: string) => void;
+  onContinue?: () => void;
   isStreaming?: boolean;
+  searchQuery?: string;
 }
 
 export const MessageBubble = memo(function MessageBubble({
@@ -35,16 +38,26 @@ export const MessageBubble = memo(function MessageBubble({
   showModificationButtons,
   onCitationClick,
   onEdit,
+  onContinue,
   isStreaming,
+  searchQuery,
 }: MessageBubbleProps) {
   const isUser = message.role === "user";
   const [showAllCitations, setShowAllCitations] = useState(false);
   const [saved, setSaved] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
+  const [isExpanded, setIsExpanded] = useState(false);
   const editTextareaRef = useRef<HTMLTextAreaElement>(null);
   const feedbackMutation = useMessageFeedback(sessionId);
   const createNote = useCreateNote(notebookId);
+
+  const COLLAPSE_THRESHOLD = 500;
+  const isCollapsible = message.content.length > COLLAPSE_THRESHOLD && !isUser;
+  const hasSearchMatch =
+    searchQuery &&
+    searchQuery.length > 0 &&
+    message.content.toLowerCase().includes(searchQuery.toLowerCase());
 
   useEffect(() => {
     if (isEditing && editTextareaRef.current) {
@@ -118,6 +131,10 @@ export const MessageBubble = memo(function MessageBubble({
     />
   );
 
+  const timestamp = formatDistanceToNow(new Date(message.created_at), {
+    addSuffix: true,
+  });
+
   return (
     <div className={cn("flex gap-4", isUser && "flex-row-reverse")}>
       {!isUser && (
@@ -144,13 +161,27 @@ export const MessageBubble = memo(function MessageBubble({
         ) : (
           <div
             className={cn(
-              "group inline-block rounded-2xl px-4 py-3",
+              "group relative inline-block rounded-2xl px-4 py-3",
               isUser
                 ? "bg-primary-muted text-on-primary-muted shadow-elevation-1"
                 : "text-on-surface",
+              hasSearchMatch && "ring-2 ring-primary/50",
             )}
           >
-            <div className="prose prose-sm max-w-none">
+            <div
+              className={cn(
+                "mb-1 text-[10px] text-on-surface-muted opacity-0 transition-opacity group-hover:opacity-100",
+                isUser && "text-right",
+              )}
+            >
+              {timestamp}
+            </div>
+            <div
+              className={cn(
+                "prose prose-sm max-w-none overflow-hidden transition-[max-height] duration-300",
+                isCollapsible && !isExpanded && "max-h-[200px]",
+              )}
+            >
               <ReactMarkdown
                 components={{
                   code({ className, children, ...props }) {
@@ -204,6 +235,29 @@ export const MessageBubble = memo(function MessageBubble({
                 {message.content}
               </ReactMarkdown>
             </div>
+            {isCollapsible && !isExpanded && (
+              <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-surface to-transparent" />
+            )}
+            {isCollapsible && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mt-2 h-7 gap-1 text-xs text-on-surface-muted"
+                onClick={() => setIsExpanded(!isExpanded)}
+              >
+                {isExpanded ? (
+                  <>
+                    <ChevronUp className="h-3 w-3" />
+                    Show less
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-3 w-3" />
+                    Show more
+                  </>
+                )}
+              </Button>
+            )}
             {isUser && onEdit && !isStreaming && (
               <div className="mt-2 flex justify-end opacity-0 transition-opacity group-hover:opacity-100">
                 <Button
@@ -224,6 +278,7 @@ export const MessageBubble = memo(function MessageBubble({
                 onRate={handleRate}
                 onSaveToNote={handleSaveToNote}
                 onRegenerate={onRegenerate ? () => onRegenerate() : undefined}
+                onContinue={onContinue}
                 isFeedbackPending={feedbackMutation.isPending}
                 isNoteSaving={createNote.isPending}
                 isNoteSaved={saved}

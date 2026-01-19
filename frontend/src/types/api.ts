@@ -167,14 +167,24 @@ export interface GroundingMetadata {
   sources_filtered: number;
 }
 
+export type StreamingStage = "searching" | "reading" | "generating";
+
 export interface StreamEvent {
-  type: "sources" | "token" | "done" | "error" | "suggestions" | "grounding";
+  type:
+    | "sources"
+    | "token"
+    | "done"
+    | "error"
+    | "suggestions"
+    | "grounding"
+    | "stage";
   sources?: SourceInfo[];
   content?: string;
   message_id?: string;
   error?: string;
   questions?: string[];
   metadata?: GroundingMetadata;
+  stage?: StreamingStage;
 }
 
 export interface SuggestedQuestionsResponse {

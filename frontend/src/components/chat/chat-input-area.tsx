@@ -1,8 +1,18 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import {
+  useRef,
+  useEffect,
+  useCallback,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { Square, ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+export interface ChatInputAreaHandle {
+  focus: () => void;
+}
 
 interface ChatInputAreaProps {
   value: string;
@@ -15,24 +25,44 @@ interface ChatInputAreaProps {
   disabled: boolean;
 }
 
-export function ChatInputArea({
-  value,
-  onChange,
-  onSend,
-  onStop,
-  onKeyDown,
-  isStreaming,
-  selectedSourcesCount,
-  disabled,
-}: ChatInputAreaProps) {
+export const ChatInputArea = forwardRef<
+  ChatInputAreaHandle,
+  ChatInputAreaProps
+>(function ChatInputArea(
+  {
+    value,
+    onChange,
+    onSend,
+    onStop,
+    onKeyDown,
+    isStreaming,
+    selectedSourcesCount,
+    disabled,
+  },
+  ref,
+) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  useImperativeHandle(ref, () => ({
+    focus: () => textareaRef.current?.focus(),
+  }));
+
+  const adjustHeight = useCallback(() => {
+    if (!textareaRef.current) return;
+    const textarea = textareaRef.current;
+    textarea.style.height = "auto";
+    const maxHeight = Math.floor(window.innerHeight * 0.4);
+    textarea.style.height = `${Math.min(textarea.scrollHeight, maxHeight)}px`;
+  }, []);
+
   useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
-    }
-  }, [value]);
+    adjustHeight();
+  }, [value, adjustHeight]);
+
+  useEffect(() => {
+    window.addEventListener("resize", adjustHeight);
+    return () => window.removeEventListener("resize", adjustHeight);
+  }, [adjustHeight]);
 
   return (
     <div className="shrink-0 bg-surface/80 px-4 pb-2 pt-3 backdrop-blur-xl">
@@ -79,4 +109,4 @@ export function ChatInputArea({
       </div>
     </div>
   );
-}
+});

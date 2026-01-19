@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { Loader2, ArrowDown } from "lucide-react";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { Loader2, ArrowDown, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { showToast } from "@/components/ui/toast";
 import { useMessages } from "@/hooks/use-chat";
 import { useScrollSentinel } from "@/hooks/use-scroll-sentinel";
 import { useChatStream } from "@/hooks/use-chat-stream";
@@ -19,7 +20,7 @@ import {
 import { ChatEmptyState } from "./chat-empty-state";
 import { ChatReadyState } from "./chat-ready-state";
 import { ChatMessagesView } from "./chat-messages-view";
-import { ChatInputArea } from "./chat-input-area";
+import { ChatInputArea, ChatInputAreaHandle } from "./chat-input-area";
 import { ChatErrorBanner } from "./chat-error-banner";
 
 interface ChatContentProps {
@@ -38,6 +39,17 @@ export function ChatContent({ sessionId, notebookId }: ChatContentProps) {
 
   const [inputValue, setInputValue] = useState("");
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [visibleMessageCount, setVisibleMessageCount] = useState(20);
+  const inputAreaRef = useRef<ChatInputAreaHandle>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const allMessages = messages || [];
+  const hasMoreMessages = allMessages.length > visibleMessageCount;
+  const visibleMessages = hasMoreMessages
+    ? allMessages.slice(-visibleMessageCount)
+    : allMessages;
 
   const {
     streaming,
@@ -132,17 +144,49 @@ export function ChatContent({ sessionId, notebookId }: ChatContentProps) {
     handlers,
   ]);
 
-  // Global escape key handler
+  // Global keyboard shortcuts
   useEffect(() => {
     function handleGlobalKeyDown(e: KeyboardEvent) {
+      const isMod = e.metaKey || e.ctrlKey;
+
+      // Escape - stop streaming
       if (e.key === "Escape" && streaming.isActive) {
         e.preventDefault();
         handlers.stop();
+        return;
+      }
+
+      // Cmd/Ctrl+K - focus input
+      if (isMod && e.key === "k") {
+        e.preventDefault();
+        inputAreaRef.current?.focus();
+        return;
+      }
+
+      // Cmd/Ctrl+Shift+C - copy last response
+      if (isMod && e.shiftKey && e.key === "c") {
+        const lastAssistant = allMessages.findLast(
+          (m) => m.role === "assistant",
+        );
+        if (lastAssistant) {
+          e.preventDefault();
+          navigator.clipboard.writeText(lastAssistant.content);
+          showToast("Copied last response", "success");
+        }
+        return;
+      }
+
+      // Cmd/Ctrl+F - open search
+      if (isMod && e.key === "f") {
+        e.preventDefault();
+        setIsSearchOpen(true);
+        setTimeout(() => searchInputRef.current?.focus(), 0);
+        return;
       }
     }
     window.addEventListener("keydown", handleGlobalKeyDown);
     return () => window.removeEventListener("keydown", handleGlobalKeyDown);
-  }, [streaming.isActive, handlers]);
+  }, [streaming.isActive, handlers, allMessages]);
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -176,7 +220,9 @@ export function ChatContent({ sessionId, notebookId }: ChatContentProps) {
     handlers.send(question);
   }
 
-  const allMessages = messages || [];
+  function handleLoadMoreMessages() {
+    setVisibleMessageCount((prev) => prev + 20);
+  }
 
   if (isLoading) {
     return (
@@ -194,6 +240,46 @@ export function ChatContent({ sessionId, notebookId }: ChatContentProps) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
+      {isSearchOpen && (
+        <div className="flex shrink-0 items-center gap-2 border-b border-border bg-surface px-4 py-2">
+          <Search className="h-4 w-4 text-on-surface-muted" />
+          <input
+            ref={searchInputRef}
+            type="text"
+            placeholder="Search in conversation..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                setIsSearchOpen(false);
+                setSearchQuery("");
+              }
+            }}
+            className="flex-1 bg-transparent text-sm text-on-surface placeholder:text-on-surface-muted outline-none"
+          />
+          {searchQuery && (
+            <span className="text-xs text-on-surface-muted">
+              {
+                allMessages.filter((m) =>
+                  m.content.toLowerCase().includes(searchQuery.toLowerCase()),
+                ).length
+              }{" "}
+              matches
+            </span>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => {
+              setIsSearchOpen(false);
+              setSearchQuery("");
+            }}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
       <div className="relative min-h-0 flex-1">
         <div
           ref={scrollContainerRef}
@@ -216,7 +302,7 @@ export function ChatContent({ sessionId, notebookId }: ChatContentProps) {
           {showMessages && (
             <ChatMessagesView
               ref={sentinelRef}
-              messages={allMessages}
+              messages={visibleMessages}
               sessionId={sessionId}
               notebookId={notebookId}
               currentSources={streaming.sources}
@@ -226,10 +312,15 @@ export function ChatContent({ sessionId, notebookId }: ChatContentProps) {
               pendingUserMessage={pendingUserMessage}
               stoppedContent={stoppedContent}
               suggestedQuestions={suggestions.questions}
+              streamingStage={streaming.stage}
+              searchQuery={searchQuery}
+              hasMoreMessages={hasMoreMessages}
               onCitationClick={handleCitationClick}
               onRegenerate={handlers.regenerate}
               onEdit={handlers.edit}
               onQuestionClick={handleSuggestedQuestion}
+              onContinue={handlers.continueGenerating}
+              onLoadMore={handleLoadMoreMessages}
             />
           )}
 
@@ -263,6 +354,7 @@ export function ChatContent({ sessionId, notebookId }: ChatContentProps) {
       )}
 
       <ChatInputArea
+        ref={inputAreaRef}
         value={inputValue}
         onChange={setInputValue}
         onSend={handleSend}

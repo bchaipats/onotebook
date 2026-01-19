@@ -5,7 +5,12 @@ import {
   useInvalidateChatSessions,
 } from "@/hooks/use-chat";
 import { sendMessage, regenerateMessage, editMessage } from "@/lib/api";
-import type { SourceInfo, StreamEvent, GroundingMetadata } from "@/types/api";
+import type {
+  SourceInfo,
+  StreamEvent,
+  GroundingMetadata,
+  StreamingStage,
+} from "@/types/api";
 
 interface UseChatStreamOptions {
   sessionId: string;
@@ -31,6 +36,7 @@ export function useChatStream({
   );
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [currentStage, setCurrentStage] = useState<StreamingStage | null>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const stoppedByUserRef = useRef(false);
@@ -59,6 +65,9 @@ export function useChatStream({
   const handleEvent = useCallback(
     (event: StreamEvent) => {
       switch (event.type) {
+        case "stage":
+          setCurrentStage(event.stage || null);
+          break;
         case "sources":
           setCurrentSources(event.sources || []);
           break;
@@ -70,6 +79,7 @@ export function useChatStream({
           break;
         case "done":
           setIsStreaming(false);
+          setCurrentStage(null);
           completeStreamingBuffer();
           break;
         case "suggestions":
@@ -78,6 +88,7 @@ export function useChatStream({
         case "error":
           setError(event.error || "An error occurred");
           setIsStreaming(false);
+          setCurrentStage(null);
           resetStreamingBuffer();
           break;
       }
@@ -90,6 +101,7 @@ export function useChatStream({
     setStoppedContent("");
     setCurrentSources([]);
     setGroundingMetadata(null);
+    setCurrentStage(null);
     stoppedByUserRef.current = false;
   }, [resetStreamingBuffer]);
 
@@ -151,6 +163,7 @@ export function useChatStream({
     setStoppedContent(streamingContent);
     abortControllerRef.current?.abort();
     setIsStreaming(false);
+    setCurrentStage(null);
     resetStreamingBuffer();
     setPendingUserMessage(null);
     invalidateMessages();
@@ -221,6 +234,12 @@ export function useChatStream({
     [handleEvent, resetStreamState, resetStreamingBuffer, invalidateMessages],
   );
 
+  const continueGenerating = useCallback(async () => {
+    if (isStreaming) return;
+    const continuePrompt = "Please continue from where you left off.";
+    await send(continuePrompt);
+  }, [isStreaming, send]);
+
   const dismissError = useCallback(() => {
     setError(null);
     setLastFailedMessage(null);
@@ -239,6 +258,7 @@ export function useChatStream({
       sources: currentSources,
       grounding: groundingMetadata,
       isBufferActive,
+      stage: currentStage,
     },
     error: {
       message: error,
@@ -257,6 +277,7 @@ export function useChatStream({
       stop,
       regenerate,
       edit,
+      continueGenerating,
     },
   };
 }

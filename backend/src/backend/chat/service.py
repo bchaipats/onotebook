@@ -386,11 +386,15 @@ async def stream_rag_response(
 ) -> AsyncGenerator[str]:
     """Stream a RAG response with sources, grounding, and follow-up questions."""
     try:
+        yield f"data: {json.dumps({'type': 'stage', 'stage': 'searching'})}\n\n"
+
         raw_sources = retrieve_sources(query, notebook.id, document_ids)
         sources, grounding_metadata = filter_and_score_sources(raw_sources)
 
+        yield f"data: {json.dumps({'type': 'stage', 'stage': 'reading'})}\n\n"
         yield f"data: {json.dumps({'type': 'sources', 'sources': sources})}\n\n"
         yield f"data: {json.dumps({'type': 'grounding', 'metadata': grounding_metadata.model_dump()})}\n\n"
+        yield f"data: {json.dumps({'type': 'stage', 'stage': 'generating'})}\n\n"
 
         prompt = build_rag_prompt(
             query,
