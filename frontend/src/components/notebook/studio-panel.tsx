@@ -194,7 +194,7 @@ export function StudioPanel({
       )}
 
       <div className="flex-1 overflow-y-auto px-4 py-3">
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-2">
           {ARTIFACTS.map((artifact) => (
             <ArtifactCard
               key={artifact.id}

@@ -51,7 +51,7 @@ export function ArtifactCard({
       disabled={isDisabled}
       onClick={!isDisabled ? onClick : undefined}
       className={cn(
-        "group flex w-full flex-col gap-1 rounded-xl p-3",
+        "group flex w-full flex-col gap-1.5 rounded-xl p-2.5",
         "transition-colors duration-200",
         "hover:brightness-[0.97]",
         "disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100",
@@ -59,33 +59,34 @@ export function ArtifactCard({
       )}
     >
       <div className="flex w-full items-center justify-between">
-        <div className={cn("shrink-0", colors.icon)}>
-          {isLoading ? (
-            <Loader2 className="h-6 w-6 animate-spin" />
-          ) : (
-            <Icon className="h-6 w-6" strokeWidth={1.75} />
+        <div className="flex items-center gap-1.5">
+          <div className={cn("shrink-0", colors.icon)}>
+            {isLoading ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <Icon className="h-5 w-5" strokeWidth={1.75} />
+            )}
+          </div>
+          {artifact.beta && (
+            <span className="rounded bg-on-surface/80 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-surface">
+              Beta
+            </span>
           )}
         </div>
 
         {isLoading ? (
           <div className="flex items-center gap-1.5 text-xs text-on-surface-muted">
-            <Progress value={progress} className="h-1 w-10 bg-on-surface/10" />
+            <Progress value={progress} className="h-1 w-8 bg-on-surface/10" />
             <span>{progress}%</span>
           </div>
         ) : (
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-on-surface/6 text-on-surface/40 transition-colors duration-150 group-hover:bg-on-surface/10 group-hover:text-on-surface-muted">
-            <Pencil className="h-3.5 w-3.5" />
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-on-surface/6 text-on-surface/40 transition-colors duration-150 group-hover:bg-on-surface/10 group-hover:text-on-surface-muted">
+            <Pencil className="h-3 w-3" />
           </div>
         )}
       </div>
 
-      {artifact.beta && (
-        <span className="self-start rounded bg-on-surface/80 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-surface">
-          Beta
-        </span>
-      )}
-
-      <span className="truncate text-left text-[13px] font-medium text-on-surface">
+      <span className="truncate text-left text-xs font-medium text-on-surface">
         {artifact.label}
       </span>
     </button>
